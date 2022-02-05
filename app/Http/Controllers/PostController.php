@@ -5,6 +5,10 @@ use App\Models\Post;
 use App\Models\TicketType;
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
+use Exception;
+use Postmark\PostmarkClient;
+use Postmark\Models\PostmarkException;
+
 class PostController extends Controller
 {
     
@@ -34,9 +38,10 @@ class PostController extends Controller
             $post->picture = $image_name;
         }
         $post->name = $request->name;
+        $post->ticket_type_id = $request->ticket_type_id;
         // check that the name is chars only
         if(preg_match("^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z])$^", $post->name) == 0){
-           return redirect()->back()->with('status-failure', 'First name should be characters only!');
+           return redirect()->back()->with('status-failure', 'Name should be characters only!');
         }
         // check that it is a correct type of emails
         $post->email = $request->email;
@@ -62,5 +67,54 @@ class PostController extends Controller
         $post->code = $unique_id;
         $post->save();
         return redirect()->back()->with('status-success', 'Thank you for registering at Egycon 9. An email will be sent to you once your request is reviewed.');
+    }
+    private function send_email($request){
+        try {
+            $client = new PostmarkClient(env("POSTMARK_TOKEN"));
+            $sendResult = $client->sendEmailWithTemplate(
+                "info@gamerslegacy.net",
+                $request->email,
+                26959536,
+                [
+                    "name"=>explode(' ',$request->name)[0],
+                    "ticket_type"=>$request->ticket_type->name." Ticket - ". $request->ticket_type->price,
+                    "date"=>date('Y/m/d'),
+                    "action_url"=>"#",
+                    "qrcode"=>"#"
+                ]
+            );
+
+            // Getting the MessageID from the response
+            echo $sendResult->MessageID;
+        } catch (PostmarkException $ex) {
+            // If the client is able to communicate with the API in a timely fashion,
+            // but the message data is invalid, or there's a server error,
+            // a PostmarkException can be thrown.
+            echo $ex->httpStatusCode;
+            echo $ex->message;
+            echo $ex->postmarkApiErrorCode;
+        } catch (Exception $generalException) {
+            // A general exception is thrown if the API
+            // was unreachable or times out.
+        }
+    }
+    public function view_requests(){
+        $posts = Post::with('ticket_type')->orderBy('status')->paginate(15);
+        return view('admin.requests',['requests'=>$posts]);
+    }
+
+    public function accept($id){
+        $post = Post::with('ticket_type')->findOrFail($id);
+        $this->send_email($post);
+        $post->status = 1;
+        $post->save();
+        return redirect()->back()->with(["success"=>"{$post->name}'s request has been accepted successfully!"]);
+    }
+    public function reject($id)
+    {
+        $post = Post::with('ticket_type')->findOrFail($id);
+        $post->status = 0;
+        $post->save();
+        return redirect()->back()->with(["success" => "{$post->name}'s request has been rejected successfully!"]);
     }
 }
