@@ -7,8 +7,9 @@ use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
 use Exception;
 use Postmark\PostmarkClient;
+use Session;
 use Postmark\Models\PostmarkException;
-
+use DB;
 class PostController extends Controller
 {
     
@@ -16,6 +17,36 @@ class PostController extends Controller
     {
         $ticket_types = TicketType::all();
         return view('form',["ticket_types"=>$ticket_types]);
+    }
+
+    public function edit_requests()
+    {
+        return view('admin.edit-requests');
+    }
+
+    public function action()
+    {
+        
+        $data = DB::table('posts')->where('code',$_POST['code'])->get();
+        if($data->isEmpty()){
+            return back()->with('message', 'Code # '.$_POST['code'].' Not Found');
+        }else{
+            // return back()->with('message', 'Code # '.$_POST['code'].' Found');
+            $status = DB::table('posts')->where('code', $_POST['code'])->value('status');
+            if($status == 0 || $status == null){
+                return back()->with('message', 'Status = 0 or Status = null');
+            }else if($status == 1){
+                $result = DB::update('update posts set status=? where code = ?',[2,$_POST['code']]);
+                if($result){
+                    return back()->with('message', 'Accepted and Changed to 2');
+                }else{
+                    return back()->with('message', 'Error while updating');
+                }
+            }else if($status == 2){
+                return back()->with('message', 'Scanned Before');
+            }
+        }
+
     }
 
     public function store(Request $request)
