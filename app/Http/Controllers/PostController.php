@@ -23,7 +23,7 @@ class PostController extends Controller
         
         $request->validate([
             'name'=>"required|string|min:6|max:64",
-            'email' => "required|email|unique:posts,email",
+            'email' => "required|email",
             'phone_number' => "required",
             'receipt'=>"required|file|mimes:png,jpg,jpeg",
             'ticket_type_id'=>"required|integer|exists:ticket_types,id",
