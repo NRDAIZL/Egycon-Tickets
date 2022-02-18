@@ -31,5 +31,6 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
     Route::get('/requests/accept/{id}', [PostController::class, 'accept'])->name('accept');
     Route::get('/requests/reject/{id}', [PostController::class, 'reject'])->name('reject');
 });
-Route::get('/', [PostController::class, 'view']);
-Route::post('/', [PostController::class, 'store']);
+
+Route::get('/', [PostController::class, 'instructions'])->name('instructions');
+Route::post('/', [PostController::class, 'instructions_store']);

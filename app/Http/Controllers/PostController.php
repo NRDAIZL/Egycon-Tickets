@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Post;
+use App\Models\PostTicket;
 use App\Models\TicketType;
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
@@ -11,22 +12,44 @@ use Postmark\Models\PostmarkException;
 
 class PostController extends Controller
 {
-    
-    public function view()
-    {
+    public function instructions(){
         $ticket_types = TicketType::all();
-        return view('form',["ticket_types"=>$ticket_types]);
+        return view('instructions',['ticket_types'=>$ticket_types]);
     }
-
+    public function instructions_store(Request $request)
+    {
+        if($request->has('name')){
+            return $this->store($request);
+        }
+        $request->validate([
+            'quantity'=>'array',
+            'quantity.*'=>'numeric|min:0|max:10',
+        ]);
+        $total = 0;
+        $ticket_types = TicketType::all();
+        $i = 0;
+        foreach($ticket_types as $ticket_type){
+            $price = $ticket_type->price * $request->quantity[$i];
+            $total += $price;
+            $i++;
+        }
+        if($total==0){
+            return redirect()->back()->with('error','You must select at least on ticket');
+        }
+        
+        return view('form', ['ticket_types' => $ticket_types,'total'=>$total,'quantity'=>$request->quantity]);
+    }
+    
     public function store(Request $request)
     {
-        
         $request->validate([
+            'quantity'=>'array|required',
+            'quantity.*'=>'numeric|min:0|max:10',
+            'total'=>"numeric",
             'name'=>"required|string|min:6|max:64",
             'email' => "required|email",
             'phone_number' => "required",
             'receipt'=>"required|file|mimes:png,jpg,jpeg",
-            'ticket_type_id'=>"required|integer|exists:ticket_types,id",
         ]);
         $post = new Post;
         // check that the selected file is image and save it to a folder
@@ -54,18 +77,33 @@ class PostController extends Controller
             return redirect()->back()->with('status-failure', 'Phone number must be numbers only!');
         }
         $unique_id = uniqid();
-        $qr_options = new QROptions([
-            'version'    => 5,
-            'outputType' => QRCode::OUTPUT_IMAGE_JPG,
-            'eccLevel'   => QRCode::ECC_L,
-            'imageTransparent'=>false,
-            'imagickFormat'=>'jpg',
-            'imageTransparencyBG'=>[255,255,255],
-        ]);        
-        $qrcode = new QRCode($qr_options);
-        $qrcode->render($unique_id, public_path('images/qrcodes/'.$unique_id.".jpg"));
+       
         $post->code = $unique_id;
         $post->save();
+        $j=0;
+        $tickets = TicketType::all();
+        foreach($request->quantity as $quantity){
+            for($i = 0; $i<$quantity; $i++){
+                $unique_id = uniqid();
+                $ticket = $tickets[$j];
+                $post_ticket = new PostTicket();
+                $post_ticket->post_id = $post->id;
+                $post_ticket->ticket_type_id = $ticket->id;
+                $post_ticket->code = $unique_id;
+                $qr_options = new QROptions([
+                    'version'    => 5,
+                    'outputType' => QRCode::OUTPUT_IMAGE_JPG,
+                    'eccLevel'   => QRCode::ECC_L,
+                    'imageTransparent' => false,
+                    'imagickFormat' => 'jpg',
+                    'imageTransparencyBG' => [255, 255, 255],
+                ]);
+                $qrcode = new QRCode($qr_options);
+                $qrcode->render($unique_id, public_path('images/qrcodes/' . $unique_id . ".jpg"));
+                $post_ticket->save();
+            }
+            $j++;
+        }
         return redirect()->back()->with('status-success', 'Thank you for registering at Egycon 9. An email will be sent to you once your request is reviewed.');
     }
     private function send_email($request){
