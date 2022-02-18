@@ -21,7 +21,7 @@
 <form method="POST" class="bg-slate-100 border-r-8 border-l-8 border-b-8 border-black shadow-md rounded-lg" enctype="multipart/form-data">
     <div class="w-full h-48 relative">
         <img src="{{ asset('images/header.png') }}" class="w-full h-full object-right-top" alt="">
-        <img src="{{ asset('logo.png') }}" class="absolute left-4 hidden sm:block top-1/2 -translate-y-1/2 transform h-2/3 " alt="">
+        <img src="https://gamerslegacy.net/b/logos//Egycon-8.png" class="absolute left-4 hidden sm:block top-1/2 -translate-y-1/2 transform h-2/3 " alt="">
         <img src="{{ asset('images/vodafone cash.png') }}" class="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 transform h-1/2 lg:h-2/3 " alt="">
             {{-- <img src="{{ asset('logo.png') }}" alt=""> --}}
     </div>
