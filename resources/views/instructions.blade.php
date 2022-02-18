@@ -17,7 +17,7 @@ Egycon Tickets - Register Purchase
       @foreach ($ticket_types as $type)
         <tr>
           <td class="border-r-2 border-white">{{ $type->name }}</td>
-          <td class="border-r-2 border-white">1</td>
+          <td class="border-r-2 border-white">{{ $type->person }}</td>
           <td class="border-r-2 border-white">{{ $type->price }}</td>
           <td class="border-white"><input type="number" data-price="{{ $type->price }}" data-quantity="0" value="0"  minlength="0" max="10" min="0" maxlength="2" class="quantity w-16 text-black text-left" name="quantity[]"></td>
         </tr>
