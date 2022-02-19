@@ -1,6 +1,6 @@
 @extends('layouts.form')
 @section('title')
-Egycon Tickets - Register Purchase
+Egycon Tickets
 @endsection
 @section('content')
 @csrf

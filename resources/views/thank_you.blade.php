@@ -1,6 +1,6 @@
 @extends('layouts.form')
 @section('title')
-Egycon Tickets - Register Purchase
+Egycon Tickets - Thank you for registering at egycon 9!
 @endsection
 @section('content')
 <div class="flex justify-center items-center h-full w-full py-32 text-white">
