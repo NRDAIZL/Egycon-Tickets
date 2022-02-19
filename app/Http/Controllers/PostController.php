@@ -7,14 +7,18 @@ use App\Models\TicketType;
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
 use Exception;
+use Illuminate\Contracts\Session\Session;
 use Postmark\PostmarkClient;
 use Postmark\Models\PostmarkException;
 
 class PostController extends Controller
 {
-    public function instructions(){
+    public function instructions(Request $request){
         $ticket_types = TicketType::all();
-        return view('instructions',['ticket_types'=>$ticket_types]);
+        if(session()->get('errors')){
+            return view('form', ['ticket_types' => $ticket_types, 'quantity' => old('quantity'), 'total' => old('total')]);
+        }
+        return view('instructions',['ticket_types'=>$ticket_types, ]);
     }
     public function instructions_store(Request $request)
     {
@@ -61,17 +65,9 @@ class PostController extends Controller
             $post->picture = $image_name;
         }
         $post->name = $request->name;
-        $post->ticket_type_id = $request->ticket_type_id;
-        // check that the name is chars only
-        if(preg_match("^[a-zA-Z]+(([',. -][a-zA-Z ])?[a-zA-Z])$^", $post->name) == 0){
-           return redirect()->back()->with('status-failure', 'Name should be characters only!');
-        }
-        // check that it is a correct type of emails
         $post->email = $request->email;
-        if (!filter_var($post->email, FILTER_VALIDATE_EMAIL)) {
-            return redirect()->back()->with('status-failure', 'Not a valid email address!');
-        }
-        // check that it is numbers only
+        $post->ticket_type_id = $request->ticket_type_id;
+       
         $post->phone_number = $request->phone_number;
         if(preg_match('@[0-9]@', $post->phone_number) == 0 ){
             return redirect()->back()->with('status-failure', 'Phone number must be numbers only!');
@@ -104,7 +100,7 @@ class PostController extends Controller
             }
             $j++;
         }
-        return redirect()->back()->with('status-success', 'Thank you for registering at Egycon 9. An email will be sent to you once your request is reviewed.');
+        return view('thank_you', ['status-success' => 'Thank you for registering at Egycon 9. An email will be sent to you once your request is reviewed.', 'total' => $request->total, 'quantity' => $request->quantity]);
     }
     private function send_email($request){
         try {

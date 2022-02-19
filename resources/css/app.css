@@ -3,3 +3,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+    font-family: 'Gothic';
+    src: url('../fonts/GOTHIC.TTF');
+}
