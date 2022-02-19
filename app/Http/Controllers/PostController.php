@@ -55,6 +55,11 @@ class PostController extends Controller
             'phone_number' => "required",
             'receipt'=>"required|file|mimes:png,jpg,jpeg",
         ]);
+        if (strpos(trim($request->name), ' ') === false) {
+            $ticket_types = TicketType::all();
+            session()->flash('status-failure', 'Please enter your full name.');
+            return view('form', ['ticket_types' => $ticket_types, 'total' => $request->total, 'quantity' => $request->quantity]);
+        }
         $post = new Post;
         // check that the selected file is image and save it to a folder
         // $post->receipt = $request->receipt;

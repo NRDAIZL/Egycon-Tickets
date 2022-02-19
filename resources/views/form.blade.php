@@ -16,7 +16,7 @@ Egycon Tickets - Register Purchase
   @endforeach
   <input type="hidden" name="total" value="{{ $total }}" >
   <label class="text-center text-lg w-full my-2">
-    <p class="text-white">Name</p>
+    <p class="text-white">Full Name</p>
     <input required name='name' value="{{ old('name') }}" placeholder='Name' class="w-full py-2 px-4 border border-slate-400" type='text'>
   </label>
   <label class="text-center text-lg w-full my-2">
