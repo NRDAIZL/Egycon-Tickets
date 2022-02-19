@@ -66,7 +66,7 @@ class PostController extends Controller
         // $post->receipt = $request->receipt;
         if($request->hasFile('receipt')){
             $image = $request->file('receipt');
-            $image_name = $image->getClientOriginalName();
+            $image_name = time().'-'.$image->getClientOriginalName();
             $image->move(public_path('/images'), $image_name);
             $post->picture = $image_name;
         }
