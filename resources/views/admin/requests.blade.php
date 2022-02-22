@@ -8,6 +8,12 @@ Requests
 @section('content')
         <main class="h-full pb-16 overflow-y-auto">
           <div class="container grid px-6 mx-auto">
+            <form action="">
+                <div class="flex  my-4">
+                  <button class=" w-14 rounded-l-md flex items-center justify-center dark:bg-slate-800 border-l border-t border-b border-gray-800"> <i class="las la-search text-xl text-purple-500 "></i> </button>
+                  <input name="q" placeholder="Search phone, email, order id" type="text" class="w-full py-2 px-4  flex-1  dark:bg-slate-800 rounded-r-md dark:text-white border-t border-r border-b border-l-0 border-gray-800 ">
+                </div>
+            </form>
             <h2
               class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"
             >
@@ -21,6 +27,7 @@ Requests
                     <tr
                       class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800"
                     >
+                      <th class="px-4 py-3">Order ID</th>
                       <th class="px-4 py-3">Registrant</th>
                       <th class="px-4 py-3">Email</th>
                       <th class="px-4 py-3">Phone</th>
@@ -40,21 +47,28 @@ Requests
                       <td class="px-4 py-3">
                         <div class="flex items-center text-sm">
                           <div>
-                            <p class="font-semibold">{{ $request->name }}</p>
+                            <p class="font-semibold">{!! str_replace("$query","<span class='bg-yellow-100'>$query</span>",$request->id) !!}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center text-sm">
+                          <div>
+                            <p class="font-semibold">{!! str_replace("$query","<span class='bg-yellow-100'>$query</span>",$request->name) !!}</p>
                           </div>
                         </div>
                       </td>
                       <td class="px-2 py-3">
                         <div class="flex items-center text-sm">
                           <div>
-                            <p class="font-semibold">{{ $request->email }}</p>
+                            <p class="font-semibold">{!! str_replace("$query","<span class='bg-yellow-100'>$query</span>",$request->email) !!}</p>
                           </div>
                         </div>
                       </td>
                       <td class="px-2 py-3">
                         <div class="flex items-center text-sm">
                           <div>
-                            <p class="font-semibold">{{ $request->phone_number }}</p>
+                            <p class="font-semibold">{!! str_replace("$query","<span class='bg-yellow-100'>$query</span>",$request->phone_number) !!}</p>
                           </div>
                         </div>
                       </td>
