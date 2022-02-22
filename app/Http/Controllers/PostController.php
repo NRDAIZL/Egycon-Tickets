@@ -121,7 +121,8 @@ class PostController extends Controller
                     "ticket_type"=> $ticket->ticket_type->name . " Ticket - " . $ticket->ticket_type->price,
                     "order_id" => $request->id,
                     // "date"=>date('Y/m/d'),
-                    "qrcode"=>asset('images/qrcodes/'.$ticket->code.'.jpg')
+                    "qrcode"=>asset('images/qrcodes/'.$ticket->code.'.jpg'),
+                    "code"=>$ticket->code
                 ]
             );
 
@@ -141,6 +142,7 @@ class PostController extends Controller
             // was unreachable or times out.
         }
     }
+
     public function view_requests(){
         $posts = Post::with('ticket_type')->orderBy('status')->paginate(15);
         return view('admin.requests',['requests'=>$posts]);
@@ -155,9 +157,41 @@ class PostController extends Controller
         $post->save();
         return redirect()->back()->with(["success"=>"{$post->name}'s request has been accepted successfully!"]);
     }
+    private function send_declined_email($request)
+    {
+
+        try {
+            $client = new PostmarkClient(env("POSTMARK_TOKEN"));
+            $sendResult = $client->sendEmailWithTemplate(
+                "info@gamerslegacy.net",
+                $request->email,
+                27132435,
+                [
+                    "name" => explode(' ', $request->name)[0],
+                    "order_id" => $request->id,
+                ]
+            );
+
+            // Getting the MessageID from the response
+            echo $sendResult->MessageID;
+        } catch (PostmarkException $ex) {
+            dd($ex);
+            // If the client is able to communicate with the API in a timely fashion,
+            // but the message data is invalid, or there's a server error,
+            // a PostmarkException can be thrown.
+            echo $ex->httpStatusCode;
+            echo $ex->message;
+            echo $ex->postmarkApiErrorCode;
+        } catch (Exception $generalException) {
+            dd($generalException);
+            // A general exception is thrown if the API
+            // was unreachable or times out.
+        }
+    }
     public function reject($id)
     {
         $post = Post::with('ticket_type')->findOrFail($id);
+        $this->send_declined_email($post);
         $post->status = 0;
         $post->save();
         return redirect()->back()->with(["success" => "{$post->name}'s request has been rejected successfully!"]);
