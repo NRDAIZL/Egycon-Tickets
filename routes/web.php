@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\TicketController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,6 +31,13 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
     Route::get('/requests', [PostController::class, 'view_requests'])->name('requests');
     Route::get('/requests/accept/{id}', [PostController::class, 'accept'])->name('accept');
     Route::get('/requests/reject/{id}', [PostController::class, 'reject'])->name('reject');
+
+    Route::prefix('/tickets')->as('tickets.')->group(function(){
+        Route::get('/', [TicketController::class, 'view'])->name('view');
+        Route::get('/add', [TicketController::class, 'add'])->name('add');
+        Route::post('/add', [TicketController::class, 'store']);
+    });
+
 });
 
 Route::get('/', [PostController::class, 'instructions'])->name('instructions');
