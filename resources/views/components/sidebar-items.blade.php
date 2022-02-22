@@ -39,6 +39,7 @@
               </a>
             </li>
           </ul>
+          
           <ul>
             <li class="relative px-6 py-3">
               @if($page == 'requests')
@@ -129,6 +130,7 @@
             </li>
 
           </ul>
+          
           <div class="px-6 my-6">
             <a
             href="{{ route('logout') }}"

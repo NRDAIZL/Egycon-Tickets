@@ -31,6 +31,9 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
     Route::get('/requests', [PostController::class, 'view_requests'])->name('requests');
     Route::get('/requests/accept/{id}', [PostController::class, 'accept'])->name('accept');
     Route::get('/requests/reject/{id}', [PostController::class, 'reject'])->name('reject');
+    
+    Route::get('/requests/edit', [PostController::class, 'edit_requests'])->name('edit-requests');
+    Route::post('/requests/action', [PostController::class, 'action'])->name('action');
 
     Route::prefix('/tickets')->as('tickets.')->group(function(){
         Route::get('/', [TicketController::class, 'view'])->name('view');
