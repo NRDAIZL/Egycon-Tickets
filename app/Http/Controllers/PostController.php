@@ -115,13 +115,13 @@ class PostController extends Controller
             $sendResult = $client->sendEmailWithTemplate(
                 "info@gamerslegacy.net",
                 $request->email,
-                26959536,
+                27131977,
                 [
-                    "name"=>explode(' ',$request->name)[0],
-                    "ticket_type"=> $ticket->ticket_type->name." Ticket - ". $ticket->ticket_type->price,
-                    "date"=>date('Y/m/d'),
-                    "action_url"=>"#",
-                    "qrcode"=>"#"
+                    "name" => explode(' ', $request->name)[0],
+                    "ticket_type"=> $ticket->ticket_type->name . " Ticket - " . $ticket->ticket_type->price,
+                    "order_id" => $request->id,
+                    // "date"=>date('Y/m/d'),
+                    "qrcode"=>asset('images/qrcodes/'.$ticket->code.'.jpg')
                 ]
             );
 
