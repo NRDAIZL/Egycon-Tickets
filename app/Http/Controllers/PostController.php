@@ -10,7 +10,7 @@ use Exception;
 use Illuminate\Contracts\Session\Session;
 use Postmark\PostmarkClient;
 use Postmark\Models\PostmarkException;
-
+use DB;
 class PostController extends Controller
 {
     public function instructions(Request $request){
@@ -43,7 +43,35 @@ class PostController extends Controller
         
         return view('form', ['ticket_types' => $ticket_types,'total'=>$total,'quantity'=>$request->quantity]);
     }
-    
+
+    public function edit_requests()
+    {
+        return view('admin.edit-requests');
+    }
+
+    public function action()
+    {
+        $data = PostTicket::with('post')->where('code',$_POST['code'])->first();
+        if(!$data){
+            return back()->with('error', 'Code # '.$_POST['code'].' Not Found');
+        }else{
+            // return back()->with('message', 'Code # '.$_POST['code'].' Found');
+            $status = $data->post->status;
+            if($status == 0 || $status == null){
+                return back()->with('error', 'Not accepted yet');
+            }else if($status == 1 && $data->status != 2){
+                $data->status = 2;
+                $data->save();
+                    return back()->with('message', 'Scanned Successfully! The registree can enter Egycon!');
+            }else if($data->status == 2){
+                return back()->with('error', 'Already Scanned Before!!!');
+            }else{
+                return back()->with('error', 'There was a problem Scanning! Please refer to the Technical Support Team.');
+            }
+        }
+
+    }
+
     public function store(Request $request)
     {
         $request->validate([
