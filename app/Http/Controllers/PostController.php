@@ -171,9 +171,16 @@ class PostController extends Controller
         }
     }
 
-    public function view_requests(){
-        $posts = Post::with('ticket_type')->orderBy('status')->paginate(15);
-        return view('admin.requests',['requests'=>$posts]);
+    public function view_requests(Request $request){
+        $q = false;
+        $posts = Post::with('ticket_type')->orderBy('status');
+        if($request->has('q')){
+            $q = $request->q;
+            $posts = Post::with('ticket_type')->orderBy('status')->where('id',$request->q)->orWhere('email',"LIKE", "%" . $request->q . "%")->orWhere('name', "LIKE", "%" . $request->q . "%")->orWhere('phone_number',"LIKE","%".$request->q."%")->paginate(1000);
+        }else{
+            $posts = Post::with('ticket_type')->orderBy('status')->paginate(15);
+        }
+        return view('admin.requests',['requests'=>$posts, 'query'=>$q]);
     }
 
     public function accept($id){
