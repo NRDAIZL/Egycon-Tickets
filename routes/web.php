@@ -41,6 +41,9 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
         Route::post('/add', [TicketController::class, 'store']);
     });
 
+    Route::get('/import', [PostController::class,'import_sheet'])->name('import');
+    Route::post('/import', [PostController::class,'import_sheet_store']);
+
 });
 
 Route::get('/', [PostController::class, 'instructions'])->name('instructions');
