@@ -82,7 +82,21 @@ Requests
                         </div>                   
                       </td>
                       <td class="px-4 py-3 text-sm">
-                        {{ $request->ticket_type->name??"" }} - {{ $request->ticket_type->price??"" }}EGP
+                        @php
+                          $similar = [];
+                          $similar_person = [];
+                        foreach ($request->ticket as $ticket){
+                          if(!isset($similar[$ticket->ticket_type->name])){
+                            $similar[$ticket->ticket_type->name] = 1;
+                            $similar_person[$ticket->ticket_type->name] = $ticket->ticket_type->person;
+                          }else{
+                            $similar[$ticket->ticket_type->name]++;
+                          }
+                        }
+                        @endphp
+                        @foreach ($similar as $key=>$value)
+                          {{ $value/$similar_person[$key] }} {{ $key }} <br>
+                        @endforeach
                       </td>
                       <td class="px-4 py-3 text-xs">
                         @if($request->status === null)
@@ -95,8 +109,17 @@ Requests
                         <span
                           class="px-2 py-1 font-semibold leading-tight text-green-600 bg-green-100 rounded-full dark:bg-green-600 dark:text-green-100"
                         >
-                          Approved
+                          Approved 
+                          
+
                         </span>
+                        @if($request->provider)
+                        <span
+                          class="px-2 py-1 font-semibold leading-tight text-black-600 bg-green-100 rounded-full dark:bg-green-600 dark:text-green-100"
+                        >
+                          {{ $request->provider->name }}
+                        </span>
+                        @endif
                         @else
                         <span
                           class="px-2 py-1 font-semibold leading-tight text-red-600 bg-red-100 rounded-full dark:bg-red-600 dark:text-red-100"

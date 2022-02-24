@@ -17,4 +17,10 @@ class Post extends Model
     {
         return $this->hasMany(PostTicket::class);
     }
+    
+    public function provider(){
+        return $this->belongsTo(ExternalServiceProvider::class,'external_service_provider_id');
+    }
+
+    
 }

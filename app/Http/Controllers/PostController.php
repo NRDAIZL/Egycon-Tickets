@@ -1,5 +1,8 @@
 <?php
 namespace App\Http\Controllers;
+
+use App\Imports\PostImport;
+use App\Models\ExternalServiceProvider;
 use Illuminate\Http\Request;
 use App\Models\Post;
 use App\Models\PostTicket;
@@ -11,6 +14,8 @@ use Illuminate\Contracts\Session\Session;
 use Postmark\PostmarkClient;
 use Postmark\Models\PostmarkException;
 use DB;
+use Maatwebsite\Excel\Facades\Excel;
+
 class PostController extends Controller
 {
     public function instructions(Request $request){
@@ -154,8 +159,6 @@ class PostController extends Controller
                 ]
             );
 
-            // Getting the MessageID from the response
-            echo $sendResult->MessageID;
         } catch (PostmarkException $ex) {
             dd($ex);
             // If the client is able to communicate with the API in a timely fashion,
@@ -173,12 +176,12 @@ class PostController extends Controller
 
     public function view_requests(Request $request){
         $q = false;
-        $posts = Post::with('ticket_type')->orderBy('status');
+        $posts = Post::with(['ticket.ticket_type','ticket_type','provider'])->orderBy('status');
         if($request->has('q')){
             $q = $request->q;
-            $posts = Post::with('ticket_type')->orderBy('status')->where('id',$request->q)->orWhere('email',"LIKE", "%" . $request->q . "%")->orWhere('name', "LIKE", "%" . $request->q . "%")->orWhere('phone_number',"LIKE","%".$request->q."%")->paginate(1000);
+            $posts = $posts->where('id',$request->q)->orWhere('email',"LIKE", "%" . $request->q . "%")->orWhere('name', "LIKE", "%" . $request->q . "%")->orWhere('phone_number',"LIKE","%".$request->q."%")->paginate(1000);
         }else{
-            $posts = Post::with('ticket_type')->orderBy('status')->paginate(15);
+            $posts = $posts->paginate(15);
         }
         return view('admin.requests',['requests'=>$posts, 'query'=>$q]);
     }
@@ -230,5 +233,64 @@ class PostController extends Controller
         $post->status = 0;
         $post->save();
         return redirect()->back()->with(["success" => "{$post->name}'s request has been rejected successfully!"]);
+    }
+
+    public function import_sheet(){
+        $providers = ExternalServiceProvider::all();
+        return view('admin.import',['providers'=>$providers]);
+    }
+
+    public function import_sheet_store(Request $request)
+    {
+        $request->validate([
+            'sheet'=>'required|file',
+            'provider_id'=>'required|exists:external_service_providers,id'
+        ]);
+        $array = Excel::toArray(PostImport::class,$request->file('sheet'));
+        
+        foreach($array[0] as $k=>$row){
+            if($k == 0 || Post::where('external_service_provider_order_id',$row[0])->where('external_service_provider_id',$request->provider_id)->first()){
+                continue;
+            }
+            $post = new Post();
+            $post->external_service_provider_id = $request->provider_id;
+            $post->external_service_provider_order_id = $row[0];
+            $post->name = $row[1];
+            $post->phone_number = $row[2];
+            $post->email = $row[3];
+            $post->external_service_provider_payment_method = $row[6];
+            $post->external_service_provider_notes = $row[7];
+
+            $quantity = $row[4];
+            $ticket_type = TicketType::where('name',$row[5])->first();
+            $unique_id = uniqid();
+            $post->code = $unique_id;
+            $post->picture = 0;
+            $post->status=1;
+            $post->save();
+            for ($i = 0; $i < $quantity * $ticket_type->person; $i++) {
+                $unique_id = uniqid();
+                $post_ticket = new PostTicket();
+                $post_ticket->post_id = $post->id;
+                $post_ticket->ticket_type_id = $ticket_type->id;
+                $post_ticket->code = $unique_id;
+                $qr_options = new QROptions([
+                    'version'    => 5,
+                    'outputType' => QRCode::OUTPUT_IMAGE_JPG,
+                    'eccLevel'   => QRCode::ECC_L,
+                    'imageTransparent' => false,
+                    'imagickFormat' => 'jpg',
+                    'imageTransparencyBG' => [255, 255, 255],
+                ]);
+                $qrcode = new QRCode($qr_options);
+                $qrcode->render($unique_id, public_path('images/qrcodes/' . $unique_id . ".jpg"));
+                $post_ticket->save();
+                $post_ticket = PostTicket::with('ticket_type')->find($post_ticket->id);
+                $this->send_email($post_ticket, $post);
+
+            }
+            
+        }
+        return redirect()->back()->with('success',"Sheet imported successfully!");
     }
 }
