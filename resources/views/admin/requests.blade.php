@@ -73,13 +73,17 @@ Requests
                         </div>
                       </td>
                       <td class="px-4 py-3 text-sm">
+                            @if($request->picture)
                         <div class="w-12 h-12 relative">
                             
                             <div class=" bg-black absolute w-full h-full top-0 left-0 flex justify-center items-center">
                                 <i class="las la-search-plus text-xl"></i>
                             </div>      
                             <img src="{{ asset('images/'.$request->picture) }}" class="transition-all absolute top-0 left-0 flex justify-center items-center opacity-100 hover:opacity-40 w-full h-full object-cover" alt=""> 
-                        </div>                   
+                          </div>    
+                          @else
+                          N/A               
+                            @endif
                       </td>
                       <td class="px-4 py-3 text-sm">
                         @php
