@@ -56,9 +56,11 @@ class PostController extends Controller
 
     public function action()
     {
-        $data = PostTicket::with('post')->where('code',$_POST['code'])->first();
+        $data = PostTicket::with('post','ticket_type')->where('code',$_POST['code'])->first();
         if(!$data){
             return back()->with('error', 'Code # '.$_POST['code'].' Not Found');
+        }else if(str_contains(strtolower($data->ticket_type->name),'bus')){
+            return back()->with('error', 'Code # ' . $_POST['code'] . ' is a Bus Ticket. This page is for event tickets only');
         }else{
             // return back()->with('message', 'Code # '.$_POST['code'].' Found');
             $status = $data->post->status;
@@ -142,6 +144,9 @@ class PostController extends Controller
         return view('thank_you', ['status-success' => 'Thank you for registering at Egycon 9. An email will be sent to you once your request is reviewed.', 'total' => $request->total, 'quantity' => $request->quantity]);
     }
     private function send_email($ticket,$request){
+        if(str_contains(strtolower($ticket->ticket_type->name),'bus')){
+            return;
+        }
 
         try {
             $client = new PostmarkClient(env("POSTMARK_TOKEN"));
