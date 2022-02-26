@@ -165,6 +165,20 @@ Requests
                           >
                             <i class="las la-times text-xl group-disabled:text-gray-500 text-red-500"></i>
                           </button>
+                          <button
+                            @if ($request->status !== null)
+                                disabled
+                            @else
+                            onclick="display_popup(this)"
+                            data-title="Are you sure you want to DELETE {{ explode(' ',$request->name)[0] }}'s request?"
+                            data-content="By continuing, you ensure that this request is completely DELETED and cannot be undone."
+                            data-action="{{ route('admin.requests.delete',$request->id) }}"
+                            @endif
+                            class="flex items-center group disabled:hover:bg-inherit disabled:cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600 justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400 focus:outline-none focus:shadow-outline-gray"
+                            aria-label="Reject"
+                          >
+                            <i class="las la-trash-alt text-xl group-disabled:text-gray-500 text-red-500"></i>
+                          </button>
                         </div>
                       </td>
                     </tr>
