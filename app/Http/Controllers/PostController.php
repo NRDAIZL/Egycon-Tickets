@@ -239,7 +239,15 @@ class PostController extends Controller
         $post->save();
         return redirect()->back()->with(["success" => "{$post->name}'s request has been rejected successfully!"]);
     }
-
+    public function destroy($id)
+    {
+        $post = Post::with('ticket')->findOrFail($id);
+        foreach($post->ticket as $ticket){
+            $ticket->delete();
+        }
+        $post->delete();
+        return redirect()->back()->with(["success" => "{$post->name}'s request has been rejected successfully!"]);
+    }
     public function import_sheet(){
         $providers = ExternalServiceProvider::all();
         return view('admin.import',['providers'=>$providers]);
