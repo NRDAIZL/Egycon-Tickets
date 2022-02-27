@@ -262,12 +262,12 @@ class PostController extends Controller
         $array = Excel::toArray(PostImport::class,$request->file('sheet'));
         
         foreach($array[0] as $k=>$row){
-            if($k == 0 || Post::where('external_service_provider_order_id',$row[0])->where('external_service_provider_id',$request->provider_id)->first()){
+            if($row[1]==null||$k == 0 || Post::where('external_service_provider_order_id',intval($row[0]))->where('external_service_provider_id',$request->provider_id)->first()){
                 continue;
             }
             $post = new Post();
             $post->external_service_provider_id = $request->provider_id;
-            $post->external_service_provider_order_id = $row[0];
+            $post->external_service_provider_order_id = intval($row[0]);
             $post->name = $row[1];
             $post->phone_number = $row[2];
             $post->email = $row[3];
