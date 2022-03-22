@@ -17,7 +17,8 @@ Requests
             <h2
               class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"
             >
-              Requests
+              Requests 
+              <a href="{{ route('admin.requests.export') }}"><button class="mx-8 py-1 px-4 rounded-md bg-purple-500 hover:bg-purple-400 text-white"> <i class="las la-download"></i> Export</button></a>
             </h2>
            
             <div class="w-full overflow-hidden rounded-lg shadow-xs">

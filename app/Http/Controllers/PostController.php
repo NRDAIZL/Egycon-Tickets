@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Exports\PostsExport;
 use App\Imports\PostImport;
 use App\Models\ExternalServiceProvider;
 use Illuminate\Http\Request;
@@ -307,5 +308,10 @@ class PostController extends Controller
             
         }
         return redirect()->back()->with('success',"Sheet imported successfully!");
+    }
+
+    public function export()
+    {
+        return Excel::download(new PostsExport, 'tickets.xlsx');
     }
 }
