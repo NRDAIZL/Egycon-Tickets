@@ -32,6 +32,7 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
     Route::get('/requests/accept/{id}', [PostController::class, 'accept'])->name('accept');
     Route::get('/requests/reject/{id}', [PostController::class, 'reject'])->name('reject');
     Route::get('/requests/delete/{id}', [PostController::class, 'destroy'])->name('requests.delete');
+    Route::get('/requests/export', [PostController::class, 'export'])->name('requests.export');
     
     Route::get('/requests/edit', [PostController::class, 'edit_requests'])->name('edit-requests');
     Route::post('/requests/action', [PostController::class, 'action'])->name('action');
