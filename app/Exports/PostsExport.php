@@ -12,7 +12,7 @@ class PostsExport implements FromView
     public function view(): View
     {
         return view('exports.posts', [
-            'requests' => Post::with('ticket.ticket_type', 'provider')->get()
+            'requests' => Post::with(['ticket.ticket_type','ticket_type','provider'])->orderBy('status')
         ]);
     }
 }
