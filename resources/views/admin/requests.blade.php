@@ -99,7 +99,8 @@ Requests
                         }
                         @endphp
                         @foreach ($similar as $key=>$value)
-                          {{ $value/$similar_person[$key] }} {{ $key }} <br>
+                        
+                          {{ $value/$similar_person[$key] }} {!! str_replace("$query","<span class='bg-yellow-100'>$query</span>",$key) !!} <br>
                         @endforeach
                       </td>
                       <td class="px-4 py-3 text-xs">
@@ -121,7 +122,7 @@ Requests
                         <span
                           class="px-2 py-1 font-semibold leading-tight text-black-600 bg-green-100 rounded-full dark:bg-green-600 dark:text-green-100"
                         >
-                          {{ $request->provider->name }}
+                            {!! str_replace("$query","<span class='bg-yellow-100'>$query</span>",$request->provider->name) !!}
                         </span>
                         @endif
                         @else

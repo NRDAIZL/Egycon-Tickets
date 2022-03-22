@@ -23,6 +23,7 @@ use App\Http\Controllers\TicketController;
 Route::get('/home',function(){
     return redirect()->route('admin.home');
 })->name('home');
+
 Route::get('/login', [LoginController::class, 'index'])->name('login');
 Route::post('/login', [ LoginController::class, 'login']);
 Route::get('/logout', [LogoutController::class, 'logout'])->name('logout');
@@ -47,5 +48,9 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
 
 });
 
-Route::get('/', [PostController::class, 'instructions'])->name('instructions');
-Route::post('/', [PostController::class, 'instructions_store']);
+// Route::get('/', [PostController::class, 'instructions'])->name('instructions');
+// Route::post('/', [PostController::class, 'instructions_store']);
+
+Route::get('/',function(){
+    return view('tickets_suspended');
+});

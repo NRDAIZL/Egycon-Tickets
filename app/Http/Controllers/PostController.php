@@ -63,17 +63,17 @@ class PostController extends Controller
             return back()->with('error', 'Code # ' . $_POST['code'] . ' is a Bus Ticket. This page is for event tickets only');
         }else{
             // return back()->with('message', 'Code # '.$_POST['code'].' Found');
-            $status = $data->post->status;
+            $status = $data->post->status??1;
             if($status == 0 || $status == null){
                 return back()->with('error', 'Not accepted yet');
             }else if($status == 1 && $data->status != 2){
                 $data->status = 2;
                 $data->save();
-                    return back()->with('message', 'Scanned Successfully! The registree can enter Egycon!');
+                    return back()->with('message', 'Scanned Successfully! The registree can enter Egycon!, Name:'.($data->post->name??"N/A").' Order ID: '. ($data->post->id??"N/A"));
             }else if($data->status == 2){
-                return back()->with('error', 'Already Scanned Before!!!');
+                return back()->with('error', 'Already Scanned Before!!!, Name:'.($data->post->name??"N/A").' Order ID: '. ($data->post->id??"N/A"));
             }else{
-                return back()->with('error', 'There was a problem Scanning! Please refer to the Technical Support Team.');
+                return back()->with('error', 'There was a problem Scanning! Please refer to the Technical Support Team., Name:'.($data->post->name??"N/A").' Order ID: '. ($data->post->id??"N/A"));
             }
         }
 
@@ -151,7 +151,7 @@ class PostController extends Controller
         try {
             $client = new PostmarkClient(env("POSTMARK_TOKEN"));
             $sendResult = $client->sendEmailWithTemplate(
-                "info@gamerslegacy.net",
+                "egycon@gamerslegacy.net",
                 $request->email,
                 27131977,
                 [
@@ -181,12 +181,14 @@ class PostController extends Controller
 
     public function view_requests(Request $request){
         $q = false;
-        $posts = Post::with(['ticket.ticket_type','ticket_type','provider'])->orderBy('status');
+         $statusPriorities = [1, 0];
+
+        $posts = Post::with(['ticket.ticket_type','ticket_type','provider'])->orderByRaw('FIELD (status, ' . implode(', ', $statusPriorities) . ') ASC');
         if($request->has('q')){
             $q = $request->q;
-            $posts = $posts->where('id',$request->q)->orWhere('email',"LIKE", "%" . $request->q . "%")->orWhere('name', "LIKE", "%" . $request->q . "%")->orWhere('phone_number',"LIKE","%".$request->q."%")->paginate(1000);
+            $posts = $posts->orderBy('created_at',"DESC")->where('id',$request->q)->orWhereHas('provider',function($query) use($request){ return $query->where('name',"LIKE", "%" . $request->q . "%");})->orWhereHas('ticket.ticket_type',function($query) use($request){ return $query->where('name',"LIKE", "%" . $request->q . "%");})->orWhere('email',"LIKE", "%" . $request->q . "%")->orWhere('name', "LIKE", "%" . $request->q . "%")->orWhere('phone_number',"LIKE","%".$request->q."%")->paginate(1000);
         }else{
-            $posts = $posts->paginate(15);
+            $posts = $posts->orderBy('created_at',"DESC")->limit(1000)->paginate(15);
         }
         return view('admin.requests',['requests'=>$posts, 'query'=>$q]);
     }
@@ -206,7 +208,7 @@ class PostController extends Controller
         try {
             $client = new PostmarkClient(env("POSTMARK_TOKEN"));
             $sendResult = $client->sendEmailWithTemplate(
-                "info@gamerslegacy.net",
+                "egycon@gamerslegacy.net",
                 $request->email,
                 27132435,
                 [
