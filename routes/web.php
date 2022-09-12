@@ -28,6 +28,7 @@ Route::get('/login', [LoginController::class, 'index'])->name('login');
 Route::post('/login', [ LoginController::class, 'login']);
 Route::get('/logout', [LogoutController::class, 'logout'])->name('logout');
 Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
+    Route::get('/view_tickets/{id}', [PostController::class, 'view_tickets'])->name('view_tickets');
     Route::get('/', [DashboardController::class, 'index'])->name('home');
     Route::get('/requests', [PostController::class, 'view_requests'])->name('requests');
     Route::get('/requests/accept/{id}', [PostController::class, 'accept'])->name('accept');

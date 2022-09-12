@@ -87,22 +87,32 @@ Requests
                             @endif
                       </td>
                       <td class="px-4 py-3 text-sm">
-                        @php
-                          $similar = [];
-                          $similar_person = [];
-                        foreach ($request->ticket as $ticket){
-                          if(!isset($similar[$ticket->ticket_type->name])){
-                            $similar[$ticket->ticket_type->name] = 1;
-                            $similar_person[$ticket->ticket_type->name] = $ticket->ticket_type->person;
-                          }else{
-                            $similar[$ticket->ticket_type->name]++;
+                        <a class="hover:underline" href="{{ route('admin.view_tickets',$request->id) }}">
+                          @php
+                            $similar = [];
+                            $similar_person = [];
+                          foreach ($request->ticket as $ticket){
+                            if(!isset($similar[$ticket->ticket_type->name])){
+                              $similar[$ticket->ticket_type->name] = 1;
+                              $similar_person[$ticket->ticket_type->name] = $ticket->ticket_type->person;
+                            }else{
+                              $similar[$ticket->ticket_type->name]++;
+                            }
                           }
+<<<<<<< HEAD
                         }
                         @endphp
                         @foreach ($similar as $key=>$value)
                         
                           {{ $value/$similar_person[$key] }} {!! str_replace("$query","<span class='bg-yellow-100'>$query</span>",$key) !!} <br>
                         @endforeach
+=======
+                          @endphp
+                          @foreach ($similar as $key=>$value)
+                            {{ $value/$similar_person[$key] }} {{ $key }} <br>
+                          @endforeach
+                        </a>
+>>>>>>> b5defcb3b0af27402aba994979ddaf9f316e0a6f
                       </td>
                       <td class="px-4 py-3 text-xs">
                         @if($request->status === null)
