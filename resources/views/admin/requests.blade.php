@@ -99,20 +99,15 @@ Requests
                               $similar[$ticket->ticket_type->name]++;
                             }
                           }
-<<<<<<< HEAD
-                        }
-                        @endphp
-                        @foreach ($similar as $key=>$value)
-                        
-                          {{ $value/$similar_person[$key] }} {!! str_replace("$query","<span class='bg-yellow-100'>$query</span>",$key) !!} <br>
-                        @endforeach
-=======
+                          $tickets = [];
+                          foreach ($similar as $key => $value) {
+                            $tickets[] = $value/$similar_person[$key] . " " . str_replace("$query","<span class='bg-yellow-100'>$query</span>",$key);
+                          }
                           @endphp
                           @foreach ($similar as $key=>$value)
-                            {{ $value/$similar_person[$key] }} {{ $key }} <br>
+                            {!! implode(',',$tickets) !!}
                           @endforeach
                         </a>
->>>>>>> b5defcb3b0af27402aba994979ddaf9f316e0a6f
                       </td>
                       <td class="px-4 py-3 text-xs">
                         @if($request->status === null)
