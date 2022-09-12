@@ -201,6 +201,12 @@ class PostController extends Controller
         $post->save();
         return redirect()->back()->with(["success"=>"{$post->name}'s request has been accepted successfully!"]);
     }
+
+    public function view_tickets($id){
+        $post = Post::with('ticket.ticket_type')->findOrFail($id);
+        return view('admin.view_tickets',['post'=>$post]);
+    }
+    
     private function send_declined_email($request)
     {
 
