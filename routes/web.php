@@ -30,6 +30,8 @@ Route::get('/logout', [LogoutController::class, 'logout'])->name('logout');
 Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
     Route::get('/view_tickets/{id}', [PostController::class, 'view_tickets'])->name('view_tickets');
     Route::get('/', [DashboardController::class, 'index'])->name('home');
+    Route::get('/delete_all_tickets', [PostController::class, 'delete_all_view'])->name('delete_all');
+    Route::post('/delete_all_tickets', [PostController::class, 'delete_all']);
     Route::get('/requests', [PostController::class, 'view_requests'])->name('requests');
     Route::get('/requests/accept/{id}', [PostController::class, 'accept'])->name('accept');
     Route::get('/requests/reject/{id}', [PostController::class, 'reject'])->name('reject');
@@ -43,6 +45,8 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
         Route::get('/', [TicketController::class, 'view'])->name('view');
         Route::get('/add', [TicketController::class, 'add'])->name('add');
         Route::post('/add', [TicketController::class, 'store']);
+        Route::get('/trash/{id}', [TicketController::class, 'trash'])->name('delete');
+        Route::get('/restore/{id}', [TicketController::class, 'restore'])->name('restore');
     });
 
     Route::get('/import', [PostController::class,'import_sheet'])->name('import');
@@ -50,9 +54,9 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
 
 });
 
-// Route::get('/', [PostController::class, 'instructions'])->name('instructions');
-// Route::post('/', [PostController::class, 'instructions_store']);
+Route::get('/', [PostController::class, 'instructions'])->name('instructions');
+Route::post('/', [PostController::class, 'instructions_store']);
 
-Route::get('/',function(){
-    return view('tickets_suspended');
-});
+// Route::get('/',function(){
+//     return view('tickets_suspended');
+// });

@@ -61,7 +61,16 @@ Tickets
                         </div>
                       </td>
                       <td class="px-4 py-3">
-                        
+                        @if($ticket_type->trashed())
+                        <a href="{{ route('admin.tickets.restore', $ticket_type->id) }}"><button class="bg-green-500 text-white py-2 px-8 rounded-md">
+                            Restore
+                        </button></a>
+                        @else
+                        <a href="{{ route('admin.tickets.delete', $ticket_type->id) }}">
+                          <button class="bg-red-600 text-white py-2 px-8 rounded-md">
+                            Delete
+                        </button></a>
+                        @endif
                       </td>
                     </tr>
                     @endforeach

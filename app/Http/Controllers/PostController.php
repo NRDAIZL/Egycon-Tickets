@@ -26,6 +26,21 @@ class PostController extends Controller
         }
         return view('instructions',['ticket_types'=>$ticket_types, ]);
     }
+
+    public function delete_all_view(){
+        $random_string = substr(str_shuffle("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 4);
+        return view('admin.reset-tickets',['random_string'=>$random_string]);
+    }
+    
+    public function delete_all(Request $request){
+        if(strtoupper($request->random_string) != strtoupper($request->random_string_confirm)){
+            return redirect()->back()->with('error','The text does not match. Please try again');
+        }
+        PostTicket::query()->delete();
+        Post::query()->delete();
+        return redirect()->route('admin.home');
+    }
+
     public function instructions_store(Request $request)
     {
         if($request->has('name')){
