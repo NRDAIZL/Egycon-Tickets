@@ -5,11 +5,7 @@ Egycon Tickets
 @section('content')
   
 <h1 class="text-3xl text-white">Registration Closed!</h1>
-<<<<<<< Updated upstream
-<h1 class="text-2xl mt-4 text-white">Online registration has been closed, you can still attend Egycon by purchasing the tickets from the event's gates before entry!</h1>
-=======
 <h1 class="text-2xl mt-4 text-white">Online registration has been closed, you can still attend the event by purchasing the tickets from the event's gates before entry!</h1>
->>>>>>> Stashed changes
 
 <div class="flex justify-center items-center mt-4">
     <a href="https://www.facebook.com/egyconvention/">
