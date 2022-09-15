@@ -7,7 +7,9 @@ use App\Models\ExternalServiceProvider;
 use Illuminate\Http\Request;
 use App\Models\Post;
 use App\Models\PostTicket;
+use App\Models\TicketDiscountCode;
 use App\Models\TicketType;
+use Carbon\Carbon;
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
 use Exception;
@@ -142,17 +144,32 @@ class PostController extends Controller
                 $post_ticket = new PostTicket();
                 $post_ticket->post_id = $post->id;
                 $post_ticket->ticket_type_id = $ticket->id;
-                $post_ticket->code = $unique_id;
-                $qr_options = new QROptions([
-                    'version'    => 5,
-                    'outputType' => QRCode::OUTPUT_IMAGE_JPG,
-                    'eccLevel'   => QRCode::ECC_L,
-                    'imageTransparent' => false,
-                    'imagickFormat' => 'jpg',
-                    'imageTransparencyBG' => [255, 255, 255],
-                ]);
-                $qrcode = new QRCode($qr_options);
-                $qrcode->render($unique_id, public_path('images/qrcodes/' . $unique_id . ".jpg"));
+                if (config('settings.enable_qr')) {
+                    $post_ticket->code = $unique_id;
+                    $qr_options = new QROptions([
+                        'version'    => 5,
+                        'outputType' => QRCode::OUTPUT_IMAGE_JPG,
+                        'eccLevel'   => QRCode::ECC_L,
+                        'imageTransparent' => false,
+                        'imagickFormat' => 'jpg',
+                        'imageTransparencyBG' => [255, 255, 255],
+                    ]);
+                    $qrcode = new QRCode($qr_options);
+                    $qrcode->render($unique_id, public_path('images/qrcodes/' . $unique_id . ".jpg"));
+                } else if (config('settings.enable_codes')) {
+                    $discount_ticket = TicketDiscountCode::where('claimed_at', null)->first();
+                    if ($discount_ticket) {
+                        $post_ticket->discount_code_id = $discount_ticket->id;
+                        $discount_ticket->claimed_at = Carbon::now();
+                        $discount_ticket->save();
+                    } else {
+                        $post->delete();
+                        return redirect()->back()->with(["error" => "An error occurred while processing your request. Please try again later. Error code: 1"]);
+                    }
+                } else {
+                    $post->delete();
+                    return redirect()->back()->with(["error" => "An error occurred while processing your request. Please try again later. Error code: 2"]);
+                }
                 $post_ticket->save();
             }
             $j++;
@@ -166,18 +183,28 @@ class PostController extends Controller
 
         try {
             $client = new PostmarkClient(env("POSTMARK_TOKEN"));
+            $data = [
+                "name" => explode(' ', $request->name)[0],
+                "ticket_type" => $ticket->ticket_type->name . " Ticket - " . $ticket->ticket_type->price,
+                "order_id" => $request->id,
+                // "date"=>date('Y/m/d'),
+                
+            ];
+            $template_id = 0;
+            if($ticket->code != null){
+                $data["qrcode"] = asset('images/qrcodes/' . $ticket->code . '.jpg');
+                $data["code"] = $ticket->code;
+                $template_id = 27131977;
+            } else if ($ticket->discount_code_id != null) {
+                $data["code"] = $ticket->discount_code->code;
+                $template_id = 29184862; //TODO:Add new template id
+            }
+
             $sendResult = $client->sendEmailWithTemplate(
                 "egycon@gamerslegacy.net",
                 $request->email,
-                27131977,
-                [
-                    "name" => explode(' ', $request->name)[0],
-                    "ticket_type"=> $ticket->ticket_type->name . " Ticket - " . $ticket->ticket_type->price,
-                    "order_id" => $request->id,
-                    // "date"=>date('Y/m/d'),
-                    "qrcode"=>asset('images/qrcodes/'.$ticket->code.'.jpg'),
-                    "code"=>$ticket->code
-                ]
+                $template_id,
+                $data
             );
 
         } catch (PostmarkException $ex) {
@@ -310,23 +337,36 @@ class PostController extends Controller
                 $post_ticket = new PostTicket();
                 $post_ticket->post_id = $post->id;
                 $post_ticket->ticket_type_id = $ticket_type->id;
-                $post_ticket->code = $unique_id;
-                $qr_options = new QROptions([
-                    'version'    => 5,
-                    'outputType' => QRCode::OUTPUT_IMAGE_JPG,
-                    'eccLevel'   => QRCode::ECC_L,
-                    'imageTransparent' => false,
-                    'imagickFormat' => 'jpg',
-                    'imageTransparencyBG' => [255, 255, 255],
-                ]);
-                $qrcode = new QRCode($qr_options);
-                $qrcode->render($unique_id, public_path('images/qrcodes/' . $unique_id . ".jpg"));
+                if(config('settings.enable_qr')){
+                    $post_ticket->code = $unique_id;
+                    $qr_options = new QROptions([
+                        'version'    => 5,
+                        'outputType' => QRCode::OUTPUT_IMAGE_JPG,
+                        'eccLevel'   => QRCode::ECC_L,
+                        'imageTransparent' => false,
+                        'imagickFormat' => 'jpg',
+                        'imageTransparencyBG' => [255, 255, 255],
+                    ]);
+                    $qrcode = new QRCode($qr_options);
+                    $qrcode->render($unique_id, public_path('images/qrcodes/' . $unique_id . ".jpg"));
+                }else if(config('settings.enable_codes')){
+                    $discount_ticket = TicketDiscountCode::where('claimed_at',null)->first();
+                    if($discount_ticket){
+                        $post_ticket->discount_code_id = $discount_ticket->id;
+                        $discount_ticket->claimed_at = Carbon::now();
+                        $discount_ticket->save();
+                    }else{
+                        $post->delete();
+                        return redirect()->back()->with(["error"=>"There are no discount tickets left!"]);
+                    }
+                }else{
+                    $post->delete();
+                    return redirect()->back()->with(["error" => "There are no settings enabled for ticket codes!"]);
+                }
                 $post_ticket->save();
                 $post_ticket = PostTicket::with('ticket_type')->find($post_ticket->id);
                 $this->send_email($post_ticket, $post);
-
             }
-            
         }
         return redirect()->back()->with('success',"Sheet imported successfully!");
     }

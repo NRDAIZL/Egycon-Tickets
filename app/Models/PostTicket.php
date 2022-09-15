@@ -13,6 +13,11 @@ class PostTicket extends Model
     public function ticket_type(){
         return $this->belongsTo(TicketType::class);
     }
+
+    public function discount_code(){
+        return $this->belongsTo(TicketDiscountCode::class);
+    }
+    
     public function post()
     {
         return $this->belongsTo(Post::class);

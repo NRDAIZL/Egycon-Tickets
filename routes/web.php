@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DiscountCodeController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\TicketController;
@@ -49,6 +50,16 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
         Route::get('/restore/{id}', [TicketController::class, 'restore'])->name('restore');
     });
 
+    Route::prefix('/codes')->as('codes.')->group(function(){
+        Route::get('/', [DiscountCodeController::class, 'index'])->name('view');
+        Route::get('/add', [DiscountCodeController::class, 'create'])->name('add');
+        Route::post('/add', [DiscountCodeController::class, 'store']);
+        Route::get('/upload', [DiscountCodeController::class, 'upload'])->name('upload');
+        Route::post('/upload', [DiscountCodeController::class, 'upload_store']);
+        Route::get('/trash/{id}', [DiscountCodeController::class, 'trash'])->name('delete');
+        Route::get('/restore/{id}', [DiscountCodeController::class, 'restore'])->name('restore');
+    });
+
     Route::get('/import', [PostController::class,'import_sheet'])->name('import');
     Route::post('/import', [PostController::class,'import_sheet_store']);
 
@@ -56,6 +67,7 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
 
 Route::get('/', [PostController::class, 'instructions'])->name('instructions');
 Route::post('/', [PostController::class, 'instructions_store']);
+
 
 // Route::get('/',function(){
 //     return view('tickets_suspended');

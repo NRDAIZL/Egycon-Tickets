@@ -104,9 +104,7 @@ Requests
                             $tickets[] = $value/$similar_person[$key] . " " . str_replace("$query","<span class='bg-yellow-100'>$query</span>",$key);
                           }
                           @endphp
-                          @foreach ($similar as $key=>$value)
                             {!! implode(',',$tickets) !!}
-                          @endforeach
                         </a>
                       </td>
                       <td class="px-4 py-3 text-xs">

@@ -66,7 +66,11 @@
     {{-- Display tickets QR Code --}}
     @foreach ($post->ticket as $ticket)
         <p>{{ $ticket->ticket_type->name }} - ID: {{ $ticket->id }}</p>
-        <img src="{{ asset('images/qrcodes/'.$ticket->code.'.jpg') }}" alt="">
+        @if($ticket->code != null)
+            <img src="{{ asset('images/qrcodes/'.$ticket->code.'.jpg') }}" alt="">
+        @elseif($ticket->discount_code_id != null)
+            {{ $ticket->discount_code->code }}
+        @endif
         <br/>
     @endforeach
 </body>
