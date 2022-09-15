@@ -174,7 +174,7 @@ class PostController extends Controller
             }
             $j++;
         }
-        return view('thank_you', ['status-success' => 'Thank you for registering at Egycon 9. An email will be sent to you once your request is reviewed.', 'total' => $request->total, 'quantity' => $request->quantity]);
+        return view('thank_you', ['status-success' => 'Thank you for registering at Egycon. An email will be sent to you once your request is reviewed.', 'total' => $request->total, 'quantity' => $request->quantity]);
     }
     private function send_email($ticket,$request){
         if(str_contains(strtolower($ticket->ticket_type->name),'bus')){
