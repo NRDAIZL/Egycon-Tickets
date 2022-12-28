@@ -18,7 +18,7 @@ Requests
               class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"
             >
               Requests 
-              <a href="{{ route('admin.requests.export') }}"><button class="mx-8 py-1 px-4 rounded-md bg-purple-500 hover:bg-purple-400 text-white"> <i class="las la-download"></i> Export</button></a>
+              <a href="{{ route('admin.requests.export',$event_id) }}"><button class="mx-8 py-1 px-4 rounded-md bg-purple-500 hover:bg-purple-400 text-white"> <i class="las la-download"></i> Export</button></a>
             </h2>
            
             <div class="w-full overflow-hidden rounded-lg shadow-xs">
@@ -87,7 +87,7 @@ Requests
                             @endif
                       </td>
                       <td class="px-4 py-3 text-sm">
-                        <a class="hover:underline" href="{{ route('admin.view_tickets',$request->id) }}">
+                        <a class="hover:underline" href="{{ route('admin.view_tickets',['id'=>$request->id,'event_id'=>$event_id]) }}">
                           @php
                             $similar = [];
                             $similar_person = [];
@@ -108,6 +108,19 @@ Requests
                         </a>
                       </td>
                       <td class="px-4 py-3 text-xs">
+                        @php
+                          if($request->external_service_provider_payment_method == 'opay'){
+                            // $payment = new \Nafezly\Payments\Classes\OpayPayment();
+                            // $payment = $payment->verify(
+                            //   new \Illuminate\Http\Request(
+                            //     [
+                            //       'reference_id'=>$request->external_service_provider_order_id,
+                            //     ]
+                            //   )
+                            // );
+                            // print_r($payment);
+                          }
+                        @endphp
                         @if($request->status === null)
                         <span
                           class="px-2 py-1 font-semibold leading-tight text-yellow-600 bg-yellow-100 rounded-full dark:bg-yellow-600 dark:text-yellow-100"
@@ -136,6 +149,11 @@ Requests
                           Declined
                         </span>
                         @endif
+                        @if($request->external_service_provider_payment_method == 'opay')
+                        <span class="font-bold mx-2">
+                          Reference: {{ $request->external_service_provider_order_id; }}
+                        </span>
+                        @endif
                       </td>
                       <td class="px-4 py-3 text-sm">
                         {{ date('Y/m/d h:i A',strtotime($request->created_at)) }}
@@ -149,7 +167,7 @@ Requests
                             onclick="display_popup(this)"
                             data-title="Are you sure you want to ACCEPT {{ explode(' ',$request->name)[0] }}'s request?"
                             data-content="By continuing, you ensure that this request is completely accepted and cannot be undone. An email will be sent to them confirming their request and providing a QR Code image to be able to enter the event!"
-                            data-action="{{ route('admin.accept',$request->id) }}"
+                            data-action="{{ route('admin.accept',['id'=>$request->id,'event_id'=>$event_id]) }}"
                             @endif
                             class="flex items-center group disabled:hover:bg-inherit disabled:cursor-not-allowed  hover:bg-gray-300 dark:hover:bg-gray-600 justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400 focus:outline-none focus:shadow-outline-gray"
                             aria-label="Accept"
@@ -163,7 +181,7 @@ Requests
                             onclick="display_popup(this)"
                             data-title="Are you sure you want to REJECT {{ explode(' ',$request->name)[0] }}'s request?"
                             data-content="By continuing, you ensure that this request is completely rejected and cannot be undone. An email will be sent to them informing them with the status of their request!"
-                            data-action="{{ route('admin.reject',$request->id) }}"
+                            data-action="{{ route('admin.reject',['id'=>$request->id,'event_id'=>$event_id]) }}"
                             @endif
                             class="flex items-center group disabled:hover:bg-inherit disabled:cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600 justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400 focus:outline-none focus:shadow-outline-gray"
                             aria-label="Reject"
@@ -177,7 +195,7 @@ Requests
                             onclick="display_popup(this)"
                             data-title="Are you sure you want to DELETE {{ explode(' ',$request->name)[0] }}'s request?"
                             data-content="By continuing, you ensure that this request is completely DELETED and cannot be undone."
-                            data-action="{{ route('admin.requests.delete',$request->id) }}"
+                            data-action="{{ route('admin.requests.delete',['id'=>$request->id,'event_id'=>$event_id]) }}"
                             @endif
                             class="flex items-center group disabled:hover:bg-inherit disabled:cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600 justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400 focus:outline-none focus:shadow-outline-gray"
                             aria-label="Reject"

@@ -42,16 +42,31 @@ Egycon Tickets
     </script>
     
   </div>
-  <div class="flex items-center my-4">
-  <h1 class="text-2xl font- uppercase mr-2">2) Transfer the total amount to</h1>
-  <div>
-    <h1 class="text-2xl font- uppercase mx-2">010 1759 5077</h1>
-    <h1 class="text-2xl font- uppercase mx-2">010 2792 7479</h1>
+  <div class="mt-4">
+      <h1 class="text-2xl font- uppercase mx-2">2) Select your payment method</h1>
+      <div class="flex">
+        <label class="flex items-center">
+          <input type="radio" onchange="document.querySelector('#vodafone-cash-instructions').classList.remove('hidden');" name="payment_method" value="vodafone_cash" class="mr-2">
+          <h1 class="text-2xl font- uppercase mx-2">Vodafone Cash</h1>
+        </label>
+        <label class="flex items-center ml-4">
+          <input type="radio" onchange="document.querySelector('#vodafone-cash-instructions').classList.add('hidden');" name="payment_method" value="credit_card" class="mr-2">
+          <h1 class="text-2xl font- uppercase mx-2">Credit Card</h1>
+        </label>
+      </div>
   </div>
+  <div id="vodafone-cash-instructions" class="hidden">
+    <div class="flex items-center my-4">
+    <h1 class="text-2xl font- uppercase mr-2">3) Transfer the total amount to</h1>
+    <div>
+      <h1 class="text-2xl font- uppercase mx-2">010 1759 5077</h1>
+      <h1 class="text-2xl font- uppercase mx-2">010 2792 7479</h1>
+    </div>
+    </div>
+    <h1 class=" mt-4 text-2xl font- uppercase mr-4">4) Take a photo/screenshot of your reciept then hit continue.</h1>
+    <p class="text-xl">*reciept must show date of payment and total amount</p>
   </div>
-  <h1 class=" mt-4 text-2xl font- uppercase mr-4">3) Take a photo/screenshot of your reciept then hit continue.</h1>
-  <p class="text-xl">*reciept must show date of payment and total amount</p>
-
+  
   <br>
   <div class="text-center">
   <button type='submit' class="text-center mx-auto text-xl bg-green-500 mt-4 py-2 px-16 text-black font-bold   hover:bg-green-400 border-4 border-black">

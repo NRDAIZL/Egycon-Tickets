@@ -15,7 +15,7 @@ Codes
             >
               Ticket Codes
             </h2>
-            <a href="{{ route('admin.codes.add') }}"><button class="bg-purple-600 text-white py-2 px-8 rounded-md">
+            <a href="{{ route('admin.codes.add',$event_id) }}"><button class="bg-purple-600 text-white py-2 px-8 rounded-md">
                 Add Code
             </button></a>
               </div>

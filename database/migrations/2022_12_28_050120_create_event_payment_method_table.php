@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateTicketDiscountCodesTable extends Migration
+class CreateEventPaymentMethodTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,10 @@ class CreateTicketDiscountCodesTable extends Migration
      */
     public function up()
     {
-        Schema::create('ticket_discount_codes', function (Blueprint $table) {
+        Schema::create('event_payment_method', function (Blueprint $table) {
             $table->id();
-            $table->string('code');
-            $table->dateTime('claimed_at')->nullable();
-            $table->foreignId('ticket_type_id')->constrained();
+            $table->foreignId('event_id')->constrained();
+            $table->foreignId('payment_method_id')->constrained();
             $table->timestamps();
         });
     }
@@ -29,6 +28,6 @@ class CreateTicketDiscountCodesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('ticket_discount_codes');
+        Schema::dropIfExists('event_payment_method');
     }
 }

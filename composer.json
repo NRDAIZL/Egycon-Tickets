@@ -7,6 +7,7 @@
     "require": {
         "php": "^7.3|^8.0",
         "chillerlan/php-qrcode": "^4.3",
+        "coconutcraig/laravel-postmark": "^2.11",
         "doctrine/dbal": "^3.4",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
@@ -14,9 +15,11 @@
         "laravel/sanctum": "^2.11",
         "laravel/tinker": "^2.5",
         "maatwebsite/excel": "^3.1",
+        "nafezly/payments": "^2.4",
         "wildbit/postmark-php": "^4.0"
     },
     "require-dev": {
+        "barryvdh/laravel-debugbar": "^3.7",
         "facade/ignition": "^2.5",
         "fakerphp/faker": "^1.9.1",
         "laravel/sail": "^1.0.1",

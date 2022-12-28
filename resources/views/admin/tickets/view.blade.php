@@ -15,7 +15,7 @@ Tickets
             >
               Tickets
             </h2>
-            <a href="{{ route('admin.tickets.add') }}"><button class="bg-purple-600 text-white py-2 px-8 rounded-md">
+            <a href="{{ route('admin.tickets.add',$event_id) }}"><button class="bg-purple-600 text-white py-2 px-8 rounded-md">
                 Add Ticket Type
             </button></a>
               </div>
@@ -62,11 +62,11 @@ Tickets
                       </td>
                       <td class="px-4 py-3">
                         @if($ticket_type->trashed())
-                        <a href="{{ route('admin.tickets.restore', $ticket_type->id) }}"><button class="bg-green-500 text-white py-2 px-8 rounded-md">
+                        <a href="{{ route('admin.tickets.restore', ['id'=>$ticket_type->id,'event_id'=>$event_id]) }}"><button class="bg-green-500 text-white py-2 px-8 rounded-md">
                             Restore
                         </button></a>
                         @else
-                        <a href="{{ route('admin.tickets.delete', $ticket_type->id) }}">
+                        <a href="{{ route('admin.tickets.delete', ['id'=>$ticket_type->id,'event_id'=>$event_id]) }}">
                           <button class="bg-red-600 text-white py-2 px-8 rounded-md">
                             Delete
                         </button></a>

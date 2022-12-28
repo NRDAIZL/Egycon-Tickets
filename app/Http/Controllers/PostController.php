@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Exports\PostsExport;
 use App\Imports\PostImport;
+use App\Models\Event;
 use App\Models\ExternalServiceProvider;
 use Illuminate\Http\Request;
 use App\Models\Post;
@@ -18,13 +19,17 @@ use Postmark\PostmarkClient;
 use Postmark\Models\PostmarkException;
 use DB;
 use Maatwebsite\Excel\Facades\Excel;
+use Nafezly\Payments\Classes\OpayPayment;
 
 class PostController extends Controller
 {
     public function instructions(Request $request){
         $ticket_types = TicketType::all();
+        if($ticket_types->count() == 0){
+            return view('tickets_suspended');
+        }
         if(session()->get('errors')){
-            return view('form', ['ticket_types' => $ticket_types, 'quantity' => old('quantity'), 'total' => old('total')]);
+            return view('form', ['payment_method' => $request->payment_method, 'ticket_types' => $ticket_types, 'quantity' => old('quantity'), 'total' => old('total')]);
         }
         return view('instructions',['ticket_types'=>$ticket_types, ]);
     }
@@ -34,19 +39,29 @@ class PostController extends Controller
         return view('admin.reset-tickets',['random_string'=>$random_string]);
     }
     
-    public function delete_all(Request $request){
+    public function delete_all(Request $request, $event_id){
         if(strtoupper($request->random_string) != strtoupper($request->random_string_confirm)){
             return redirect()->back()->with('error','The text does not match. Please try again');
         }
-        PostTicket::query()->delete();
-        Post::query()->delete();
-        return redirect()->route('admin.home');
+        $posts = Event::find($event_id)->posts;
+        $post_tickets = PostTicket::whereIn('post_id',$posts->pluck('id'))->get();
+        $post_tickets->each(function($post_ticket){
+            $post_ticket->delete();
+        });
+        $posts->each(function($post){
+            $post->delete();
+        });
+        return redirect()->route('admin.home',$event_id)->with('success','All tickets have been deleted');
     }
 
     public function instructions_store(Request $request)
     {
         if($request->has('name')){
             return $this->store($request);
+        }
+        $payment_method = $request->payment_method;
+        if(!$payment_method){
+            return redirect()->back()->with('error','Please select a payment method');
         }
         $request->validate([
             'quantity'=>'array',
@@ -64,17 +79,24 @@ class PostController extends Controller
             return redirect()->back()->with('error','You must select at least on ticket');
         }
         
-        return view('form', ['ticket_types' => $ticket_types,'total'=>$total,'quantity'=>$request->quantity]);
+        return view('form', ['payment_method'=>$request->payment_method,'ticket_types' => $ticket_types,'total'=>$total,'quantity'=>$request->quantity]);
     }
-
     public function edit_requests()
     {
         return view('admin.edit-requests');
     }
 
-    public function action()
+    public function action($event_id)
     {
+
         $data = PostTicket::with('post','ticket_type')->where('code',$_POST['code'])->first();
+        // check if data related to event 
+        if($data){
+            $check_event_id = $data->ticket_type->event_id;
+            if($check_event_id != $event_id){
+                return back()->with('error', 'Code # '.$_POST['code'].' Not Found');
+            }
+        }
         if(!$data){
             return back()->with('error', 'Code # '.$_POST['code'].' Not Found');
         }else if(str_contains(strtolower($data->ticket_type->name),'bus')){
@@ -106,8 +128,13 @@ class PostController extends Controller
             'name'=>"required|string|min:6|max:64",
             'email' => "required|email",
             'phone_number' => "required",
-            'receipt'=>"required|file|mimes:png,jpg,jpeg",
+            'payment_method'=>"required",
         ]);
+        if ($request->payment_method == "vodafone_cash") {
+            $request->validate([
+                'receipt' => "required|file|mimes:png,jpg,jpeg",
+            ]);
+        }
         if (strpos(trim($request->name), ' ') === false) {
             $ticket_types = TicketType::all();
             session()->flash('status-failure', 'Please enter your full name.');
@@ -174,7 +201,26 @@ class PostController extends Controller
             }
             $j++;
         }
-        return view('thank_you', ['status-success' => 'Thank you for registering at Egycon. An email will be sent to you once your request is reviewed.', 'total' => $request->total, 'quantity' => $request->quantity]);
+        if($request->payment_method == "credit_card"){
+            // calculate the total amount
+            $total = 0;
+            $j=0;
+            foreach($request->quantity as $quantity){
+                $ticket = $tickets[$j];
+                $total += $quantity*$ticket->price;
+                $j++;
+            }
+            $data = [
+                "amount" => $total,
+                "user_first_name" => explode(' ', $request->name)[0],
+                "user_last_name" => explode(' ', $request->name)[1],
+                "user_email" => $request->email,
+                "user_phone" => $request->phone_number,
+                "order_id" => $post->id,
+            ];
+            return $this->online_payment($data);
+        }
+        return view('thank_you', ['status_success' => 'Thank you for registering at Egycon. An email will be sent to you once your request is reviewed.', 'total' => $request->total, 'quantity' => $request->quantity]);
     }
     private function send_email($ticket,$request){
         if(str_contains(strtolower($ticket->ticket_type->name),'bus')){
@@ -374,5 +420,35 @@ class PostController extends Controller
     public function export()
     {
         return Excel::download(new PostsExport, 'tickets.xlsx');
+    }
+
+
+    public function online_payment($data){
+        $payment = new OpayPayment();
+        $response = $payment->pay(
+            $data['amount'],
+            null,
+            $data['user_first_name'],
+            $data['user_last_name'],
+            $data['user_email'],
+            $data['user_phone'],
+        );
+        $post = Post::find($data['order_id']);
+        $post->external_service_provider_payment_method = 'opay';
+        $post->external_service_provider_order_id = $response['payment_id'];
+        $post->save();
+        return redirect($response['redirect_url']);
+    }
+
+    public function verify_payment(Request $request){
+        $payment = new OpayPayment();
+        $response = $payment->verify($request);
+        if($response['process_data']['data']['status'] == 'SUCCESS'){
+            $post = Post::where('external_service_provider_order_id',$response['payment_id'])->first();
+            $this->accept($post->id);
+            return view('thank_you', ['status_success' => 'Thank you for registering at Egycon. An email will be sent to you with your ticket(s)']);
+        }else{
+            return view('thank_you', ['status_error' => 'There was an error processing your payment. Please try again later.']);
+        }
     }
 }

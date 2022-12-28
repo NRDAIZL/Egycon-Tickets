@@ -31,13 +31,13 @@ class TicketController extends Controller
         return redirect()->back()->with('success',"Ticket Type has been added!");
     }
 
-    public function trash($id){
+    public function trash($event_id,$id){
         $ticket_type = TicketType::find($id);
         $ticket_type->delete();
         return redirect()->back()->with('success',"Ticket Type has been deleted!");
     }
 
-    public function restore($id){
+    public function restore($event_id,$id){
         $ticket_type = TicketType::withTrashed()->find($id);
         $ticket_type->restore();
         return redirect()->back()->with('success',"Ticket Type has been restored!");
