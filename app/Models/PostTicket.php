@@ -11,7 +11,7 @@ class PostTicket extends Model
     use HasFactory, SoftDeletes;
 
     public function ticket_type(){
-        return $this->belongsTo(TicketType::class);
+        return $this->belongsTo(TicketType::class)->withTrashed();
     }
 
     public function discount_code(){

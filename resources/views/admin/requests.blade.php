@@ -91,15 +91,23 @@ Requests
                           @php
                             $similar = [];
                             $similar_person = [];
+                            
+                            $tickets = [];
                           foreach ($request->ticket as $ticket){
+                            if(!isset($ticket->ticket_type)){
+                                    $tickets[] = "N/A";
+                                    continue;
+                            }
                             if(!isset($similar[$ticket->ticket_type->name])){
+                               
                               $similar[$ticket->ticket_type->name] = 1;
+
                               $similar_person[$ticket->ticket_type->name] = $ticket->ticket_type->person;
                             }else{
                               $similar[$ticket->ticket_type->name]++;
                             }
                           }
-                          $tickets = [];
+                          
                           foreach ($similar as $key => $value) {
                             $tickets[] = $value/$similar_person[$key] . " " . str_replace("$query","<span class='bg-yellow-100'>$query</span>",$key);
                           }

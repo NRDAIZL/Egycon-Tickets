@@ -22,7 +22,11 @@ use Maatwebsite\Excel\Facades\Excel;
 class PostController extends Controller
 {
     public function instructions(Request $request){
+        
         $ticket_types = TicketType::all();
+        if($ticket_types->count() == 0){
+            return view('tickets_suspended');
+        }
         if(session()->get('errors')){
             return view('form', ['ticket_types' => $ticket_types, 'quantity' => old('quantity'), 'total' => old('total')]);
         }
