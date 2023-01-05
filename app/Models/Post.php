@@ -10,14 +10,6 @@ class Post extends Model
 {
     use HasFactory, SoftDeletes;
 
-<<<<<<< HEAD
-    public function ticket_type(){
-        return $this->belongsTo(TicketType::class)->withTrashed();
-    }
-=======
-    
->>>>>>> 3c3e495ac6b21332f2eda4372e3cef0a5633d0f3
-
     public function ticket()
     {
         return $this->hasMany(PostTicket::class)->withTrashed();

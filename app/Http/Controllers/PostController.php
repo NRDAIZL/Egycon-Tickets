@@ -24,16 +24,6 @@ use Nafezly\Payments\Classes\OpayPayment;
 
 class PostController extends Controller
 {
-<<<<<<< HEAD
-    public function instructions(Request $request){
-        
-        $ticket_types = TicketType::all();
-        if($ticket_types->count() == 0){
-            return view('tickets_suspended');
-        }
-        if(session()->get('errors')){
-            return view('form', ['ticket_types' => $ticket_types, 'quantity' => old('quantity'), 'total' => old('total')]);
-=======
 
     public static function generate_random_string($length = 10){
         $code = substr(str_shuffle("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, $length);
@@ -41,7 +31,6 @@ class PostController extends Controller
         while($code_exists){
             $code = substr(str_shuffle("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, $length);
             $code_exists = Post::where('code',$code)->first();
->>>>>>> 3c3e495ac6b21332f2eda4372e3cef0a5633d0f3
         }
         return $code;
     }
