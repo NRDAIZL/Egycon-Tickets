@@ -7,7 +7,9 @@ use App\Http\Controllers\DiscountCodeController;
 use App\Http\Controllers\EventController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\QRCodeTicketController;
 use App\Http\Controllers\TicketController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,9 +25,11 @@ use App\Http\Controllers\TicketController;
 
 // Route::get('add-blog-post-form', [PostController::class, 'index']);
 Route::get('/home',function(){
-    return redirect()->route('admin.home');
+    return redirect()->route('admin.events.view');
 })->name('home');
 
+Route::get('/invitations/{token}', [UserController::class, 'accept_invitation'])->name('accept_invitation');
+Route::post('/invitations/{token}', [UserController::class, 'accept_invitation_post'])->name('accept_invitation_post');
 Route::get('/login', [LoginController::class, 'index'])->name('login');
 Route::post('/login', [ LoginController::class, 'login']);
 Route::get('/logout', [LogoutController::class, 'logout'])->name('logout');
@@ -36,12 +40,26 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
     Route::prefix('/events')->as('events.')->group(function(){
         Route::get('/', [EventController::class, 'index'])->name('view');
         Route::get('/add', [EventController::class, 'add'])->name('add');
+            Route::post('/add', [EventController::class, 'store']);
     });
     Route::prefix('/event/{event_id}')->group(function(){
         Route::prefix('/events')->as('event.events.')->group(function () {
             Route::get('/', [EventController::class, 'index'])->name('view');
-            Route::get('/add', [EventController::class, 'add'])->name('add');
+            Route::get('/add/{id?}', [EventController::class, 'add'])->name('add');
+            Route::post('/add/{id?}', [EventController::class, 'store']);
         });
+        Route::prefix('/event_settings')->as('event_settings.')->group(function(){
+            Route::get('/event_days', [EventController::class, 'edit_event_days'])->name('event_days');
+            Route::post('/event_days', [EventController::class, 'store_event_days']);   
+            Route::get('/theme', [EventController::class, 'edit_theme'])->name('theme');
+            Route::post('/theme', [EventController::class, 'store_theme']);
+        });
+        Route::get('generate_qr_codes',[QRCodeTicketController::class,'generate_qr_codes'])->name('generate_qr_codes');
+        Route::post('generate_qr_codes',[QRCodeTicketController::class,'generate_qr_codes_post']);
+
+        Route::get('generate_qr_tickets', [QRCodeTicketController::class, 'generate_qr_tickets'])->name('generate_qr_tickets');
+        Route::post('generate_qr_tickets', [QRCodeTicketController::class, 'generate_qr_tickets_post']);
+
         Route::get('/requests', [PostController::class, 'view_requests'])->name('requests');
         Route::get('/delete_all_tickets', [PostController::class, 'delete_all_view'])->name('delete_all');
         Route::post('/delete_all_tickets', [PostController::class, 'delete_all']);
@@ -73,6 +91,14 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
             Route::get('/trash/{id}', [DiscountCodeController::class, 'trash'])->name('delete');
             Route::get('/restore/{id}', [DiscountCodeController::class, 'restore'])->name('restore');
         });
+        Route::prefix('/users')->as('users.')->group(function () {
+            Route::get('/', [UserController::class, 'view'])->name('view');
+            Route::get('/invite', [UserController::class, 'invite'])->name('invite');
+            Route::post('/invite', [UserController::class, 'invite_post']);
+        });
+        
+        Route::get('/register',[PostController::class, 'onspot_registration'])->name('register');
+        Route::post('/register', [PostController::class, 'onspot_registration_post']);
 
         Route::get('/import', [PostController::class, 'import_sheet'])->name('import');
         Route::post('/import', [PostController::class, 'import_sheet_store']);
@@ -81,11 +107,12 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
 
 });
 
-Route::get('/', [PostController::class, 'instructions'])->name('instructions');
-Route::post('/', [PostController::class, 'instructions_store']);
+Route::get('/{x_event_id}', [PostController::class, 'instructions'])->name('instructions');
+Route::post('/{x_event_id}', [PostController::class, 'instructions_store']);
 
 Route::get('/payment_test',[PostController::class, 'online_payment'])->name('payment_test');
 Route::get('verify-payment',[PostController::class, 'verify_payment'])->name('verify-payment');
+Route::get('/{x_event_id}/payment-success',[PostController::class, 'payment_success'])->name('payment-success');
 
 // Route::get('/',function(){
 //     return view('tickets_suspended');

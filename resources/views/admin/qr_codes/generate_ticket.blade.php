@@ -1,9 +1,9 @@
 @extends('layouts.app')
 @section('page')
-tickets
+qr_codes
 @endsection
 @section('title')
-Add Ticket
+Generate Tickets
 @endsection
 @section('content')
 
@@ -12,7 +12,7 @@ Add Ticket
             <h2
               class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"
             >
-              Add Ticket
+              Generate Tickets
             </h2>
             
             @if(Session::has('success'))
@@ -40,72 +40,52 @@ Add Ticket
               class="px-4 py-3 mb-8 bg-white rounded-lg shadow-md dark:bg-gray-800"
             >
             <span class="text-red-500 text-sm">* Is required</span>
-
+              
             @csrf
             @if($errors->any())
                 {!! implode('', $errors->all('<div class="text-red-500">:message</div>')) !!}
             @endif
               <label class="block text-sm">
                 <span class="text-gray-700 dark:text-gray-400">
-                <i class="las la-signature text-xl"></i>
-                Ticket Name <span class="text-red-500">*</span>
+                QR Codes Amount to Generate (max: 200 per batch) <span class="text-red-500">*</span>
                 </span>
                 <input
-                value="{{ old('name') }}"
-                type="text"
-                name="name"
-                    required
-                  class="block w-full mt-1 text-sm border dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-                  placeholder="Early Ninja"
-                />
-              </label>
-              <label class="block text-sm">
-                <span class="text-gray-700 dark:text-gray-400">
-                <i class="las la-dollar-sign text-xl"></i>
-                Ticket Price <span class="text-red-500">*</span>
-                </span>
-                <input
-                value="{{ old('price') }}"
+                value="{{ old('quantity') }}"
                 type="number"
-                min="0"
-                name="price"
+                name="quantity"
                     required
                   class="block w-full mt-1 text-sm border dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-                  placeholder="220"
+                  placeholder="10"
                 />
               </label>
               <label class="block text-sm">
                 <span class="text-gray-700 dark:text-gray-400">
-                <i class="las la-users text-xl"></i>
-                Number of Persons <span class="text-red-500">*</span>
-                </span>
-                <input
-                value="{{ old('persons') }}"
-                type="number"
-                name="persons"
-                    required
-                  class="block w-full mt-1 text-sm border dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-                  placeholder="1"
-                />
-              </label>
-              <label class="block text-sm">
-                <span class="text-gray-700 dark:text-gray-400">
-                <i class="las la-ticket-alt text-xl"></i>
                 Ticket Type <span class="text-red-500">*</span>
                 </span>
                 <select
-                value="{{ old('name') }}"
-                name="type"
+                name="ticket_type_id"
                     required
                   class="block w-full mt-1 text-sm border dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
                 >
-                <option value="qr">QR Code</option>
-                <option value="discount">Discount Code</option>
-                <option value="noticket">No Ticket (Just registers on the system, user won't get any ticket)</option>
+                @foreach ($ticket_types as $ticket_type)
+                    <option value="{{ $ticket_type->id }}">{{ $ticket_type->name }}</option>
+                @endforeach
                 </select>
               </label>
+              <label class="block text-sm">
+                <span class="text-gray-700 dark:text-gray-400">
+                Template <span class="text-red-500">*</span>
+                </span>
+                 <input
+                type="file"
+                accept="image/jpeg,image/png,image/jpg"
+                name="template"
+                    required
+                  class="block w-full mt-1 text-sm border dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                />
+              </label>
               <button type="submit" class="table items-center mt-4 justify-between px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
-              Add Ticket
+                Generate Tickets
               <span class="ml-2" aria-hidden="true">
                   <i class='las la-arrow-right'></i>
               </span>

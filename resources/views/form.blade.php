@@ -18,7 +18,7 @@ Egycon Tickets
     @if ($payment_method == 'vodafone_cash')
       Vodafone Cash
     @else
-      Credit Card
+      Credit Card 
     @endif
   </p>
   <input type="hidden" name="payment_method" value="{{ $payment_method }}">

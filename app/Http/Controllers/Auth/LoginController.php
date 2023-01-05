@@ -21,7 +21,7 @@ class LoginController extends Controller
         $credentials  = $request->only(['email','password']);
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect()->route('admin.home');
+            return redirect()->route('admin.events.view');
         }
         return back()->withInput()->with('status', 'Incorrect login info!');
     }

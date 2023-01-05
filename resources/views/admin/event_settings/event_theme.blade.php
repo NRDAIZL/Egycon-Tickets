@@ -1,9 +1,9 @@
 @extends('layouts.app')
 @section('page')
-tickets
+event-settings
 @endsection
 @section('title')
-Add Ticket
+Update Event Theme
 @endsection
 @section('content')
 
@@ -12,7 +12,7 @@ Add Ticket
             <h2
               class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"
             >
-              Add Ticket
+              Update Event Theme
             </h2>
             
             @if(Session::has('success'))
@@ -45,67 +45,65 @@ Add Ticket
             @if($errors->any())
                 {!! implode('', $errors->all('<div class="text-red-500">:message</div>')) !!}
             @endif
-              <label class="block text-sm">
+            <label class="block text-sm">
                 <span class="text-gray-700 dark:text-gray-400">
-                <i class="las la-signature text-xl"></i>
-                Ticket Name <span class="text-red-500">*</span>
+                Theme Name <span class="text-red-500">*</span>
                 </span>
                 <input
-                value="{{ old('name') }}"
-                type="text"
+                value="{{ old('name') ?? $theme->name ?? "" }}"
                 name="name"
-                    required
+                required
+                type="text"
                   class="block w-full mt-1 text-sm border dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-                  placeholder="Early Ninja"
                 />
               </label>
               <label class="block text-sm">
                 <span class="text-gray-700 dark:text-gray-400">
-                <i class="las la-dollar-sign text-xl"></i>
-                Ticket Price <span class="text-red-500">*</span>
+                Theme Color <span class="text-red-500">*</span>
                 </span>
                 <input
-                value="{{ old('price') }}"
-                type="number"
-                min="0"
-                name="price"
-                    required
+                value="{{ old('theme_color') ?? $theme->theme_color ?? "#c207db" }}"
+                name="theme_color"
+                required
+                type="color"
                   class="block w-full mt-1 text-sm border dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-                  placeholder="220"
                 />
               </label>
               <label class="block text-sm">
                 <span class="text-gray-700 dark:text-gray-400">
-                <i class="las la-users text-xl"></i>
-                Number of Persons <span class="text-red-500">*</span>
+                Registration Form Background Color <span class="text-red-500">*</span>
                 </span>
                 <input
-                value="{{ old('persons') }}"
-                type="number"
-                name="persons"
-                    required
+                value="{{ old('registration_form_background_color') ?? $theme->registration_form_background_color ?? "#c207db" }}"
+                name="registration_form_background_color"
+                type="color"
                   class="block w-full mt-1 text-sm border dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-                  placeholder="1"
                 />
               </label>
               <label class="block text-sm">
                 <span class="text-gray-700 dark:text-gray-400">
-                <i class="las la-ticket-alt text-xl"></i>
-                Ticket Type <span class="text-red-500">*</span>
+                Registration Page Header Image <span class="text-red-500">*</span>
                 </span>
-                <select
-                value="{{ old('name') }}"
-                name="type"
-                    required
+                <input
+                accept="image/*"
+                name="registration_page_header_image"
+                type="file"
                   class="block w-full mt-1 text-sm border dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-                >
-                <option value="qr">QR Code</option>
-                <option value="discount">Discount Code</option>
-                <option value="noticket">No Ticket (Just registers on the system, user won't get any ticket)</option>
-                </select>
+                />
+              </label>
+              <label class="block text-sm">
+                <span class="text-gray-700 dark:text-gray-400">
+                Registration Page Background <span class="text-red-500">*</span>
+                </span>
+                <input
+                accept="image/*"
+                name="registration_page_background_image"
+                type="file"
+                  class="block w-full mt-1 text-sm border dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                />
               </label>
               <button type="submit" class="table items-center mt-4 justify-between px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
-              Add Ticket
+              Update Event Theme
               <span class="ml-2" aria-hidden="true">
                   <i class='las la-arrow-right'></i>
               </span>

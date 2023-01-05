@@ -49,10 +49,10 @@ Egycon Tickets
           <input type="radio" onchange="document.querySelector('#vodafone-cash-instructions').classList.remove('hidden');" name="payment_method" value="vodafone_cash" class="mr-2">
           <h1 class="text-2xl font- uppercase mx-2">Vodafone Cash</h1>
         </label>
-        <label class="flex items-center ml-4">
+        {{-- <label class="flex items-center ml-4">
           <input type="radio" onchange="document.querySelector('#vodafone-cash-instructions').classList.add('hidden');" name="payment_method" value="credit_card" class="mr-2">
           <h1 class="text-2xl font- uppercase mx-2">Credit Card</h1>
-        </label>
+        </label> --}}
       </div>
   </div>
   <div id="vodafone-cash-instructions" class="hidden">

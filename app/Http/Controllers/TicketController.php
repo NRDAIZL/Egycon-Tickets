@@ -7,27 +7,31 @@ use Illuminate\Http\Request;
 
 class TicketController extends Controller
 {
-    public function view(){
-        $ticket_types = TicketType::withTrashed()->paginate(15);
+    public function view($event_id){
+        $ticket_types = auth()->user()->events()->where('event_id',$event_id)->first()->ticket_types()->paginate(15);
         return view('admin.tickets.view',['ticket_types'=>$ticket_types]);
     }
 
-    public function add(){
+    public function add($event_id){
         return view('admin.tickets.add');
     }
 
-    public function store(Request $request)
+    public function store($event_id,Request $request)
     {
         $request->validate([
             'name'=>"required|string",
             "price"=>"required|numeric",
-            "persons"=>"required|numeric"
+            "persons"=>"required|numeric",
+            'type'=>'required|in:qr,discount,noticket',
         ]);
-        $ticket_type = new TicketType();
-        $ticket_type->name = $request->name;
-        $ticket_type->price = $request->price;
-        $ticket_type->person = $request->persons;
-        $ticket_type->save();
+        $ticket = auth()->user()->events()->where('event_id',$event_id)->first()->ticket_types()->create([
+            'name' => $request->name,
+            'price' => $request->price,
+            'person' => $request->persons,
+            'type' => $request->type,
+            'is_active' => true,
+        ]);
+        
         return redirect()->back()->with('success',"Ticket Type has been added!");
     }
 

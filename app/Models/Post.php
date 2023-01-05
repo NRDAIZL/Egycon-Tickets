@@ -10,18 +10,27 @@ class Post extends Model
 {
     use HasFactory, SoftDeletes;
 
-    public function ticket_type(){
-        return $this->belongsTo(TicketType::class);
-    }
+    
 
     public function ticket()
     {
         return $this->hasMany(PostTicket::class);
     }
+
+    // post belongs to ticket type through ticket
+    public function ticket_type()
+    {
+        return $this->belongsToMany(TicketType::class, 'post_tickets', 'post_id', 'ticket_type_id');
+    }
     
+
     public function provider(){
         return $this->belongsTo(ExternalServiceProvider::class,'external_service_provider_id');
     }
 
+    public function event()
+    {
+        return $this->belongsTo(Event::class);
+    }
     
 }

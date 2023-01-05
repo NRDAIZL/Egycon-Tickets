@@ -13,14 +13,11 @@ class Event extends Model
         'name',
         'description',
         'location',
-        'start_date',
-        'end_date',
-        'start_time',
-        'end_time',
-        'image',
-        'status',
-        'type',
-        'user_id',
+        'logo',
+        'banner',
+        'google_maps_url',
+        'registration_start',
+        'registration_end',
     ];
 
     public function users()
@@ -35,7 +32,7 @@ class Event extends Model
 
     public function posts()
     {
-        return $this->hasManyThrough(Post::class, TicketType::class);
+        return $this->hasMany(Post::class);
     }
 
     public function getPostsCountAttribute()
@@ -95,7 +92,14 @@ class Event extends Model
         return $this->event_days->min('date');
     }
     
+    // themes
+    public function themes()
+    {
+        return $this->hasMany(EventTheme::class);
+    }
 
-
-
+    public function invitations()
+    {
+        return $this->hasMany(UserInvitation::class);
+    }
 }

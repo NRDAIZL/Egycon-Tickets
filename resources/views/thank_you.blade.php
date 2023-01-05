@@ -1,6 +1,6 @@
 @extends('layouts.form')
 @section('title')
-Egycon Tickets - Thank you for registering at Egycon!
+Egycon Tickets - Thank you for registering at {{ $event->name??"The Event" }}!
 @endsection
 @section('content')
 <div class="flex justify-center items-center h-full w-full py-32 text-white">
@@ -13,7 +13,7 @@ Egycon Tickets - Thank you for registering at Egycon!
         {{ $status_error }}
      </h1>
     @else
-     <h1 class="text-3xl text-center">Your request is being reviewed. Once approved you will receive your ticket(s) via E-mail. <br><div class="mt-8 text-3xl font-bold">CYA at Egycon!</div></h1>
+     <h1 class="text-3xl text-center">Your request is being reviewed. Once approved you will receive your ticket(s) via E-mail. <br></h1>
     @endif
 </div>
  @endsection

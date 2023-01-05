@@ -12,7 +12,12 @@ Add Event
             <h2
               class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"
             >
-              Create new Event
+              @isset($event)
+                Edit Event - {{ $event->name }}
+                @else
+                Create New Event
+              @endisset
+
             </h2>
             
             @if(Session::has('success'))
@@ -40,7 +45,9 @@ Add Event
               class="px-4 py-3 mb-8 bg-white rounded-lg shadow-md dark:bg-gray-800"
             >
             <span class="text-red-500 text-sm">* Is required</span>
-
+              @isset($event)
+              <input type="hidden" name="event_edit_id" value="{{ $event->id }}">
+              @endisset
             @csrf
             @if($errors->any())
                 {!! implode('', $errors->all('<div class="text-red-500">:message</div>')) !!}
@@ -51,7 +58,7 @@ Add Event
                 Event Name <span class="text-red-500">*</span>
                 </span>
                 <input
-                value="{{ old('name') }}"
+                value="{{ old('name')??$event->name??"" }}"
                 type="text"
                 name="name"
                     required
@@ -68,7 +75,7 @@ Add Event
                 name="description"
                   class="block w-full mt-1 text-sm border dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
                   placeholder="Event Description"
-                >{{ old('description') }}</textarea>
+                >{{ old('description')??$event->description??"" }}</textarea>
               </label>
               <label class="block text-sm">
                 <span class="text-gray-700 dark:text-gray-400">
@@ -76,7 +83,7 @@ Add Event
                 Location
                 </span>
                 <input
-                value="{{ old('location') }}"
+                value="{{ old('location')??$event->location??"" }}"
                 type="text"
                 name="location"
                   class="block w-full mt-1 text-sm border dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
@@ -89,7 +96,7 @@ Add Event
                 Google Maps URL 
                 </span>
                 <input
-                value="{{ old('map') }}"
+                value="{{ old('map')??$event->map??"" }}"
                 type="text"
                 name="map"
                   class="block w-full mt-1 text-sm border dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
@@ -120,8 +127,64 @@ Add Event
                   class="block w-full mt-1 text-sm border dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
                 />
               </label>
+              <label class="block text-sm">
+                <span class="text-gray-700 dark:text-gray-400">
+                <i class="las la-calendar text-xl"></i>
+                Registration Starts on <span class="text-red-500">*</span>
+                </span>
+                <input
+                required
+                type="date"
+                value="{{ old('registration_start')??date('Y-m-d',strtotime($event->registration_start??""))??"" }}"
+                name="registration_start"
+                  class="block w-full mt-1 text-sm border dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                />
+              </label>
+              <label class="block text-sm">
+                <span class="text-gray-700 dark:text-gray-400">
+                <i class="las la-clock text-xl"></i>
+                Registration Starts at <span class="text-red-500">*</span>
+                </span>
+                <input
+                required
+                type="time"
+                value="{{ old('registration_start_time')??date('H:i:s',strtotime($event->registration_start??""))??"" }}"
+                name="registration_start_time"
+                  class="block w-full mt-1 text-sm border dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                />
+              </label>
+              <label class="block text-sm">
+                <span class="text-gray-700 dark:text-gray-400">
+                <i class="las la-calendar text-xl"></i>
+                Registration Ends on <span class="text-red-500">*</span>
+                </span>
+                <input
+                required
+                type="date"
+                value="{{ old('registration_end')??date('Y-m-d',strtotime($event->registration_end??""))??"" }}"
+                name="registration_end"
+                  class="block w-full mt-1 text-sm border dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                />
+              </label>
+              <label class="block text-sm">
+                <span class="text-gray-700 dark:text-gray-400">
+                <i class="las la-calendar text-xl"></i>
+                Registration Ends at <span class="text-red-500">*</span>
+                </span>
+                <input
+                required
+                type="time"
+                value="{{ old('registration_end_time')??date('H:i:s',strtotime($event->registration_end??""))??"" }}"
+                name="registration_end_time"
+                  class="block w-full mt-1 text-sm border dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                />
+              </label>
               <button type="submit" class="table items-center mt-4 justify-between px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
+              @isset($event)
+              Update Event
+              @else
               Create Event
+              @endisset
               <span class="ml-2" aria-hidden="true">
                   <i class='las la-arrow-right'></i>
               </span>
