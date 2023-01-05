@@ -14,7 +14,7 @@ class AddEventIdToTicketTypes extends Migration
     public function up()
     {
         Schema::table('ticket_types', function (Blueprint $table) {
-            $table->foreignId('event_id')->constrained();
+            $table->foreignId('event_id')->nullable()->constrained();
         });
     }
 
