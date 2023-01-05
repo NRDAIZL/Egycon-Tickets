@@ -55,6 +55,14 @@ function data() {
     toggleUsersMenu() {
       this.isUsersMenuOpen = !this.isUsersMenuOpen
     },
+    isCodesMenuOpen: false,
+    toggleCodesMenu() {
+      this.isCodesMenuOpen = !this.isCodesMenuOpen
+    },
+    isGenerateMenuOpen: false,
+    toggleGenerateMenu() {
+      this.isGenerateMenuOpen = !this.isGenerateMenuOpen
+    },
     // Modal
     isModalOpen: false,
     trapCleanup: null,

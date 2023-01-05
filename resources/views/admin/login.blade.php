@@ -40,6 +40,9 @@
               @if(Session::has('status'))
                 <p class="text-red-500">{{ Session::get('status') }}</p>
               @endif
+              @if(Session::has('error'))
+                <p class="text-red-500">{{ Session::get('error') }}</p>
+              @endif
               <label class="block text-sm">
                 <span class="text-gray-700 dark:text-gray-400">Email</span>
                 <input

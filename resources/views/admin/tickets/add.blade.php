@@ -88,6 +88,22 @@ Add Ticket
                   placeholder="1"
                 />
               </label>
+              <label class="block text-sm">
+                <span class="text-gray-700 dark:text-gray-400">
+                <i class="las la-ticket-alt text-xl"></i>
+                Ticket Type <span class="text-red-500">*</span>
+                </span>
+                <select
+                value="{{ old('name') }}"
+                name="type"
+                    required
+                  class="block w-full mt-1 text-sm border dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                >
+                <option value="qr">QR Code</option>
+                <option value="discount">Discount Code</option>
+                <option value="noticket">No Ticket (Just registers on the system, user won't get any ticket)</option>
+                </select>
+              </label>
               <button type="submit" class="table items-center mt-4 justify-between px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
               Add Ticket
               <span class="ml-2" aria-hidden="true">

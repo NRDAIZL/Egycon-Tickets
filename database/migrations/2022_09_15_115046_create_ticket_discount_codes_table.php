@@ -17,6 +17,7 @@ class CreateTicketDiscountCodesTable extends Migration
             $table->id();
             $table->string('code');
             $table->dateTime('claimed_at')->nullable();
+            $table->foreignId('ticket_type_id')->constrained();
             $table->timestamps();
         });
     }
