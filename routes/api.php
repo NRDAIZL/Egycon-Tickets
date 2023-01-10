@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\API\EventController;
+use App\Http\Controllers\API\LoginController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +16,14 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+
+
+Route::post('/login', [LoginController::class, 'login']);
+
+Route::middleware('auth:sanctum')->group(function(){
+    Route::get('/logout', [LoginController::class, 'logout']);
+    Route::get('/user', [LoginController::class, 'user']);
+    Route::get('/events', [EventController::class, 'index']);
+    Route::post('/scan', [EventController::class, 'scan']);
 });
+
