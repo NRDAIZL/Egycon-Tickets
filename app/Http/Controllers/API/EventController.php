@@ -68,7 +68,6 @@ class EventController extends Controller
             } else if ($status == 1 && $data->status != 2) {
                 $data->status = 2;
                 $data->save();
-                return back()->with('message', 'Scanned Successfully! The registree can enter!, Name:' . ($data->post->name ?? "N/A") . ' Order ID: ' . ($data->post->id ?? "N/A"));
                 return response()->json([
                     'status' => 'success',
                     'message' => 'Scanned Successfully! The registree can enter!, Name:' . ($data->post->name ?? "N/A") . ' Order ID: ' . ($data->post->id ?? "N/A")
