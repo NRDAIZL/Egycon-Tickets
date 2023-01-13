@@ -19,6 +19,8 @@ class TicketType extends Model
         'is_active'
     ];
 
+    protected $hidden = ['pivot'];
+
     public function event()
     {
         return $this->belongsTo(Event::class);

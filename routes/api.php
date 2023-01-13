@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\API\EventController;
 use App\Http\Controllers\API\LoginController;
+use App\Http\Controllers\API\TicketController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -25,5 +26,8 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::get('/user', [LoginController::class, 'user']);
     Route::get('/events', [EventController::class, 'index']);
     Route::post('/scan', [EventController::class, 'scan']);
+    Route::post('/search', [TicketController::class, 'search']);
 });
+
+
 
