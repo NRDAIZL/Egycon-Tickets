@@ -15,8 +15,10 @@
     if(isset($theme)){
         $theme_color = $theme->theme_color;
         $registration_form_background_color = $theme->registration_form_background_color;
-        $registration_page_header_image = Storage::url($theme->registration_page_header_image);
-        $registration_page_background = Storage::url($theme->registration_page_background_image);
+        if($theme->registration_page_header_image != null)
+          $registration_page_header_image = Storage::url($theme->registration_page_header_image);
+        if($theme->registration_page_background_image != null)
+          $registration_page_background = Storage::url($theme->registration_page_background_image);
     }
     if(isset($event)){
       if($event->logo){

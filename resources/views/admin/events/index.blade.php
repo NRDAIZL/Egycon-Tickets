@@ -58,7 +58,30 @@ Events
                       <td class="px-2 py-3">
                         <div class="flex items-center text-sm">
                           <div>
-                            <p class="font-semibold">{{ implode(', ',$event->getAdminNamesAttribute()) }}</p>
+                            @php
+                              $all_admins = $event->getAdminNamesAttribute();
+                              // get the first 3 admins
+                              $admins = array_slice($all_admins,0,2);
+                              $more_admins = count($all_admins) - 2;
+                              if($more_admins > 0){
+                                  $more_admins_names = array_slice($all_admins,2);
+                                  $more_admins_html = 
+                                  "<button class='text-gray-500 dark:text-gray-400 group relative'>
+                                    +$more_admins more
+                                    <div class='hidden rounded-lg group-focus-within:block absolute left-1/2 w-max max-h-96 overflow-y-auto transform -translate-x-1/2 '>
+                                      <div class='bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-400 text-sm shadow-lg p-2'>
+                                        <ul>
+                                          <li class='hover:bg-gray-200 dark:hover:bg-gray-600'>
+                                            <a href='#' class='block px-4 py-2 whitespace-nowrap'>".implode('</a></li><li class="hover:bg-gray-200 dark:hover:bg-gray-600"><a href="#" class="block px-4 py-2">',$more_admins_names)."</a>
+                                          </li>
+                                        </ul>
+                                      </div>
+                                    </div>
+                                    </button>";
+                                  array_push($admins,$more_admins_html);
+                              }
+                            @endphp
+                            <p class="font-semibold">{!! implode(', ',$admins) !!}</p>
                           </div>
                         </div>
                       </td>

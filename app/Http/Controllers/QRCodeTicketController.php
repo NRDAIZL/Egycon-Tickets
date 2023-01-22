@@ -134,6 +134,24 @@ class QRCodeTicketController extends Controller
             // merge qrcode image to template image
             // add the image to bottom right corner
             imagecopymerge($image, $qrcode_image, $width - $qrcode_width, $height - $qrcode_height, 0, 0, $qrcode_width, $qrcode_height, 100);
+
+            // write QR code text top of qr code image
+            $text_color = imagecolorallocate($image, 255, 255, 255);
+            $font = public_path('fonts/CenturyGothic.ttf');
+            $font_size = 30;
+            $text = $qr_code;
+            $text_width = imagettfbbox($font_size, 0, $font, $text)[2];
+            // $text_height = imagettfbbox($font_size, 0, $font, $text)[3];
+            imagettftext(
+            $image, 
+            $font_size, 
+            0,
+            ($width - $text_width) - (($qrcode_width - $text_width) / 2), // x position
+            $height - $qrcode_height - 10, // y position
+            $text_color, 
+            $font, 
+            $text);
+
             // save image
             imagejpeg($image, $directory_path."/" . $qr_code . ".jpg");
         }
