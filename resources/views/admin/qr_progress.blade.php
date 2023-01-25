@@ -1,9 +1,8 @@
 
 @php
     
-    $progress_directory_name = Session::get('progress_directory_name');
     // read the progress file
-    $progress = file_get_contents(storage_path('app/public/qr_codes/'.$progress_directory_name.'/progress.txt'));
+    $progress = file_get_contents(storage_path(auth()->id."_progress.txt"));
     // get last line
     $progress = explode('\r\n', $progress);
     $progress = end($progress);
