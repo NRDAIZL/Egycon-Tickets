@@ -6,7 +6,6 @@
     // get last line
     $progress = explode('\r\n', $progress);
     $progress = end($progress);
-    echo '<script>console.log("'.$progress.'")</script>';
     $progress = $progress > 100 ? 100 : $progress;
     $progress = $progress < 0 ? 0 : $progress;
     $progress = round($progress);
@@ -19,7 +18,4 @@
     if($progress == '100%'){
         echo '<script>parent.document.getElementById("information").innerHTML="<div style=\"text-align:center; font-weight:bold\">Process completed</div>"</script>';
     }
-    ob_flush(); 
-    flush();
-    Session::forget('progress'); 
 @endphp
