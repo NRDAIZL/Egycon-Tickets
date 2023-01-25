@@ -122,6 +122,11 @@ Generate Tickets
                   // create iframe element
                   var iframe = document.createElement('iframe');
                   iframe.style.display = 'none';
+                  var progressbar = document.getElementById('progressbar');
+                  if(progressbar.style.width == '100%') {
+                    clearInterval(progress_interval);
+                    return;
+                  }
                   iframe.src = "{{ route('admin.qr_progress',$event_id) }}";
                   document.body.appendChild(iframe);
                 }, 3000);
