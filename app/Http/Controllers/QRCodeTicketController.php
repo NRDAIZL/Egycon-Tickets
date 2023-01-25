@@ -127,7 +127,7 @@ class QRCodeTicketController extends Controller
         $total = $request->quantity;
         // add progress to session
         // create file in storage instead of session
-        $progress_file = fopen(storage_path(auth()->id."_progress.txt"), "wa+");
+        $progress_file = fopen(storage_path(auth()->user()->id."_progress.txt"), "wa+");
         // save directory name to session
         $request->session()->put('progress_directory_name', $directory_name);
         fwrite($progress_file, "0");

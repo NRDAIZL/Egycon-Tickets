@@ -2,7 +2,7 @@
 @php
     
     // read the progress file
-    $progress = file_get_contents(storage_path(auth()->id."_progress.txt"));
+    $progress = file_get_contents(storage_path(auth()->user()->id."_progress.txt"));
     // get last line
     $progress = explode('\r\n', $progress);
     $progress = end($progress);
