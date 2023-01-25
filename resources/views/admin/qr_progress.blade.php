@@ -4,9 +4,7 @@
     $progress = Session::has('progress') ? Session::get('progress') : 0;
     // check if progress is array 
     if(is_array($progress)){
-        $progress = json_encode($progress);
-        echo '<script>console.log("'.$progress.'")</script>';
-        exit();
+        $progress = $progress['percent'];
     }
     echo '<script>console.log("'.$progress.'")</script>';
     $progress = $progress > 100 ? 100 : $progress;
