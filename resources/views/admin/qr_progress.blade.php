@@ -8,6 +8,7 @@
         $line = fgets($progress);
     }
     $progress = $line;
+    echo $progress;
     $progress = $progress > 100 ? 100 : $progress;
     $progress = $progress < 0 ? 0 : $progress;
     $progress = round($progress);
