@@ -2,10 +2,12 @@
 @php
     
     // read the progress file
-    $progress = file_get_contents(storage_path(auth()->user()->id."_progress.txt"));
+    $progress = fopen(storage_path(auth()->user()->id."_progress.txt"),'r');
     // get last line
-    $progress = explode('\r\n', $progress);
-    $progress = end($progress);
+    while(!feof($progress)) {
+        $line = fgets($progress);
+    }
+    $progress = $line;
     $progress = $progress > 100 ? 100 : $progress;
     $progress = $progress < 0 ? 0 : $progress;
     $progress = round($progress);
@@ -18,4 +20,6 @@
     if($progress == '100%'){
         echo '<script>parent.document.getElementById("information").innerHTML="<div style=\"text-align:center; font-weight:bold\">Process completed</div>"</script>';
     }
+
+
 @endphp
