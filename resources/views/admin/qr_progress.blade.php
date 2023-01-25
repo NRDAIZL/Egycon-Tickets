@@ -2,7 +2,7 @@
 @php
     
     // read the progress file
-    $progress = fopen(storage_path(auth()->user()->id."_progress.txt"),'r');
+    $progress = fopen(storage_path('app/'.auth()->user()->id."_progress.txt"),'r');
     // get last line
     while(!feof($progress)) {
         $line = fgets($progress);
