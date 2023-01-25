@@ -115,9 +115,10 @@ Generate Tickets
           </div>
         </main>
         <script>
+            var progress_interval = null;
             var submit_button = document.getElementById('submit');
             submit_button.addEventListener('click', function() {
-                setInterval(() => {
+                progress_interval = setInterval(() => {
                   // create iframe element
                   var iframe = document.createElement('iframe');
                   iframe.style.display = 'none';
