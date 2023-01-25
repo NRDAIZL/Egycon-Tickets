@@ -20,6 +20,7 @@
     parent.document.getElementById("information").innerHTML="<div style=\"text-align:center; font-weight:bold\">'.$progress.' is processed.</div>";</script>';
     if($progress == '100%'){
         echo '<script>parent.document.getElementById("information").innerHTML="<div style=\"text-align:center; font-weight:bold\">Process completed</div>"</script>';
+        file_put_contents(storage_path('app/'.auth()->user()->id."_progress.txt"), '');
     }
 
 
