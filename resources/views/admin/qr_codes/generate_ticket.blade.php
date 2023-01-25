@@ -123,8 +123,8 @@ Generate Tickets
                   var iframe = document.createElement('iframe');
                   iframe.style.display = 'none';
                   var progressbar = document.getElementById('progressbar');
-                  console.log(progressbar.style.width);
-                  if(progressbar.style.width == '100%') {
+                  console.log(progressbar.style.width, progressbar.dataset.progress);
+                  if(progressbar.style.width == '100%' || progressbar.dataset.progress == '100' ) {
                     clearInterval(progress_interval);
                     return;
                   }
