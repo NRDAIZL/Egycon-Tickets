@@ -2,7 +2,12 @@
 @php
     
     $progress = Session::has('progress') ? Session::get('progress') : 0;
-    echo $progress;
+    // check if progress is array 
+    if(is_array($progress)){
+        $progress = json_encode($progress);
+        echo '<script>console.log("'.$progress.'")</script>';
+        exit();
+    }
     echo '<script>console.log("'.$progress.'")</script>';
     $progress = $progress > 100 ? 100 : $progress;
     $progress = $progress < 0 ? 0 : $progress;
