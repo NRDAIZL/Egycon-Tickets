@@ -188,6 +188,7 @@ class QRCodeTicketController extends Controller
             session()->put('progress', ['percent' => round(($i - $request->start_number) / $total * 50)]);
         }
         session()->put('progress', ['percent' => 50]);
+        sleep(10);
         // zip file
         $zip_file_name = $directory_name . ".zip";
         $zip_file_path = storage_path('app/qrcodes/' . $zip_file_name);
