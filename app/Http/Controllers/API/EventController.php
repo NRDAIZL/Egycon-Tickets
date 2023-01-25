@@ -63,10 +63,11 @@ class EventController extends Controller
             if ($status == 0 || $status == null) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Code # ' . $request->code . ' is a Bus Ticket. This page is for event tickets only'
+                    'message' => 'Not accepted yet'
                 ], 404);
             } else if ($status == 1 && $data->status != 2) {
                 $data->status = 2;
+                $data->scanned_at = now();
                 $data->save();
                 return response()->json([
                     'status' => 'success',

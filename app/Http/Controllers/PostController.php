@@ -129,8 +129,9 @@ class PostController extends Controller
                 return back()->with('error', 'Not accepted yet');
             }else if($status == 1 && $data->status != 2){
                 $data->status = 2;
+                $data->scanned_at = now();
                 $data->save();
-                    return back()->with('message', 'Scanned Successfully! The registree can enter Egycon!, Name:'.($data->post->name??"N/A").' Order ID: '. ($data->post->id??"N/A"));
+                    return back()->with('message', 'Scanned Successfully! The registree can enter!, Name:'.($data->post->name??"N/A").' Order ID: '. ($data->post->id??"N/A"));
             }else if($data->status == 2){
                 return back()->with('error', 'Already Scanned Before!!!, Name:'.($data->post->name??"N/A").' Order ID: '. ($data->post->id??"N/A"));
             }else{

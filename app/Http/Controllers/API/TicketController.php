@@ -28,8 +28,10 @@ class TicketController extends Controller
             $query->where('name', 'like', '%' . $request->search_query . '%')
                 ->orWhere('phone_number', 'like', '%' . $request->search_query . '%')
                 ->orWhere('email', 'like', '%' . $request->search_query . '%');
-        })->with(['ticket_type'=>function($query){
-            return $query->select(['name','price']);
+        })->with(['ticket'=>function($query){
+            return $query->with(['ticket_type'=>function($query){
+                return $query->select(['id','price','name'])->get();
+            }])->select(['id','post_id','scanned_at','ticket_type_id'])->get();
         }])
         ->select(['id','name','phone_number as phone','email','status'])->get();
         $event_posts->map(function ($post) {

@@ -84,14 +84,47 @@ Generate Tickets
                   class="block w-full mt-1 text-sm border dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
                 />
               </label>
-              <button type="submit" class="table items-center mt-4 justify-between px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
+              <label class="block text-sm mt-4">
+                <span class="text-gray-700 dark:text-gray-400">
+                Serial Start Number <span class="text-gray-500">(leave empty for no serialization)</span>
+                </span>
+                 <input
+                type="number"
+                name="start_number"
+                  class="block w-full mt-1 text-sm border dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
+                />
+              </label>
+              <button type="submit" id="submit" class="table items-center mt-4 justify-between px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
                 Generate Tickets
               <span class="ml-2" aria-hidden="true">
                   <i class='las la-arrow-right'></i>
               </span>
             </button>
         </form>
+        <div class="col-md-12">
+		<p>&nbsp;</p>
+	    <p>&nbsp;</p>
+		<div id="progressbar" style="border:1px solid #ccc; border-radius: 5px; "></div>
+  
+		<!-- Progress information -->
+		<br>
+		<div id="information" ></div>
+	</div>
+<iframe id="loadarea" style="display:none;"></iframe><br />
 
           </div>
         </main>
+        <script>
+            var submit_button = document.getElementById('submit');
+            submit_button.addEventListener('click', function() {
+                setInterval(() => {
+                  // create iframe element
+                  var iframe = document.createElement('iframe');
+                  iframe.style.display = 'none';
+                  iframe.src = "{{ route('admin.qr_progress',$event_id) }}";
+                  document.body.appendChild(iframe);
+                }, 3000);
+            });
+          
+        </script>
 @endsection
