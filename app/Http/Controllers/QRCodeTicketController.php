@@ -75,7 +75,7 @@ class QRCodeTicketController extends Controller
     public function generate_qr_tickets_post(Request $request ,$event_id){
         $request->validate([
             'ticket_type_id' => 'required|exists:ticket_types,id',
-            'quantity' => 'required|numeric|max:1000',
+            'quantity' => 'required|numeric|max:200',
             'template' => 'required|image|mimes:jpeg,png,jpg|max:2048',
             'start_number' => 'nullable|numeric|min:1|max:999999',
             
