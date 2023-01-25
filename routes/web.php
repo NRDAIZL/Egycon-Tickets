@@ -28,10 +28,6 @@ Route::get('/home',function(){
     return redirect()->route('admin.events.view');
 })->name('home');
 
-Route::get('qr_progress', function () {
-    return view('admin.qr_progress');
-})->name('qr_progress');
-
 Route::get('/invitations/{token}', [UserController::class, 'accept_invitation'])->name('accept_invitation');
 Route::post('/invitations/{token}', [UserController::class, 'accept_invitation_post'])->name('accept_invitation_post');
 Route::get('/login', [LoginController::class, 'index'])->name('login');
@@ -64,7 +60,9 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
         Route::get('generate_qr_tickets', [QRCodeTicketController::class, 'generate_qr_tickets'])->name('generate_qr_tickets');
         Route::post('generate_qr_tickets', [QRCodeTicketController::class, 'generate_qr_tickets_post']);
 
-        
+        Route::get('qr_progress', function () {
+            return view('admin.qr_progress');
+        })->name('qr_progress');
         Route::get('/requests', [PostController::class, 'view_requests'])->name('requests');
         Route::get('/delete_all_tickets', [PostController::class, 'delete_all_view'])->name('delete_all');
         Route::post('/delete_all_tickets', [PostController::class, 'delete_all']);
