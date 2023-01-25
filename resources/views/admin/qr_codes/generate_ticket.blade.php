@@ -130,7 +130,7 @@ Generate Tickets
                   }
                   iframe.src = "{{ route('admin.qr_progress',$event_id) }}";
                   document.body.appendChild(iframe);
-                }, 3000);
+                }, 1500);
             });
           
         </script>
