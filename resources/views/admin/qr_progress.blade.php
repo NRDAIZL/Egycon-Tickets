@@ -1,11 +1,12 @@
 
 @php
     
-    $progress = Session::has('progress') ? Session::get('progress') : 0;
-    // check if progress is array 
-    if(is_array($progress)){
-        $progress = $progress['percent'];
-    }
+    $progress_directory_name = Session::get('progress_directory_name');
+    // read the progress file
+    $progress = file_get_contents(storage_path('app/public/qr_codes/'.$progress_directory_name.'/progress.txt'));
+    // get last line
+    $progress = explode('\r\n', $progress);
+    $progress = end($progress);
     echo '<script>console.log("'.$progress.'")</script>';
     $progress = $progress > 100 ? 100 : $progress;
     $progress = $progress < 0 ? 0 : $progress;

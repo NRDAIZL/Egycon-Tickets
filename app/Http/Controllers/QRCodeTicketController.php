@@ -126,7 +126,11 @@ class QRCodeTicketController extends Controller
         $end_at = $request->start_number + $request->quantity;
         $total = $request->quantity;
         // add progress to session
-        session()->put('progress', ['percent'=>0]);
+        // create file in storage instead of session
+        $progress_file = fopen($directory_path."/progress.txt", "wa+");
+        // save directory name to session
+        $request->session()->put('progress_directory_name', $directory_name);
+        fwrite($progress_file, "0");
         foreach($qr_codes as $qr_code){
             $image = imagecreatetruecolor($width, $height);
             imagecopy($image, $temp_image, 0, 0, 0, 0, $width, $height);
@@ -185,10 +189,9 @@ class QRCodeTicketController extends Controller
             // destroy image
             imagedestroy($image);
             $i++;
-            session()->put('progress', ['percent' => round(($i - $request->start_number) / $total * 50)]);
+            fwrite($progress_file, "\n".round(($i - $request->start_number) / $total * 80));
         }
-        session()->put('progress', ['percent' => 50]);
-        sleep(10);
+        fwrite($progress_file, "\n" . round(80));
         // zip file
         $zip_file_name = $directory_name . ".zip";
         $zip_file_path = storage_path('app/qrcodes/' . $zip_file_name);
@@ -197,10 +200,11 @@ class QRCodeTicketController extends Controller
         $i = 1;
         foreach($qr_codes as $qr_code){
             $zip->addFile($directory_path."/" . $qr_code . ".jpg", $qr_code . ".jpg");
-            session()->put('progress', ['percent' => round($i / $total * 50) + 50]);
+            fwrite($progress_file, "\n" . round(($i - $request->start_number) / $total * 20 + 80));
             $i++;
         }
-        session()->put('progress', ['percent' => 100]);
+        fwrite($progress_file, "\n" . round(100));
+        fclose($progress_file);
         $zip->close();
         return response()->download($zip_file_path)->deleteFileAfterSend(true);
     }
