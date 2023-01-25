@@ -2,7 +2,8 @@
 @php
     
     $progress = Session::has('progress') ? Session::get('progress') : 0;
-    $progress = $progress['percent'];
+    echo $progress;
+    echo '<script>console.log("'.$progress.'")</script>';
     $progress = $progress > 100 ? 100 : $progress;
     $progress = $progress < 0 ? 0 : $progress;
     $progress = round($progress);
