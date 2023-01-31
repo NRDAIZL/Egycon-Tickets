@@ -47,7 +47,7 @@ Generate Tickets
             @endif
               <label class="block text-sm">
                 <span class="text-gray-700 dark:text-gray-400">
-                QR Codes Amount to Generate (max: 200 per batch) <span class="text-red-500">*</span>
+                QR Codes Amount to Generate (max: 500 per batch) <span class="text-red-500">*</span>
                 </span>
                 <input
                 value="{{ old('quantity') }}"
