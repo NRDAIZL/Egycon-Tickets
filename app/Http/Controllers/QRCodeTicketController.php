@@ -136,20 +136,10 @@ class QRCodeTicketController extends Controller
         foreach($qr_codes as $qr_code){
             $image = imagecreatetruecolor($width, $height);
             imagecopy($image, $temp_image, 0, 0, 0, 0, $width, $height);
-            $check_post_ticket_with_same_serial_number = PostTicket::where('ticket_type_id', $ticket_type->id)->where('serial_number', $i)->first();
-            if ($request->start_number && $check_post_ticket_with_same_serial_number){
-                $qr_code = $check_post_ticket_with_same_serial_number->code;
-                $post_ticket = $check_post_ticket_with_same_serial_number;
-            }else{
-                $post_ticket = new PostTicket();
-                $post_ticket->ticket_type_id = $ticket_type->id;
-                $post_ticket->code = $qr_code;
-                if ($request->start_number) {
-                    $post_ticket->serial_number = $i;
-                }
-                $post_ticket->save();
-            }
-            
+            $post_ticket = new PostTicket();
+            $post_ticket->ticket_type_id = $ticket_type->id;
+            $post_ticket->code = $qr_code;
+            $post_ticket->save();
             $qrcode = new QRCode($qr_options);
             // qrcode render to storage not public
             $qrcode->render($qr_code, $directory_path."/" . $qr_code . ".jpg");
