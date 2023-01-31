@@ -75,7 +75,7 @@ class QRCodeTicketController extends Controller
     public function generate_qr_tickets_post(Request $request ,$event_id){
         $request->validate([
             'ticket_type_id' => 'required|exists:ticket_types,id',
-            'quantity' => 'required|numeric|max:200',
+            'quantity' => 'required|numeric|max:500',
             'template' => 'required|image|mimes:jpeg,png,jpg|max:2048',
             'start_number' => 'nullable|numeric|min:1|max:999999',
             
@@ -136,10 +136,20 @@ class QRCodeTicketController extends Controller
         foreach($qr_codes as $qr_code){
             $image = imagecreatetruecolor($width, $height);
             imagecopy($image, $temp_image, 0, 0, 0, 0, $width, $height);
-            $post_ticket = new PostTicket();
-            $post_ticket->ticket_type_id = $ticket_type->id;
-            $post_ticket->code = $qr_code;
-            $post_ticket->save();
+            $check_post_ticket_with_same_serial_number = PostTicket::where('ticket_type_id', $ticket_type->id)->where('serial_number', $i)->first();
+            if ($request->start_number && $check_post_ticket_with_same_serial_number){
+                $qr_code = $check_post_ticket_with_same_serial_number->code;
+                $post_ticket = $check_post_ticket_with_same_serial_number;
+            }else{
+                $post_ticket = new PostTicket();
+                $post_ticket->ticket_type_id = $ticket_type->id;
+                $post_ticket->code = $qr_code;
+                if ($request->start_number) {
+                    $post_ticket->serial_number = $i;
+                }
+                $post_ticket->save();
+            }
+            
             $qrcode = new QRCode($qr_options);
             // qrcode render to storage not public
             $qrcode->render($qr_code, $directory_path."/" . $qr_code . ".jpg");
