@@ -51,6 +51,18 @@
               </a>
             </li>
           </ul>
+          <ul class="">
+            <li class="relative px-6 py-3">
+             
+              <a
+                class="inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200"
+                href="{{ route('instructions',$event_id) }}"
+              >
+                <i class="las la-eye text-xl"></i>
+                <span class="ml-4">Preview Payment Form</span>
+              </a>
+            </li>
+          </ul>
           @else
           <h1 class="text-xl font-bold px-4 py-4">
             Please select/create an event to continue

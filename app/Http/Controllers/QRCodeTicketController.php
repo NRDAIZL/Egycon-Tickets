@@ -115,13 +115,15 @@ class QRCodeTicketController extends Controller
             mkdir($directory_path, 0777, true);
         }
         $qr_options = new QROptions([
-            'version'    => 5,
+            'version'    => 3,
             'outputType' => QRCode::OUTPUT_IMAGE_JPG,
             'eccLevel'   => QRCode::ECC_L,
             'imageTransparent' => false,
             'imagickFormat' => 'jpg',
             'imageTransparencyBG' => [255, 255, 255],
+            'quietzoneSize' => 2,
         ]);
+        $quietzone_size_px = 20;
         $i = $request->start_number??1;
         $end_at = $request->start_number + $request->quantity;
         $total = $request->quantity;
@@ -144,7 +146,7 @@ class QRCodeTicketController extends Controller
             // create image from qrcode
             $qrcode_image = imagecreatefromjpeg($directory_path."/" . $qr_code . ".jpg");
             // scale to 600x600
-            $qrcode_image = imagescale($qrcode_image, 600, 600);
+            $qrcode_image = imagescale($qrcode_image, 525, 525);
             // get qrcode image dimension
             $qrcode_height = imagesy($qrcode_image);
             $qrcode_width = imagesx($qrcode_image);
@@ -153,32 +155,34 @@ class QRCodeTicketController extends Controller
             imagecopymerge($image, $qrcode_image, $width - $qrcode_width, $height - $qrcode_height, 0, 0, $qrcode_width, $qrcode_height, 100);
 
             // write QR code text top of qr code image
-            $text_color = imagecolorallocate($image, 255, 255, 255);
+            $text_color = imagecolorallocate($image, 0, 0, 0);
             $font = public_path('fonts/CenturyGothic.ttf');
             $font_size = 30;
             $text = $qr_code;
             $text_width = imagettfbbox($font_size, 0, $font, $text)[2];
-            $text_height = -1*imagettfbbox($font_size, 0, $font, $text)[5];
+            // $text_height = -1*imagettfbbox($font_size, 0, $font, $text)[5];
             // $text_height = imagettfbbox($font_size, 0, $font, $text)[3];
             imagettftext(
             $image, 
             $font_size, 
             0,
-            ($width - $text_width) - (($qrcode_width - $text_width) / 2), // x position
-            $height - $qrcode_height - 10, // y position
+            ($width - $text_width) - $quietzone_size_px, // x position
+            $height - $qrcode_height, // y position
             $text_color, 
             $font, 
             $text);
+            // display text on top right of qr code image
+            
             if($request->start_number){
                 $serial_number = str_pad($i, 6, '0', STR_PAD_LEFT);
-                $serial_number_width = imagettfbbox($font_size, 0, $font, $serial_number)[2];
-                $serial_number_height = -1*imagettfbbox($font_size, 0, $font, $serial_number)[5];
+                // $serial_number_width = imagettfbbox($font_size, 0, $font, $serial_number)[2];
+                // $serial_number_height = -1*imagettfbbox($font_size, 0, $font, $serial_number)[5];
                 imagettftext(
                     $image,
                     $font_size,
                     0,
-                    ($width - $serial_number_width) - (($qrcode_width - $serial_number_width) / 2), // x position
-                    $height - $qrcode_height - 40 - $serial_number_height, // y position
+                    ($width - $qrcode_width) + $quietzone_size_px, // x position
+                    $height - $qrcode_height, // y position
                     $text_color,
                     $font,
                     $serial_number
