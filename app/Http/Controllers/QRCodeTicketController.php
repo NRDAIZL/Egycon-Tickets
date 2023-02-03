@@ -127,19 +127,30 @@ class QRCodeTicketController extends Controller
         $i = $request->start_number??1;
         $end_at = $request->start_number + $request->quantity;
         $total = $request->quantity;
+
         // add progress to session
         // create file in storage instead of session
         $progress_file = fopen(storage_path('app/' . auth()->user()->id."_progress.txt"), "wa+");
         // save directory name to session
         $request->session()->put('progress_directory_name', $directory_name);
         fwrite($progress_file, "0");
-        foreach($qr_codes as $qr_code){
+        foreach($qr_codes as $key=>$qr_code){
             $image = imagecreatetruecolor($width, $height);
             imagecopy($image, $temp_image, 0, 0, 0, 0, $width, $height);
-            $post_ticket = new PostTicket();
-            $post_ticket->ticket_type_id = $ticket_type->id;
-            $post_ticket->code = $qr_code;
-            $post_ticket->save();
+
+            // check if a ticket with the same serial number generated before
+            if(PostTicket::where('serial_number', $i)->where('ticket_type_id', $ticket_type->id)->exists()){
+                $post_ticket = PostTicket::where('serial_number', $i)->where('ticket_type_id', $ticket_type->id)->first();
+                // get qr code of the ticket which was generated before
+                $qr_code = $post_ticket->code;
+                $qr_codes[$key] = $qr_code;
+            }else{
+                $post_ticket = new PostTicket();
+                $post_ticket->ticket_type_id = $ticket_type->id;
+                $post_ticket->code = $qr_code;
+                $post_ticket->serial_number = $i;
+                $post_ticket->save();
+            }
             $qrcode = new QRCode($qr_options);
             // qrcode render to storage not public
             $qrcode->render($qr_code, $directory_path."/" . $qr_code . ".jpg");
