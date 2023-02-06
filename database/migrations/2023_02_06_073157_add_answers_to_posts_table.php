@@ -14,7 +14,7 @@ class AddAnswersToPostsTable extends Migration
     public function up()
     {
         Schema::table('posts', function (Blueprint $table) {
-            $table->json('answers')->nullable();
+            $table->longText('answers')->nullable();
         });
     }
 
