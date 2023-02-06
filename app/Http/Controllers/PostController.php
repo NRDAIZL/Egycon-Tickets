@@ -466,6 +466,7 @@ class PostController extends Controller
                 $data = [
                     'name' => $request->name,
                     'event_name' => $request->event->name,
+                    'order_id' => $request->id,
                 ];
                 foreach ($data as $key => $value) {
                     $body = str_replace("{{" . $key . "}}", $value, $body);
