@@ -19,7 +19,9 @@ Egycon Tickets
         <tr>
           <td class="border-r-2 text-2xl border-white">{{ $type->name }}</td>
           <td class="border-r-2 text-2xl border-white text-center">{{ $type->person }}</td>
-          <td class="border-r-2 text-2xl border-white text-center">{{ $type->event_days()->count() }}</td>
+          <td class="border-r-2 text-2xl border-white text-center">{{ 
+          $type->scan_type == "once_per_day" ? $type->event_days()->count() : 1
+          }}</td>
           <td class="border-r-2 text-2xl border-white">{{ $type->price }}</td>
           <td class="border-white"><input type="number" data-price="{{ $type->price }}" data-quantity="0" value="0"  minlength="0" max="10" min="0" maxlength="2" class="quantity w-16 text-black text-left" name="quantity[]"></td>
         </tr>
