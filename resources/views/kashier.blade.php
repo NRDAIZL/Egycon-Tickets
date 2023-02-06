@@ -1,3 +1,4 @@
+
 @extends('layouts.form')
 @section('title')
 Egycon Tickets
@@ -27,12 +28,12 @@ Egycon Tickets
     </tbody>
   </table>
       @php
-        function generateKashierOrderHash($order){
-            $mid = env('KASHIER_MERCHANT_ID'); //your merchant id
+        function generateKashierOrderHash($order,$event_payment_method){
+            $mid = $event_payment_method->account_name; //your merchant id
             $amount = $order->amount; //eg: 100
             $currency = $order->currency; //eg: "EGP"
             $orderId = $order->merchantOrderId; //eg: 99, your system order ID
-            $secret = env('KASHIER_ACCOUNT_KEY');
+            $secret = $event_payment_method->account_number;
             $path = "/?payment=".$mid.".".$orderId.".".$amount.".".$currency;
             $hash = hash_hmac( 'sha256' , $path , $secret ,false);
             return $hash;
@@ -41,7 +42,7 @@ Egycon Tickets
         $order->amount = $data->amount;
         $order->currency = $data->currency;
         $order->merchantOrderId = $data->order_reference_id;
-        $hash = generateKashierOrderHash($order);
+        $hash = generateKashierOrderHash($order,$event_payment_method);
       @endphp
      <script
   id="kashier-iFrame"
@@ -50,7 +51,7 @@ Egycon Tickets
   data-hash="{{ $hash }}"
   data-currency="{{ $order->currency }}"
   data-orderId="{{ $order->merchantOrderId }}"
-  data-merchantId="MID-16109-918"
+  data-merchantId="{{ $event_payment_method->account_name }}"
   data-merchantRedirect="{{ route('payment-success',['x_event_id'=>$data->event_id]) }}"
   data-mode="test"
   data-metaData='{{ 

@@ -63,6 +63,10 @@ function data() {
     toggleGenerateMenu() {
       this.isGenerateMenuOpen = !this.isGenerateMenuOpen
     },
+    isEventSettingsMenuOpen: false,
+    toggleEventSettingsMenu() {
+      this.isEventSettingsMenuOpen = !this.isEventSettingsMenuOpen
+    },
     // Modal
     isModalOpen: false,
     trapCleanup: null,

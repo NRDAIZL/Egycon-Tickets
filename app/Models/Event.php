@@ -102,4 +102,14 @@ class Event extends Model
     {
         return $this->hasMany(UserInvitation::class);
     }
+
+    public function payment_methods()
+    {
+        return $this->hasMany(EventPaymentMethod::class);
+    }
+
+    public function questions()
+    {
+        return $this->hasMany(EventQuestion::class);
+    }
 }

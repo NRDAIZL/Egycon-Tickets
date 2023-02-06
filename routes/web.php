@@ -4,7 +4,10 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiscountCodeController;
+use App\Http\Controllers\EmailTemplateController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\EventQuestionController;
+use App\Http\Controllers\PaymentMethodController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\QRCodeTicketController;
@@ -53,7 +56,18 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
             Route::post('/event_days', [EventController::class, 'store_event_days']);   
             Route::get('/theme', [EventController::class, 'edit_theme'])->name('theme');
             Route::post('/theme', [EventController::class, 'store_theme']);
+            Route::get('/templates', [EmailTemplateController::class, 'view'])->name('templates');
+            Route::get('/template', [EmailTemplateController::class, 'index'])->name('template');
+            Route::get('/template/{type}', [EmailTemplateController::class, 'edit'])->name('template.edit');
+            Route::post('/template', [EmailTemplateController::class, 'store'])->name('template.store');
+
+            Route::get('/questions', [EventQuestionController::class, 'index'])->name('questions');
+            Route::get('/questions/add', [EventQuestionController::class, 'add'])->name('questions.add');
+            Route::post('/questions/add', [EventQuestionController::class, 'store']);
+            Route::get('/questions/edit/{id}', [EventQuestionController::class, 'edit'])->name('questions.edit');
         });
+
+        Route::resource('payment_methods', PaymentMethodController::class);
         Route::get('generate_qr_codes',[QRCodeTicketController::class,'generate_qr_codes'])->name('generate_qr_codes');
         Route::post('generate_qr_codes',[QRCodeTicketController::class,'generate_qr_codes_post']);
 
@@ -80,6 +94,7 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
         Route::prefix('/tickets')->as('tickets.')->group(function () {
             Route::get('/', [TicketController::class, 'view'])->name('view');
             Route::get('/add', [TicketController::class, 'add'])->name('add');
+            Route::get('/edit/{id}', [TicketController::class, 'edit'])->name('edit');
             Route::post('/add', [TicketController::class, 'store']);
             Route::get('/trash/{id}', [TicketController::class, 'trash'])->name('delete');
             Route::get('/restore/{id}', [TicketController::class, 'restore'])->name('restore');

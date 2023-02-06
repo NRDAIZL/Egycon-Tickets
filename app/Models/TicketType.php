@@ -16,7 +16,8 @@ class TicketType extends Model
         'price',
         'person',
         'type',
-        'is_active'
+        'is_active',
+        'scan_type'
     ];
 
     protected $hidden = ['pivot'];
@@ -24,5 +25,10 @@ class TicketType extends Model
     public function event()
     {
         return $this->belongsTo(Event::class);
+    }
+
+    public function event_days()
+    {
+        return $this->belongsToMany(EventDay::class, 'ticket_type_event_day', 'ticket_type_id', 'event_day_id');
     }
 }

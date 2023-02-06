@@ -1,9 +1,9 @@
 @extends('layouts.app')
 @section('page')
-tickets
+event-settings
 @endsection
 @section('title')
-Tickets
+Questions
 @endsection
 @section('content')
         <main class="h-full pb-16 overflow-y-auto">
@@ -13,10 +13,10 @@ Tickets
             <h2
               class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"
             >
-              Tickets
+              Questions
             </h2>
-            <a href="{{ route('admin.tickets.add',$event_id) }}"><button class="bg-purple-600 text-white py-2 px-8 rounded-md">
-                Add Ticket Type
+            <a href="{{ route('admin.event_settings.questions.add',$event_id) }}"><button class="bg-purple-600 text-white py-2 px-8 rounded-md">
+                Add Question
             </button></a>
               </div>
            
@@ -27,51 +27,41 @@ Tickets
                     <tr
                       class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800"
                     >
-                      <th class="px-4 py-3">Ticket Type</th>
-                      <th class="px-4 py-3">Persons</th>
-                      <th class="px-4 py-3">Price</th>
+                      <th class="px-4 py-3">Question</th>
+                      <th class="px-4 py-3">Type</th>
+                      <th class="px-4 py-3">Options</th>
                       <th class="px-4 py-3">Actions</th>
                     </tr>
                   </thead>
                   <tbody
                     class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800"
                   >
-                    @foreach ($ticket_types as $ticket_type)
+                    @foreach ($questions as $question)
                         
                     <tr class="text-gray-700 dark:text-gray-400">
                       <td class="px-4 py-3">
                         <div class="flex items-center text-sm">
                           <div>
-                            <p class="font-semibold">{{ $ticket_type->name }}</p>
+                            <p class="font-semibold">{{ $question->question }}</p>
                           </div>
                         </div>
                       </td>
                       <td class="px-2 py-3">
                         <div class="flex items-center text-sm">
                           <div>
-                            <p class="font-semibold">{{ $ticket_type->person }}</p>
+                            <p class="font-semibold">{{ $question->type }}</p>
                           </div>
                         </div>
                       </td>
                       <td class="px-2 py-3">
                         <div class="flex items-center text-sm">
                           <div>
-                            <p class="font-semibold">{{ $ticket_type->price }} EGP</p>
+                            <p class="font-semibold">{{ $question->options??"N/A" }}</p>
                           </div>
                         </div>
                       </td>
                       <td class="px-4 py-3">
-                        @if($ticket_type->trashed())
-                        <a href="{{ route('admin.tickets.restore', ['id'=>$ticket_type->id,'event_id'=>$event_id]) }}"><button class="bg-green-500 text-white py-2 px-8 rounded-md">
-                            Restore
-                        </button></a>
-                        @else
-                        <a href="{{ route('admin.tickets.delete', ['id'=>$ticket_type->id,'event_id'=>$event_id]) }}">
-                          <button class="bg-red-600 text-white py-2 px-8 rounded-md">
-                            Archive
-                        </button></a>
-                        @endif
-                        <a href="{{ route('admin.tickets.edit', ['id'=>$ticket_type->id,'event_id'=>$event_id]) }}">
+                        <a href="#">
                           <button class="bg-transparent hover:bg-neutral-200 transition-colors text-green-500 py-2 px-4 rounded-md">
                             <i class="las la-pen text-xl"></i>
                         </button></a>
@@ -82,9 +72,7 @@ Tickets
                   </tbody>
                 </table>
               </div>
-            <div class="mt-4">
-             {{$ticket_types->links('pagination::tailwind')}}
-            </div>
+           
           </div>
         </main>
 

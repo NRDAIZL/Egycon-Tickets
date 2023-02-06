@@ -5,14 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class EventDay extends Model
+class EventQuestion extends Model
 {
     use HasFactory;
+
     protected $fillable = [
+        'question',
+        'type',
         'event_id',
-        'date',
-        'start_time',
-        'end_time'
+        'options',
     ];
 
     public function event()
@@ -20,8 +21,15 @@ class EventDay extends Model
         return $this->belongsTo(Event::class);
     }
 
-    public function ticket_types()
+    public function getOptionsAttribute($value)
     {
-        return $this->belongsToMany(TicketType::class, 'ticket_type_event_day', 'event_day_id', 'ticket_type_id');
+        return json_decode($value);
     }
+
+    public function setOptionsAttribute($value)
+    {
+        $this->attributes['options'] = json_encode($value);
+    }
+
+    
 }

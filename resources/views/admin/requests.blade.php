@@ -37,6 +37,7 @@ Requests
                       <th class="px-4 py-3">Status</th>
                       <th class="px-4 py-3">Date</th>
                       <th class="px-4 py-3">Actions</th>
+                      
                     </tr>
                   </thead>
                   <tbody
@@ -177,7 +178,7 @@ Requests
                             data-content="By continuing, you ensure that this request is completely accepted and cannot be undone. An email will be sent to them confirming their request and providing a QR Code image to be able to enter the event!"
                             data-action="{{ route('admin.accept',['id'=>$request->id,'event_id'=>$event_id]) }}"
                             @endif
-                            class="flex items-center group disabled:hover:bg-inherit disabled:cursor-not-allowed  hover:bg-gray-300 dark:hover:bg-gray-600 justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400 focus:outline-none focus:shadow-outline-gray"
+                            class="flex items-center group disabled:hover:bg-inherit disabled:cursor-not-allowed  hover:bg-gray-300 dark:hover:bg-gray-600 justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400  focus:shadow-outline-gray"
                             aria-label="Accept"
                           >
                             <i class="las la-check text-xl group-disabled:text-gray-500 text-green-500"></i>
@@ -191,7 +192,7 @@ Requests
                             data-content="By continuing, you ensure that this request is completely rejected and cannot be undone. An email will be sent to them informing them with the status of their request!"
                             data-action="{{ route('admin.reject',['id'=>$request->id,'event_id'=>$event_id]) }}"
                             @endif
-                            class="flex items-center group disabled:hover:bg-inherit disabled:cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600 justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400 focus:outline-none focus:shadow-outline-gray"
+                            class="flex items-center group disabled:hover:bg-inherit disabled:cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600 justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400  focus:shadow-outline-gray"
                             aria-label="Reject"
                           >
                             <i class="las la-times text-xl group-disabled:text-gray-500 text-red-500"></i>
@@ -205,7 +206,7 @@ Requests
                             data-content="By continuing, you ensure that this request is completely DELETED and cannot be undone."
                             data-action="{{ route('admin.requests.delete',['id'=>$request->id,'event_id'=>$event_id]) }}"
                             @endif
-                            class="flex items-center group disabled:hover:bg-inherit disabled:cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600 justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400 focus:outline-none focus:shadow-outline-gray"
+                            class="flex items-center group disabled:hover:bg-inherit disabled:cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600 justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400  focus:shadow-outline-gray"
                             aria-label="Reject"
                           >
                             <i class="las la-trash-alt text-xl group-disabled:text-gray-500 text-red-500"></i>
