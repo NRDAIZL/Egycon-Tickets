@@ -73,7 +73,7 @@ Egycon Tickets
         </label> --}}
       </div>
   </div>
-  @if(count($vodafone_cash) > 0)
+  @if(count($vodafone_cash ?? []) > 0)
   <div id='vodafone-cash-instructions' class="hidden">
     <div class="flex items-center my-4">
     <h1 class="text-2xl mr-2">3) Transfer the total amount to</h1>
