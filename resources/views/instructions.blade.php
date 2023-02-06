@@ -100,10 +100,12 @@ Egycon Tickets
   @endif
   <br>
   <div class="text-center">
-  <button type='submit' class="text-center mx-auto text-xl bg-green-500 mt-4 py-2 px-16 text-black font-bold   hover:bg-green-400 border-4 border-black">
+  <button type='submit' class="text-center w-64 mx-2 text-xl bg-green-500 mt-4 py-2 text-black font-bold   hover:bg-green-400 border-4 border-black">
   Continue
   </button>
-  </div>
+    <button type='button' disabled class="text-center w-64 mx-2 text-xl bg-green-500 hover:bg-green-400 mt-4 py-2 text-black font-bold border-4 border-black opacity-50">
+      I have a code
+    </button>
  
  </div>
 @endsection
