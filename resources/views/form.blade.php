@@ -54,7 +54,7 @@ Egycon Tickets
             $options = explode(",",$question->options);
           @endphp
           @foreach ($options as $option)
-            <input required name='question_{{ $question->id }}' value="{{ $option }}" type="radio"> {{ $option }}
+            <input required name='question_{{ $question->id }}' value="{{ $option }}" type="radio"> <span class="text-white"> {{ $option }} </span>
           @endforeach
         @elseif($question->type == "checkbox")
           @php
