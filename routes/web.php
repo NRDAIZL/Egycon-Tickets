@@ -126,7 +126,10 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
 });
 
 Route::get('/{x_event_id}', [PostController::class, 'instructions'])->name('instructions');
-Route::post('/{x_event_id}', [PostController::class, 'instructions_store']);
+Route::post( '/{x_event_id}', [PostController::class, 'instructions_store']);
+
+Route::get('/{slug}', [PostController::class, 'instructions'])->name('instructions.slug');
+Route::post( '/{slug}', [PostController::class, 'instructions_store']);
 
 Route::get('/payment_test',[PostController::class, 'online_payment'])->name('payment_test');
 Route::get('verify-payment',[PostController::class, 'verify_payment'])->name('verify-payment');

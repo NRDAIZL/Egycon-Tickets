@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use App\Models\TicketType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class EventController extends Controller
 {
@@ -34,6 +35,7 @@ class EventController extends Controller
             'registration_start_time' => 'required',
             'registration_end_time' => 'required',
         ]);
+        $slug = Str::slug($request->name);
         // validate registration start and end time
         $registration_start = $request->registration_start . ' ' . $request->registration_start_time;
         $registration_end = $request->registration_end . ' ' . $request->registration_end_time;
@@ -58,6 +60,7 @@ class EventController extends Controller
                 'banner' => $banner ?? $event->banner,
                 'registration_start' => $registration_start,
                 'registration_end' => $registration_end,
+                'slug' => $slug ?? $event->slug,
             ]);
             return redirect()->route('admin.events.view');
         }
@@ -70,6 +73,7 @@ class EventController extends Controller
             'banner' => $banner ?? null,
             'registration_start' => $registration_start,
             'registration_end' => $registration_end,
+            'slug' => $slug,
         ]);
 
         return redirect()->route('admin.event_settings.event_days',['event_id'=>$event->id]);

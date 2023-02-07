@@ -44,8 +44,19 @@ class PostController extends Controller
     }
 
     public function instructions(Request $request, $x_event_id){
-        // check if time is between registration start and end time
-        $event = Event::findOrFail($x_event_id);
+        // check if $x_event_id is slug or id
+        if(is_numeric($x_event_id)){
+            $event = Event::findOrFail($x_event_id);
+            if($event->slug != null)
+                return redirect()->route('instructions',['x_event_id'=>$event->slug]);
+        }else{
+            $event = Event::where('slug',$x_event_id)->first();
+            if (!$event) {
+                return abort(404);
+            }
+            $x_event_id = $event->id;
+        }
+
         // get event theme
         $theme = $event->themes()->where('is_active',1)->first();
         $ticket_types = $event->ticket_types()->where('is_active',1)->get();
@@ -95,6 +106,16 @@ class PostController extends Controller
 
     public function instructions_store(Request $request, $x_event_id)
     {
+        // check if $x_event_id is slug or id
+        if (is_numeric($x_event_id)) {
+            $event = Event::findOrFail($x_event_id);
+        } else {
+            $event = Event::where('slug', $x_event_id)->first();
+            if(!$event){
+                return abort(404);
+            }
+        }
+
         if($request->has('name')){
             return $this->store($request, $x_event_id);
         }
