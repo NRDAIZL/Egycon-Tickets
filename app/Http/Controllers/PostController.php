@@ -111,9 +111,10 @@ class PostController extends Controller
             $event = Event::findOrFail($x_event_id);
         } else {
             $event = Event::where('slug', $x_event_id)->first();
-            if(!$event){
+            if (!$event) {
                 return abort(404);
             }
+            $x_event_id = $event->id;
         }
 
         if($request->has('name')){
