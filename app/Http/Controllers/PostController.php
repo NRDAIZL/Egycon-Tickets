@@ -340,7 +340,7 @@ class PostController extends Controller
             return view('kashier', ['data' =>$data, 'theme' => $theme, 'event' => $event, 'event_payment_method' => $event_payment_method]);
         }
 
-        return view('thank_you', ['status_success' => 'Thank you for registering at Egycon. An email will be sent to you once your request is reviewed.', 'total' => $request->total, 'quantity' => $request->quantity, 'theme' => $theme, 'event' => $event]);
+        return view('thank_you', ['status_success' => 'Thank you for registering at EGYcon. An email will be sent to you once your request is reviewed.', 'total' => $request->total, 'quantity' => $request->quantity, 'theme' => $theme, 'event' => $event]);
     }
     private function send_email($ticket,$request, $email_template = null){
         if(str_contains(strtolower($ticket->ticket_type->type),'noticket')){
@@ -678,7 +678,7 @@ class PostController extends Controller
         if($response['process_data']['data']['status'] == 'SUCCESS'){
             $post = Post::where('external_service_provider_order_id',$response['payment_id'])->first();
             $this->accept(null,$post->id,true);
-            return view('thank_you', ['status_success' => 'Thank you for registering at Egycon. An email will be sent to you with your ticket(s)']);
+            return view('thank_you', ['status_success' => 'Thank you for registering at EGYcon. An email will be sent to you with your ticket(s)']);
         }else{
             return view('thank_you', ['status_error' => 'There was an error processing your payment. Please try again later.']);
         }
