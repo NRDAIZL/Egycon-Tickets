@@ -80,8 +80,8 @@
   Phone/WhatsApp: <a href="tel:+201017595077" class="text-white">+201017595077</a> | <a href="tel:+201027927479" class="text-white">+201027927479</a>
   </p>
   <div class="mt-4">
-      <a target="_blank" href="facebook.com/egycon.official" class=" text-white"><i class="lab la-facebook text-4xl"></i></a>
-      <a target="_blank" href="instagram.com/egycon.official" class=" text-white"><i class="lab la-instagram text-4xl"></i></a>
+      <a target="_blank" href="https://www.facebook.com/egycon.official" class=" text-white"><i class="lab la-facebook text-4xl"></i></a>
+      <a target="_blank" href="https://www.instagram.com/egycon.official" class=" text-white"><i class="lab la-instagram text-4xl"></i></a>
   </div>
 </div>
 </div>
