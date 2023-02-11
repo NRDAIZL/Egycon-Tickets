@@ -57,9 +57,12 @@
             <td class="text-2xl ">Total Price: </td>
             <td class="text-2xl font-bold">
                 @php
-                    $prices = $post->ticket->pluck('ticket_type')->pluck('price');
+                    if($post->total_price == null)
+                    $price = $post->ticket->pluck('ticket_type')->pluck('price')->sum();
+                    else
+                    $price = $post->total_price;
                 @endphp
-                {{ $prices->sum() }}
+                {{ $price }}
             </td>
         </tr>
     </table>

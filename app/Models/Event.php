@@ -112,4 +112,9 @@ class Event extends Model
     {
         return $this->hasMany(EventQuestion::class);
     }
+
+    public function promo_codes()
+    {
+        return $this->hasMany(PromoCode::class);
+    }
 }

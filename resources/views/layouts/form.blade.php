@@ -54,13 +54,13 @@
     
 <form method="POST" class="w-full"  enctype="multipart/form-data">
     <div class="py-4 px-4 md:px-8 lg:px-16 xl:px-32">
-         @if($errors->any())
-    <div class="alert alert-danger">
-      @foreach ($errors->all() as $input_error)
-        {!! $input_error !!}<br>
-      @endforeach 
-    </div>
-  @endif
+    @if($errors->any())
+      <div class="alert alert-danger">
+        @foreach ($errors->all() as $input_error)
+          {!! $input_error !!}<br>
+        @endforeach 
+      </div>
+    @endif
   @if(session('status-success'))
     <div class="alert alert-success">
         {{ session('status-success') }}

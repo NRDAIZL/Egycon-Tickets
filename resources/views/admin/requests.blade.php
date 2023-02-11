@@ -114,6 +114,10 @@ Requests
                           }
                           @endphp
                             {!! implode(',',$tickets) !!}
+                            @if($request->promo_code_id)
+                            <br>
+                            <span class="text-xs text-gray-500">Promo Code: {{ $request->promo_code->code }}</span>
+                            @endif
                         </a>
                       </td>
                       <td class="px-4 py-3 text-xs">

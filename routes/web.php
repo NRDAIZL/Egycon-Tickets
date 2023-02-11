@@ -10,6 +10,7 @@ use App\Http\Controllers\EventQuestionController;
 use App\Http\Controllers\PaymentMethodController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\PromoCodeController;
 use App\Http\Controllers\QRCodeTicketController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\UserController;
@@ -50,6 +51,13 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
             Route::get('/', [EventController::class, 'index'])->name('view');
             Route::get('/add/{id?}', [EventController::class, 'add'])->name('add');
             Route::post('/add/{id?}', [EventController::class, 'store']);
+        });
+        Route::prefix('/promo_codes')->as('promo_codes.')->group(function(){
+            Route::get('/',[PromoCodeController::class,'index'])->name('view');
+            Route::get('/add',[PromoCodeController::class,'create'])->name('add');
+            Route::post('/add',[PromoCodeController::class,'store']);
+            Route::get('/edit/{id}',[PromoCodeController::class,'edit'])->name('edit');
+            Route::get('/delete/{id}',[PromoCodeController::class,'destroy'])->name('delete');
         });
         Route::prefix('/event_settings')->as('event_settings.')->group(function(){
             Route::get('/event_days', [EventController::class, 'edit_event_days'])->name('event_days');
@@ -127,9 +135,8 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
 
 Route::get('/{x_event_id}', [PostController::class, 'instructions'])->name('instructions');
 Route::post( '/{x_event_id}', [PostController::class, 'instructions_store']);
-
-Route::get('/{slug}', [PostController::class, 'instructions'])->name('instructions.slug');
-Route::post( '/{slug}', [PostController::class, 'instructions_store']);
+Route::get('/{x_event_id}/code', [ PostController::class, 'instructions_code'])->name('promo_code');
+Route::post('/{x_event_id}/code', [PostController::class, 'instructions_code_store']);
 
 Route::get('/payment_test',[PostController::class, 'online_payment'])->name('payment_test');
 Route::get('verify-payment',[PostController::class, 'verify_payment'])->name('verify-payment');

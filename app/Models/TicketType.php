@@ -31,4 +31,9 @@ class TicketType extends Model
     {
         return $this->belongsToMany(EventDay::class, 'ticket_type_event_day', 'ticket_type_id', 'event_day_id');
     }
+
+    public function promoCodes()
+    {
+        return $this->hasMany(PromoCode::class);
+    }
 }

@@ -8,12 +8,23 @@ Egycon Tickets
   @php
     $i=0;
   @endphp
-  @foreach ($ticket_types as $type)
+
+  @isset($code)
+    <input type="hidden" name="promo_code" value="{{ $code->code }}">
+    <input type="hidden" name="ticket_type_id" value="{{ $code->ticket_type->id }}">
+    <div class="border border-white py-2 px-8 mb-2 text-white">
+      <p>Discount: {{ $code->discount }}%</p>
+      <p>{{ $code->ticket_type->name }}: {{ $code->ticket_type->price }}EGP</p>
+      <p class="font-bold">Total Price: {{ $code->ticket_type->price -  $code->ticket_type->price * $code->discount / 100 }} EGP</p>
+    </div>
+  @else
+    @foreach ($ticket_types as $type)
       <input type="hidden" name="quantity[]" value="{{ $quantity[$i] }}">
       @php
         $i++;
       @endphp
-  @endforeach
+    @endforeach
+  @endisset
   <p class="text-white">Payment Method:
     @if ($payment_method == 'vodafone_cash' || old('payment_method') == 'vodafone_cash' )
       Vodafone Cash
