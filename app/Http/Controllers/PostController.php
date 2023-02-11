@@ -357,7 +357,7 @@ class PostController extends Controller
             $client = new PostmarkClient(env("POSTMARK_TOKEN"));
             $data = [
                 "name" => explode(' ', $request->name)[0],
-                "ticket_type" => $ticket->ticket_type->name . " Ticket - " . $ticket->ticket_type->price,
+                "ticket_type" => $ticket->ticket_type->name,
                 "order_id" => $request->id,
                 // "date"=>date('Y/m/d'),
                 
