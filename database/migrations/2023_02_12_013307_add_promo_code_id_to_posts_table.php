@@ -14,7 +14,7 @@ class AddPromoCodeIdToPostsTable extends Migration
     public function up()
     {
         Schema::table('posts', function (Blueprint $table) {
-            $table->foreignId('promo_code_id')->nullable()->constrained('promo_codes')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreignId('promo_code_id')->nullable()->constrained('promo_codes')->onDelete('restrict')->onUpdate('restrict');
         });
     }
 

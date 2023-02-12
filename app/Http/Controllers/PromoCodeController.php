@@ -29,7 +29,7 @@ class PromoCodeController extends Controller
      */
     public function index($event_id)
     {
-        $promo_codes = auth()->user()->events()->where('event_id',$event_id)->first()->promo_codes()->paginate(15);
+        $promo_codes = auth()->user()->events()->where('event_id',$event_id)->first()->promo_codes()->with('ticket_type')->paginate(15);
         return view('admin.promo_codes.index',['promo_codes'=>$promo_codes]);
     }
 
@@ -127,7 +127,12 @@ class PromoCodeController extends Controller
     public function destroy($event_id, $id)
     {
         $promo_code = auth()->user()->events()->where('event_id', $event_id)->first()->promo_codes()->where('id',$id)->first();
-        $promo_code->delete();
+        try{
+            $promo_code->delete();
+        }
+        catch (\Exception $e){
+            return redirect()->route('admin.promo_codes.view',['event_id'=>$event_id])->with('error','Promo code cannot be deleted after it has been used!');
+        }
         return redirect()->route('admin.promo_codes.view',['event_id'=>$event_id])->with('success','Promo code deleted successfully!');
     }
 

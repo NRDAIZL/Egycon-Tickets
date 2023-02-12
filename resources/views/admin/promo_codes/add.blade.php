@@ -1,7 +1,7 @@
 
 @extends('layouts.app')
 @section('page')
-promo_codes
+promo-codes
 @endsection
 @section('title')
 {{ isset($promo_code)?"Edit":"Add" }} Promo Code
