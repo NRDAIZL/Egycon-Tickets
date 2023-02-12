@@ -20,9 +20,14 @@ Promo Codes
               <a href="{{ route('admin.promo_codes.export',$event_id) }}"><button class="mx-8 py-1 px-4 rounded-md bg-purple-500 hover:bg-purple-400 text-white"> <i class="las la-download"></i> Export</button></a>
 
             </h2>
+            <div>
+            <a href="{{ route('admin.promo_codes.generate',$event_id) }}"><button class="bg-purple-600 text-white py-2 px-8 rounded-md">
+                Generate Promo Codes
+            </button></a>
             <a href="{{ route('admin.promo_codes.add',$event_id) }}"><button class="bg-purple-600 text-white py-2 px-8 rounded-md">
                 Add Promo Code
             </button></a>
+            </div>
               </div>
            
             <div class="w-full overflow-hidden rounded-lg shadow-xs">

@@ -59,7 +59,7 @@ promo_codes
                     <option value="">Select Ticket Type</option>
                     @foreach ($ticket_types as $type)
                     <option
-                    @if(old('type')??@$promo_code->ticket_type_id??"" == $type->id) selected
+                    @if(old('type')??@$promo_code->ticket_type_id == $type->id) selected
                     @endif
                     value="{{ $type->id }}"
                     data-price="{{ $type->price }}"
