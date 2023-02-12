@@ -521,7 +521,7 @@ class PostController extends Controller
         if(!$through_payment){
             $user_events = auth()->user()->events()->pluck('event_id')->toArray();
             // check if post event is in user events
-            if (!in_array($post->event_id, $user_events)) {
+            if (!in_array($post->event_id, $user_events) || $event_id != $post->event_id) {
                 return redirect()->back()->with(["error" => "You are not allowed to view this page!"]);
             }
         }
@@ -614,13 +614,13 @@ class PostController extends Controller
             // was unreachable or times out.
         }
     }
-    public function reject($event_id=null,$id, $through_payment = false)
+    public function reject($event_id,$id, $through_payment = false)
     {
         $post = Post::with('ticket.ticket_type','event')->findOrFail($id);
         if (!$through_payment) {
             $user_events = auth()->user()->events()->pluck('event_id')->toArray();
             // check if post event is in user events
-            if (!in_array($post->event_id, $user_events)) {
+            if (!in_array($post->event_id, $user_events) || $event_id != $post->event_id) {
                 return redirect()->back()->with(["error" => "You are not allowed to view this page!"]);
             }
         }

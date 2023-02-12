@@ -14,6 +14,8 @@ Requests
                   <input name="q" placeholder="Search phone, email, order id" type="text" class="w-full py-2 px-4  flex-1  dark:bg-slate-800 rounded-r-md dark:text-white border-t border-r border-b border-l-0 border-gray-800 ">
                 </div>
             </form>
+            @include('admin.includes.alerts')
+
             <h2
               class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"
             >

@@ -4,7 +4,7 @@
 promo_codes
 @endsection
 @section('title')
-{{ isset($promo_code)?"Edit":"Add" }} Promo Code
+Generate Promo Codes
 @endsection
 @section('content')
 
@@ -13,37 +13,31 @@ promo_codes
             <h2
               class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"
             >
-              {{ isset($promo_code)?"Edit":"Add" }} Promo Code
+              Generate Promo Codes
             </h2>
             
             @include('admin.includes.alerts')
 
             <!-- General elements -->
             <form method="POST" enctype="multipart/form-data"
-            action="{{ route('admin.promo_codes.add',$event_id) }}"
               class="px-4 py-3 mb-8 bg-white rounded-lg shadow-md dark:bg-gray-800"
             >
             <span class="text-red-500 text-sm">* Is required</span>
-
             @csrf
             @if($errors->any())
                 {!! implode('', $errors->all('<div class="text-red-500">:message</div>')) !!}
             @endif
-            @isset($promo_code)
-            <input type="hidden" name="id" value="{{ $promo_code->id }}">
-            @endisset
               <label class="block text-sm">
                 <span class="text-gray-700 dark:text-gray-400">
                 <i class="las la-signature text-xl"></i>
-                Code <span class="text-red-500">*</span>
+                Quantity <span class="text-red-500">*</span>
                 </span>
                 <input
-                value="{{ old('code')??@$promo_code->code??"" }}"
-                type="text"
-                name="code"
+                type="number"
+                name="quantity"
                     required
                   class="block w-full mt-1 text-sm border dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-                  placeholder="SAVE50"
+                  placeholder="50"
                 />
               </label>
               <label class="block text-sm">
@@ -59,8 +53,7 @@ promo_codes
                     <option value="">Select Ticket Type</option>
                     @foreach ($ticket_types as $type)
                     <option
-                    @if(old('type')??@$promo_code->ticket_type_id??"" == $type->id) selected
-                    @endif
+                    @if(old('type')) selected @endif
                     value="{{ $type->id }}"
                     data-price="{{ $type->price }}"
                     >
@@ -89,7 +82,7 @@ promo_codes
               <label class="block text-sm">
                 <span class="text-gray-700 dark:text-gray-400">
                 <i class="las la-users text-xl"></i>
-                Max Uses <span class="text-red-500">*</span>
+                Max Uses Per Code<span class="text-red-500">*</span>
                 </span>
                 <input
                 value="{{ old('max_uses')??@$promo_code->max_uses??"" }}"
@@ -97,7 +90,7 @@ promo_codes
                 name="max_uses"
                     required
                   class="block w-full mt-1 text-sm border dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-                  placeholder="100"
+                  placeholder="1"
                 />
               </label>
               <label class="block text-sm">
@@ -112,15 +105,13 @@ promo_codes
                 >
                     <option value="">Select Status</option>
                     <option
-                    @if(old('is_active')??@$promo_code->is_active == 1) selected
-                    @endif
+                    selected
                     value="1"
                     >
                     Yes
                     </option>
                     <option
-                    @if(old('is_active')??@$promo_code->is_active == 0) selected
-                    @endif
+                    
                     value="0"
                     >
                     No
@@ -158,7 +149,7 @@ promo_codes
                 @endisset
               </script>
               <button type="submit" class="table items-center mt-4 justify-between px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
-              {{ isset($promo_code)?"Edit":"Add" }} Promo Code
+              Generate Promo Codes
               <span class="ml-2" aria-hidden="true">
                   <i class='las la-arrow-right'></i>
               </span>

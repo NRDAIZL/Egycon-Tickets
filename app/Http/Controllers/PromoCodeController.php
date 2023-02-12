@@ -2,10 +2,26 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\PromoCodeExport;
+use App\Models\PromoCode;
+use App\Models\TicketType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PromoCodeController extends Controller
 {
+    public static function generate_random_string($length = 10)
+    {
+        $code = substr(str_shuffle("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, $length);
+        $code_exists = PromoCode::where('code', $code)->first();
+        if ($code_exists) {
+            return self::generate_random_string($length);
+        }
+        return $code;
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -113,5 +129,55 @@ class PromoCodeController extends Controller
         $promo_code = auth()->user()->events()->where('event_id', $event_id)->first()->promo_codes()->where('id',$id)->first();
         $promo_code->delete();
         return redirect()->route('admin.promo_codes.view',['event_id'=>$event_id])->with('success','Promo code deleted successfully!');
+    }
+
+    public function generate($event_id)
+    {
+        $ticket_types = auth()->user()->events()->where('event_id',$event_id)->first()->ticket_types()->get();
+        return view('admin.promo_codes.generate', ['ticket_types'=>$ticket_types]);
+    }
+
+    public function generate_store(Request $request, $event_id)
+    {
+        $request->validate([
+            'quantity' => 'required|numeric|min:1',
+            'ticket_type_id' => 'required',
+            'discount' => 'required|numeric|min:0|max:100',
+            'max_uses' => 'required|numeric|min:1',
+            'is_active' => 'required|boolean',
+        ]);
+        $event = auth()->user()->events()->where('event_id',$event_id)->first();
+        $promo_codes = [];
+        for ($i=0; $i < $request->quantity; $i++) { 
+            $promo_codes[] = [
+                'code' => self::generate_random_string(6),
+                'ticket_type_id' => $request->ticket_type_id,
+                'discount' => $request->discount,
+                'max_uses' => $request->max_uses,
+                'is_active' => $request->is_active??0,
+                'event_id' => $event_id,
+                'uses' => 0,
+            ];
+        }
+        $event->promo_codes()->insert($promo_codes);
+        $promo_codes_collections = Collection::make();
+        foreach ($promo_codes as $promo_code) {
+            $promo_codes_collections->push(PromoCode::where('code',$promo_code['code'])->first());
+        }
+        $exports = (new PromoCodeExport($event_id, $promo_codes_collections));
+        $ticket_type = TicketType::where('id',$request->ticket_type_id)->first();
+        $ticket_type_name = preg_replace('/[^A-Za-z0-9\-]/', '', $ticket_type->name);
+        $file_name = "promo_codes-{$request->quantity}-{$ticket_type_name}-".date('Y-m-d H:i:s').".xlsx";
+        return $exports->download($file_name);
+        return redirect()->route('admin.promo_codes.view',['event_id'=>$event_id])->with('success','Promo codes generated successfully!');
+    }
+
+    public function export($event_id)
+    {
+        $event = auth()->user()->events()->where('event_id',$event_id)->first();
+        $promo_codes = $event->promo_codes()->get();
+        $exports = (new PromoCodeExport($event_id, $promo_codes));
+        $file_name = "promo_codes-".date('Y-m-d H:i:s').".xlsx";
+        return $exports->download($file_name);
     }
 }

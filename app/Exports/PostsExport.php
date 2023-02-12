@@ -9,6 +9,7 @@ use Maatwebsite\Excel\Concerns\FromView;
 class PostsExport implements FromView
 {
     // constructor
+    private $event_id;
     public function __construct($event_id)
     {
         $this->event_id = $event_id;

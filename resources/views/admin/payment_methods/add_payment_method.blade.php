@@ -15,26 +15,8 @@ Add Payment Method
               Add Payment Method
             </h2>
             
-            @if(Session::has('success'))
-            <div
-              class="flex items-center justify-between px-4 p-2 mb-8 text-sm font-semibold text-green-600 bg-green-100 rounded-lg focus:outline-none focus:shadow-outline-purple"
-            >
-              <div class="flex items-center">
-                <i class="fas fa-check mr-2"></i>
-                <span>{{ Session::get('success') }}</span>
-              </div>
-            </div>
-            @endif
-            @if(Session::has('error'))
-            <div
-              class="flex items-center justify-between px-4 p-2 mb-8 text-sm font-semibold text-red-600 bg-red-100 rounded-lg focus:outline-none focus:shadow-outline-purple"
-            >
-              <div class="flex items-center">
-                <i class="fas fa-check mr-2"></i>
-                <span>{{ Session::get('error') }}</span>
-              </div>
-            </div>
-            @endif
+                        @include('admin.includes.alerts')
+
             <!-- General elements -->
             <form method="POST" enctype="multipart/form-data"
               class="px-4 py-3 mb-8 bg-white rounded-lg shadow-md dark:bg-gray-800"

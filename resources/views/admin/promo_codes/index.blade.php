@@ -8,12 +8,17 @@ Promo Codes
 @section('content')
         <main class="h-full pb-16 overflow-y-auto">
           <div class="container grid px-6 mx-auto">
+
+            @include('admin.includes.alerts')
+
               <div class="flex justify-between items-center">
 
             <h2
               class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"
             >
               Promo Codes
+              <a href="{{ route('admin.promo_codes.export',$event_id) }}"><button class="mx-8 py-1 px-4 rounded-md bg-purple-500 hover:bg-purple-400 text-white"> <i class="las la-download"></i> Export</button></a>
+
             </h2>
             <a href="{{ route('admin.promo_codes.add',$event_id) }}"><button class="bg-purple-600 text-white py-2 px-8 rounded-md">
                 Add Promo Code
