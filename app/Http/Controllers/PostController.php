@@ -657,7 +657,7 @@ class PostController extends Controller
             $ticket->delete();
         }
         $post->delete();
-        return redirect()->back()->with(["success" => "{$post->name}'s request has been rejected successfully!"]);
+        return redirect()->back()->with(["success" => "{$post->name}'s request has been deleted successfully!"]);
     }
     public function import_sheet(){
         $providers = ExternalServiceProvider::all();
