@@ -34,6 +34,7 @@ Egycon Tickets
   </p>
   <input type="hidden" name="payment_method" value="{{ old('payment_method')??$payment_method }}">
   <input type="hidden" name="total" value="{{ $total }}" >
+  <input type="hidden" name="unique_code" value="{{ uniqid() }}">
   <label class="text-center text-lg w-full my-2">
     <p class="text-white">Full Name</p>
     <input required name='name' value="{{ old('name') }}" placeholder='Name' class="w-full py-2 px-4 border border-slate-400" type='text'>

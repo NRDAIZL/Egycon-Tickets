@@ -146,6 +146,7 @@ Route::get('/payment_test',[PostController::class, 'online_payment'])->name('pay
 Route::get('verify-payment',[PostController::class, 'verify_payment'])->name('verify-payment');
 Route::get('/{x_event_id}/payment-success',[PostController::class, 'payment_success'])->name('payment-success');
 
+Route::get('/{x_event_id}/thank_you',[PostController::class, 'thank_you'])->name('thank_you');
 // Route::get('/',function(){
 //     return view('tickets_suspended');
 // });

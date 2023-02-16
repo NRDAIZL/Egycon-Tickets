@@ -268,7 +268,9 @@ class PostController extends Controller
             'payment_method'=>"required",
             'promo_code' => 'nullable|exists:promo_codes,code',
             'ticket_type_id' => 'required_with:promo_code|exists:ticket_types,id',
-       
+            'unique_code' => 'required|unique:posts,code',
+        ],[
+            'unique_code.unique' => 'You have already registered, if you have any questions please contact us.',
         ]);
         if(!$request->promo_code){
             $request->validate([
@@ -339,9 +341,7 @@ class PostController extends Controller
         if(preg_match('@[0-9]@', $post->phone_number) == 0 ){
             return redirect()->back()->with('status-failure', 'Phone number must be numbers only!');
         }
-        $unique_id = uniqid();
-       
-        $post->code = $unique_id;
+        $post->code = $request->unique_code;
         $post->save();
         if($request->promo_code){
             $promo = PromoCode::where('code', $request->promo_code)->first();
@@ -420,9 +420,16 @@ class PostController extends Controller
             }
             return view('kashier', ['data' =>$data, 'theme' => $theme, 'event' => $event, 'event_payment_method' => $event_payment_method]);
         }
-
-        return view('thank_you', ['status_success' => 'Thank you for registering at EGYcon. An email will be sent to you once your request is reviewed.', 'total' => $request->total, 'quantity' => $request->quantity, 'theme' => $theme, 'event' => $event]);
+        return redirect()->route('thank_you', ['x_event_id' => $x_event_id]);        
     }
+
+    public function thank_you($x_event_id){
+        $event = Event::findOrFail($x_event_id);
+        $theme = $event->themes()->where('is_active', 1)->first();
+
+        return view('thank_you', ['status_success' => 'Thank you for registering at EGYcon. An email will be sent to you once your request is reviewed.', 'theme' => $theme, 'event' => $event]);
+    }
+
     private function send_email($ticket,$request, $email_template = null){
         if(str_contains(strtolower($ticket->ticket_type->type),'noticket')){
             return;
