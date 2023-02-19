@@ -19,21 +19,25 @@ class ShowScansGraph extends Component
         $event = Event::find($this->event_id);
         $this->event = $event;
 
-        $posts = Post::with('ticket')->where('event_id', $this->event_id)->get();
-        // get the number of posts for each day
-        $this->data = $posts->groupBy(function ($date) {
-            return \Carbon\Carbon::parse($date->created_at)->format('Y-m-d H');
-        })->map(function ($item, $key) {
+        $PostTickets = Post::with(['ticket'=>  function ($query) {
+            return $query->where('scanned_at', '!=', null);
+        }])->where('event_id', $this->event_id)->get();
+        $PostTickets = $PostTickets->map(function ($item, $key) {
+            return $item->ticket;
+        });
+        $PostTickets = $PostTickets->filter(function ($value, $key) {
+            return $value != null && $value->contains('scanned_at', '!=', null);
+        });
+
+        // change date format to be more readable
+        $this->data = $PostTickets->groupBy(function($date) {
+            return \Carbon\Carbon::parse($date->first()->scanned_at)->format('Y-m-d H');
+        })->map(function($item, $key) {
             return $item->count();
         })->toArray();
 
-        // change date format to be more readable
-        $this->data = array_map(function ($key, $value) {
-            return [$key . ':00', $value];
-        }, array_keys($this->data), $this->data);
-
-        $this->data = array_combine(array_column($this->data, 0), array_column($this->data, 1));
-
+        // change the keys to be the dates and the values to be the number of posts
+        $this->data = array_combine(array_keys($this->data), array_values($this->data));
 
 
         $this->chart = (new LarapexChart)->lineChart()
