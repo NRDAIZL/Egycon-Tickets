@@ -4,6 +4,7 @@ namespace App\Http\Livewire;
 
 use App\Models\Event;
 use App\Models\Post;
+use App\Models\PostTicket;
 use Livewire\Component;
 use ArielMejiaDev\LarapexCharts\LarapexChart;
 
@@ -19,14 +20,11 @@ class ShowScansGraph extends Component
         $event = Event::find($this->event_id);
         $this->event = $event;
 
-        $PostTickets = Post::with(['ticket'=>  function ($query) {
-            return $query->where('scanned_at', '!=', null);
-        }])->where('event_id', $this->event_id)->get();
-        $PostTickets = $PostTickets->map(function ($item, $key) {
-            return $item->ticket;
-        });
+        $ticket_types = $event->ticket_types;
+        $PostTickets = PostTicket::whereIn('ticket_type_id', $ticket_types->pluck('id'))->where('scanned_at','!=',null)->get();
+      
         $PostTickets = $PostTickets->filter(function ($value, $key) {
-            return $value != null && $value->contains('scanned_at', '!=', null);
+            return $value != null;
         });
 
         // change date format to be more readable
