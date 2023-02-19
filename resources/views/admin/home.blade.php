@@ -15,15 +15,20 @@ Dashboard
             </h2>
             <!-- Cards -->
             <div class="text-center py-32 w-2/3 mx-auto dark:text-white">
-               <div class="w-48 h-48 text-center flex items-center justify-center mx-auto">
+               {{-- <div class="w-48 h-48 text-center flex items-center justify-center mx-auto">
                 <img src="{{ asset('logo.png') }}" class="w-full h-full object-contain" alt="">
-              </div>
+              </div> --}}
+            <div class="dark:bg-neutral-300 text-black">
+              <livewire:show-requests-graph :event_id="$event_id" />
+              <livewire:show-scans-graph :event_id="$event_id" />
+            </div>
+{{-- 
               <h1 class="text-3xl font-bold my-2 ">
                 Welcome {{ ucfirst(explode(' ',Auth::user()->name)[0]) }},
               </h1>
               <p class="text-2xl">
                 This is <span class="text-purple-700 dark:text-purple-500 font-bold">Egycon Tickets</span>, a system crafted for Egycon! <br>
-              </p>
+              </p> --}}
               {{-- <p class="text-xl my-4 ">You can change your password from the <a href="#" class="text-purple-500 underline">settings</a></p> --}}
             </div>
             <!-- New Table -->

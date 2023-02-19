@@ -6,6 +6,7 @@
     "license": "MIT",
     "require": {
         "php": "^7.3|^8.0",
+        "arielmejiadev/larapex-charts": "^5.2",
         "chillerlan/php-qrcode": "^4.3",
         "coconutcraig/laravel-postmark": "^2.11",
         "doctrine/dbal": "^3.4",
@@ -14,6 +15,7 @@
         "laravel/framework": "^8.75",
         "laravel/sanctum": "^2.15",
         "laravel/tinker": "^2.5",
+        "livewire/livewire": "^2.11",
         "maatwebsite/excel": "^3.1",
         "nafezly/payments": "^2.4",
         "spatie/laravel-permission": "^5.7",
