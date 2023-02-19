@@ -29,7 +29,7 @@ class ShowScansGraph extends Component
 
         // change date format to be more readable
         $this->data = $PostTickets->groupBy(function($date) {
-            return \Carbon\Carbon::parse($date->first()->scanned_at)->format('Y-m-d H');
+            return \Carbon\Carbon::parse($date->scanned_at)->format('Y-m-d H');
         })->map(function($item, $key) {
             return $item->count();
         })->toArray();
