@@ -34,6 +34,8 @@ class ShowScansGraph extends Component
             return $item->count();
         })->toArray();
 
+        // sort the array by the keys
+        ksort($this->data);
         // change the keys to be the dates and the values to be the number of posts
         $this->data = array_combine(array_keys($this->data), array_values($this->data));
 
