@@ -19,14 +19,19 @@ class PromoCode extends Model
         'event_id',
     ];
 
-    public function ticket_type()
+    public function ticket_types()
     {
-        return $this->belongsTo(TicketType::class);
+        return $this->belongsToMany(TicketType::class, 'promo_code_ticket_type', 'promo_code_id', 'ticket_type_id');
     }
 
     public function event()
     {
         return $this->belongsTo(Event::class);
+    }
+
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
     }
     
 }

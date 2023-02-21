@@ -31,13 +31,19 @@ Egycon Tickets
         </tr>
         @foreach ($ticket_types as $type)
           <tr>
-            <td class="border-r-2 text-2xl border-white">{{ $type->name }}</td>
-            <td class="border-r-2 text-2xl border-white text-center">{{ $type->person }}</td>
-            <td class="border-r-2 text-2xl border-white text-center">{{ 
+            @php
+              $disabled_class = "";
+              if($type->is_disabled){
+                $disabled_class = "opacity-50";
+              }
+            @endphp
+            <td class="border-r-2 text-2xl border-white {{ $disabled_class }}">{{ $type->name }}</td>
+            <td class="border-r-2 text-2xl border-white text-center {{ $disabled_class }}">{{ $type->person }}</td>
+            <td class="border-r-2 text-2xl border-white text-center {{ $disabled_class }}">{{ 
             $type->scan_type == "once_per_day" ? $type->event_days()->count() : 1
             }}</td>
-            <td class="border-r-2 text-2xl border-white">{{ $type->price }}</td>
-            <td class="border-white"><input type="number" data-price="{{ $type->price }}" data-quantity="0" value="0"  minlength="0" max="10" min="0" maxlength="2" class="quantity w-16 text-black text-left" name="quantity[]"></td>
+            <td class="border-r-2 text-2xl border-white {{ $disabled_class }}">{{ $type->price }}</td>
+            <td class="border-white  {{ $disabled_class }}"><input {{ $type->is_disabled?"disabled":"" }} type="number" data-price="{{ $type->price }}" data-quantity="0" value="0"  minlength="0" max="10" min="0" maxlength="2" class="quantity w-16 text-black text-left" name="quantity[]"></td>
           </tr>
         @endforeach
       </table>

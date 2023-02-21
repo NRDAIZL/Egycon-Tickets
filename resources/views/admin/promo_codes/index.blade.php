@@ -62,7 +62,13 @@ Promo Codes
                       <td class="px-2 py-3">
                         <div class="flex items-center text-sm">
                           <div>
-                            <p class="font-semibold">{{ $promo_code->ticket_type->name }}</p>
+                            <p class="font-semibold">
+                              @if($promo_code->ticket_types->count() > 0)
+                              {{ implode(', ',$promo_code->ticket_types()->pluck('name')->toArray()) }}
+                              @else
+                              --
+                              @endif
+                            </p>
                           </div>
                         </div>
                       </td>
@@ -83,7 +89,9 @@ Promo Codes
                       <td class="px-2 py-3">
                         <div class="flex items-center text-sm">
                           <div>
-                            <p class="font-semibold">{{ $promo_code->uses }}</p>
+                            <a class="text-xs underline" href="{{ route('admin.promo_codes.requests', ['promo_code_id'=>$promo_code->id,'event_id'=>$event_id]) }}">
+                              <p class="font-semibold">{{ $promo_code->uses }}</p>
+                            </a>
                           </div>
                         </div>
                       </td>

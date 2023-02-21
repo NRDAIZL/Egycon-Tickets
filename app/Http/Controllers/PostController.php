@@ -62,7 +62,7 @@ class PostController extends Controller
 
         // get event theme
         $theme = $event->themes()->where('is_active',1)->first();
-        $ticket_types = $event->ticket_types()->where('is_active',1)->get();
+        $ticket_types = $event->ticket_types()->where(['is_active'=>1, 'is_visible'=>1])->orderBy('is_disabled')->get();
         if($ticket_types->count() == 0 ){
             return view('tickets_suspended');
         }
@@ -109,7 +109,9 @@ class PostController extends Controller
         if(!$code){
             return redirect()->back()->with('status-failure','Invalid code');
         }
-        return $this->instructions_store($request, $x_event_id, $code);
+        $ticket_types = $code->ticket_types;
+        dd($ticket_types);
+        // return $this->instructions_store($request, $x_event_id, $code);
     }
 
     public function instructions_store(Request $request, $x_event_id, $code = null)

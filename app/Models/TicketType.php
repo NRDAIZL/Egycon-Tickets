@@ -17,7 +17,9 @@ class TicketType extends Model
         'person',
         'type',
         'is_active',
-        'scan_type'
+        'scan_type',
+        'is_disabled',
+        'is_visible',
     ];
 
     protected $hidden = ['pivot'];
@@ -34,6 +36,6 @@ class TicketType extends Model
 
     public function promoCodes()
     {
-        return $this->hasMany(PromoCode::class);
+        return $this->belongsToMany(PromoCode::class, 'promo_code_ticket_type', 'ticket_type_id', 'promo_code_id');
     }
 }

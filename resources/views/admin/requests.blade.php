@@ -3,24 +3,27 @@
 requests
 @endsection
 @section('title')
-Requests
+Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
+  
 @endsection
 @section('content')
         <main class="h-full pb-16 overflow-y-auto">
           <div class="container grid px-6 mx-auto">
+            {{-- if on promo_codes page hide search bar --}}
+            @if(!isset($promo_code)) 
             <form action="">
                 <div class="flex  my-4">
                   <button class=" w-14 rounded-l-md flex items-center justify-center dark:bg-slate-800 border-l border-t border-b border-gray-800"> <i class="las la-search text-xl text-purple-500 "></i> </button>
                   <input name="q" placeholder="Search phone, email, order id" type="text" class="w-full py-2 px-4  flex-1  dark:bg-slate-800 rounded-r-md dark:text-white border-t border-r border-b border-l-0 border-gray-800 ">
                 </div>
             </form>
+            @endif
             @include('admin.includes.alerts')
-
             <h2
               class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"
             >
-              Requests 
-              <a href="{{ route('admin.requests.export',$event_id) }}"><button class="mx-8 py-1 px-4 rounded-md bg-purple-500 hover:bg-purple-400 text-white"> <i class="las la-download"></i> Export</button></a>
+              Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
+              <a href="{{ route('admin.requests.export',$event_id) }}"><button class="mx-8 py-1 px-4 text-sm rounded-md bg-purple-500 hover:bg-purple-600 text-white"> <i class="las la-download"></i> Export All Requests</button></a>
             </h2>
            
             <div class="w-full overflow-hidden rounded-lg shadow-xs">

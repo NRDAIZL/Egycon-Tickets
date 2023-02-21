@@ -29,7 +29,7 @@ class PromoCodeController extends Controller
      */
     public function index($event_id)
     {
-        $promo_codes = auth()->user()->events()->where('event_id',$event_id)->first()->promo_codes()->with('ticket_type')->paginate(15);
+        $promo_codes = auth()->user()->events()->where('event_id',$event_id)->first()->promo_codes()->with('ticket_types')->paginate(15);
         return view('admin.promo_codes.index',['promo_codes'=>$promo_codes]);
     }
 
@@ -54,7 +54,8 @@ class PromoCodeController extends Controller
     {
         $request->validate([
             'code' => 'required',
-            'ticket_type_id' => 'required',
+            'ticket_type_id' => 'required|array',
+            'ticket_type_id.*' => 'required|exists:ticket_types,id',
             'discount' => 'required|numeric|min:0|max:100',
             'max_uses' => 'required|numeric|min:1',
             'is_active' => 'required|boolean',
@@ -64,21 +65,23 @@ class PromoCodeController extends Controller
             $promo_code = $event->promo_codes()->where('id',$request->id)->first();
             $promo_code->update([
                 'code' => $request->code,
-                'ticket_type_id' => $request->ticket_type_id,
                 'discount' => $request->discount,
                 'max_uses' => $request->max_uses,
                 'is_active' => $request->is_active??0,
             ]);
+            $promo_code->ticket_types()->sync($request->ticket_type_id);
             return redirect()->route('admin.promo_codes.view',['event_id'=>$event_id])->with('success','Promo code updated successfully!');
         }
         $event->promo_codes()->create([
             'code' => $request->code,
-            'ticket_type_id' => $request->ticket_type_id,
             'discount' => $request->discount,
             'max_uses' => $request->max_uses,
             'is_active' => $request->is_active??0,
             'uses' => 0,
         ]);
+        $promo_code = $event->promo_codes()->where('code',$request->code)->first();
+        $promo_code->ticket_types()->sync($request->ticket_type_id);
+
         return redirect()->route('admin.promo_codes.view',['event_id'=>$event_id])->with('success','Promo code added successfully!');
     }
 
@@ -184,5 +187,14 @@ class PromoCodeController extends Controller
         $exports = (new PromoCodeExport($event_id, $promo_codes));
         $file_name = "promo_codes-".date('Y-m-d H:i:s').".xlsx";
         return $exports->download($file_name);
+    }
+
+    public function show_requests_for_promo_code($event_id, $promo_code_id)
+    {
+        $promo_code = auth()->user()->events()->where('event_id', $event_id)->first()->promo_codes()->where('id',$promo_code_id)->first();
+        $requests = $promo_code->posts();
+        $requests = $requests->paginate(15);
+
+        return view('admin.requests', ['requests'=>$requests,'query'=> "", 'promo_code'=>$promo_code]);
     }
 }

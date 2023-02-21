@@ -34,6 +34,9 @@ class TicketController extends Controller
             'event_days'=>'required|array',
             'event_days.*'=>'required|numeric',
             'scan_type'=>'required|in:once,once_per_day',
+            'is_disabled'=>'required|boolean',
+            // 'is_active'=>'required|in:0,1',
+            'is_visible'=>'required|boolean',
         ]);
         // check if event day is valid for this event
         $event_days = auth()->user()->events()->where('event_id',$event_id)->first()->event_days()->whereIn('id',$request->event_days)->get();
@@ -49,6 +52,8 @@ class TicketController extends Controller
                 'type' => $request->type,
                 'is_active' => true,
                 'scan_type' => $request->scan_type,
+                'is_disabled' => $request->is_disabled,
+                'is_visible' => $request->is_visible,
             ]);
             $ticket->event_days()->sync($request->event_days);
             return redirect()->back()->with('success',"Ticket Type has been updated!");
@@ -60,6 +65,8 @@ class TicketController extends Controller
             'type' => $request->type,
             'is_active' => true,
             'scan_type' => $request->scan_type,
+            'is_disabled' => $request->is_disabled,
+            'is_visible' => $request->is_visible,
         ]);
         $ticket->event_days()->attach($request->event_days);
         

@@ -61,6 +61,7 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
             Route::get('/generate', [PromoCodeController::class, 'generate'])->name('generate');
             Route::post('/generate', [PromoCodeController::class, 'generate_store']);
             Route::get('/export', [PromoCodeController::class, 'export'])->name('export');
+            Route::get('/{promo_code_id}/requests', [PromoCodeController::class, 'show_requests_for_promo_code'])->name('requests');
 
         });
         Route::prefix('/event_settings')->as('event_settings.')->group(function(){

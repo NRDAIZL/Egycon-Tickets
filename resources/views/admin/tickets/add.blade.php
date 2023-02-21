@@ -96,7 +96,7 @@ tickets
                 </span><br>
                 <div class="px-8">
                   @foreach ($event_days as $day)
-                  <label class="py-4 block">
+                  <label class="py-4 block dark:text-white">
                     @php
                       $days = @$ticket_type->event_days;
                       if($days){
@@ -121,7 +121,7 @@ tickets
                 Scan Type <span class="text-red-500">*</span>
                 </span><br>
                 <div class="px-8">
-                  <label class="py-4 block">
+                  <label class="py-4 block dark:text-white">
                     <input
                     type="radio"
                     name="scan_type"
@@ -131,7 +131,7 @@ tickets
                     />
                     Once
                   </label>
-                  <label class="py-4 block">
+                  <label class="py-4 block dark:text-white">
                     <input
                     type="radio"
                     name="scan_type"
@@ -140,6 +140,61 @@ tickets
                     value="once_per_day"
                     />
                     Once Per Day
+                  </label>
+                </div>
+              </div>
+              <div class="block text-sm">
+                <span class="text-gray-700 dark:text-gray-400">
+                Is Visible? <span class="text-red-500">*</span>
+                </span><br>
+                <div class="px-8">
+                  <label class="py-4 block dark:text-white">
+                    <input
+                    type="radio"
+                    name="is_visible"
+                    required
+                    @if(old('is_visible') == "1" || @$ticket_type->is_visible == "1") checked @endif
+                    value="1"
+                    />
+                    Yes
+                  </label>
+                  <label class="py-4 block dark:text-white">
+                    <input
+                    type="radio"
+                    name="is_visible"
+                    required
+                    @if(old('is_visible') == "0" || @$ticket_type->is_visible == "0") checked @endif
+                    value="0"
+                    />
+                    No
+                  </label>
+                </div>
+              </div>
+              <div class="block text-sm">
+                <span class="text-gray-700 dark:text-gray-400">
+                Is Disabled?   <span class="text-red-500">*</span>
+                </span><br>
+                <span class="text-sm text-gray-700 dark:text-gray-400">Note: disabling a ticket won't hide it from the payment form unless you set it to not visible</span><br>
+                <div class="px-8">
+                  <label class="py-4 block dark:text-white">
+                    <input
+                    type="radio"
+                    name="is_disabled"
+                    required
+                    @if(old('is_disabled') == "1" || @$ticket_type->is_disabled == "1") checked @endif
+                    value="1"
+                    />
+                    Yes
+                  </label>
+                  <label class="py-4 block dark:text-white">
+                    <input
+                    type="radio"
+                    name="is_disabled"
+                    required
+                    @if(old('is_disabled') == "0" || @$ticket_type->is_disabled == "0") checked @endif
+                    value="0"
+                    />
+                    No
                   </label>
                 </div>
               </div>

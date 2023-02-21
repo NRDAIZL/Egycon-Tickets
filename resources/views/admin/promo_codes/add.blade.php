@@ -51,23 +51,28 @@ promo-codes
                 <i class="las la-ticket-alt text-xl"></i>
                 Ticket Type <span class="text-red-500">*</span>
                 </span>
-                <select
-                name="ticket_type_id"
-                  required
-                  class="block w-full mt-1 text-sm border dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-                >
-                    <option value="">Select Ticket Type</option>
+                
                     @foreach ($ticket_types as $type)
-                    <option
-                    @if(old('type')??@$promo_code->ticket_type_id == $type->id) selected
-                    @endif
-                    value="{{ $type->id }}"
-                    data-price="{{ $type->price }}"
-                    >
-                    {{ $type->name }}
-                    </option>
+                    <label class="text-gray-700 dark:text-gray-400 block mt-1 ml-4">
+                        <input
+                        type="checkbox"
+                        name="ticket_type_id[]"
+                        @php
+                        if(isset($promo_code)){
+                            if(in_array($type->id,$promo_code->ticket_types->pluck('id')->toArray())){
+                                echo "checked";
+                            }
+                        }else if (old('ticket_type_id')) {
+                            if(in_array($type->id,old('ticket_type_id'))){
+                                echo "checked";
+                            }
+                        }
+                        @endphp
+                        value="{{ $type->id }}"
+                        >
+                        {{ $type->name }}
+                    </label>
                     @endforeach
-                </select>
               </label>
               <label class="block text-sm">
                 <span class="text-gray-700 dark:text-gray-400">
@@ -127,36 +132,36 @@ promo-codes
                     </option>
                 </select>
               </label>
-              <div>
+              <div class="hidden dark:text-white" >
                 <p>Price after discount:</p>
                 <p id="price_after_discount">0</p>
               </div>
-              <script>
-                var price = 0;
-                var discount = 0;
-                var price_after_discount = 0;
-                var ticket_type = document.querySelector('select[name="ticket_type_id"]');
-                var discount_input = document.querySelector('input[name="discount"]');
-                var price_after_discount_element = document.querySelector('#price_after_discount');
-                ticket_type.addEventListener('change',function(){
-                    calculate_discount();
-                });
-                discount_input.addEventListener('input',function(){
-                    calculate_discount();
-                });
-                discount_input.addEventListener('change',function(){
-                    calculate_discount();
-                });
-                function calculate_discount(  ){
-                    price = ticket_type.options[ticket_type.selectedIndex].dataset.price;
-                    discount = discount_input.value;
-                    price_after_discount = price - (price * discount / 100);
-                    price_after_discount_element.innerHTML = price_after_discount;
-                }
-                @isset($promo_code)
+              {{-- <script>
+                // var price = 0;
+                // var discount = 0;
+                // var price_after_discount = 0;
+                // var ticket_type = document.querySelector('select[name="ticket_type_id"]');
+                // var discount_input = document.querySelector('input[name="discount"]');
+                // var price_after_discount_element = document.querySelector('#price_after_discount');
+                // ticket_type.addEventListener('change',function(){
+                //     calculate_discount();
+                // });
+                // discount_input.addEventListener('input',function(){
+                //     calculate_discount();
+                // });
+                // discount_input.addEventListener('change',function(){
+                //     calculate_discount();
+                // });
+                // function calculate_discount(  ){
+                //     price = ticket_type.options[ticket_type.selectedIndex].dataset.price;
+                //     discount = discount_input.value;
+                //     price_after_discount = price - (price * discount / 100);
+                //     price_after_discount_element.innerHTML = price_after_discount;
+                // }
+               @isset($promo_code)
                 calculate_discount();
                 @endisset
-              </script>
+              </script> --}}
               <button type="submit" class="table items-center mt-4 justify-between px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
               {{ isset($promo_code)?"Edit":"Add" }} Promo Code
               <span class="ml-2" aria-hidden="true">
