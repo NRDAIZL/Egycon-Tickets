@@ -306,6 +306,8 @@ class PostController extends Controller
                 $post->delete();
                 return redirect()->back()->with(["error" => "An error occurred while processing your request. Please try again later. Error code: 1", 'theme' => $theme, 'event' => $event]);
             }
+        } else if($ticket->type == "noticket"){
+            $post_ticket->code = null;
         } else {
             $post->delete();
             return redirect()->back()->with(["error" => "An error occurred while processing your request. Please try again later. Error code: 2", 'theme' => $theme, 'event' => $event]);
