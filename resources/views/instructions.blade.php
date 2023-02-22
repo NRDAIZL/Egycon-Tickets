@@ -5,13 +5,14 @@ Egycon Tickets
 @section('content')
 @csrf
 <div class="text-left text-white">
-  @if($errors->any())
-      <div class="text-white bg-red-300 py-8 px-16">
-        @foreach ($errors->all() as $input_error)
-          {!! $input_error !!}<br>
-        @endforeach 
-      </div>
-    @endif
+ 
+    @isset($code)
+      <p class="text-white">Promo Code: {{ $code->code }}</p>
+      <input type="hidden" name="promo_code" value="{{ $code->code }}">
+    @endisset
+    @isset($discount)
+      <p class="text-white">Discount: {{ $discount }}%</p>
+    @endisset
   @if($i_have_a_code)
     <h1 class="text-2xl mb-8">1) Enter Discount Code.</h1>
     <label class="text-center text-lg w-full my-2">
@@ -67,6 +68,8 @@ Egycon Tickets
       
     </div>
   @endif
+  @isset($payment_methods)
+    
   <div class="mt-4">
       <h1 class="text-2xl mx-2">2) Choose your payment method.</h1>
       <div class="flex">
@@ -102,6 +105,7 @@ Egycon Tickets
         </label> --}}
       </div>
   </div>
+  @endisset
   @if(count($vodafone_cash ?? []) > 0)
   <div id='vodafone-cash-instructions' class="hidden">
     <div class="flex items-center my-4">

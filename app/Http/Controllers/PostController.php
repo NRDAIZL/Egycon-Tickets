@@ -74,11 +74,15 @@ class PostController extends Controller
         $data['ticket_types'] = $ticket_types;
         $data['theme'] = $theme;
         $data['event'] = $event;
-        $payment_methods = EventPaymentMethod::where('event_id',$x_event_id)->where('is_active',true)->get();
+        if($i_have_a_code){
+            $data['i_have_a_code'] = true;
+            return view('instructions', $data);
+        }
+        $payment_methods = EventPaymentMethod::where('event_id', $x_event_id)->where('is_active', true)->get();
         $global_payment_methods = PaymentMethod::all();
-        $payment_methods = $payment_methods->map(function($payment_method) use ($global_payment_methods){
-            $global_payment_method = $global_payment_methods->where('id',$payment_method->payment_method_id)->first();
-            if($payment_method->name == null)
+        $payment_methods = $payment_methods->map(function ($payment_method) use ($global_payment_methods) {
+            $global_payment_method = $global_payment_methods->where('id', $payment_method->payment_method_id)->first();
+            if ($payment_method->name == null)
                 $payment_method->name = $global_payment_method->name;
             $payment_method->logo = $global_payment_method->logo;
             return $payment_method;
@@ -110,8 +114,53 @@ class PostController extends Controller
             return redirect()->back()->with('status-failure','Invalid code');
         }
         $ticket_types = $code->ticket_types;
-        dd($ticket_types);
+        return redirect()->route('promo_code_tickets',['x_event_id'=>$x_event_id,'code'=>$request->code]);
         // return $this->instructions_store($request, $x_event_id, $code);
+    }
+
+    public function instructions_code_show_tickets($x_event_id, $code){
+        if (is_numeric($x_event_id)) {
+            $event = Event::findOrFail($x_event_id);
+        } else {
+            $event = Event::where('slug', $x_event_id)->first();
+            if (!$event) {
+                return abort(404);
+            }
+            $x_event_id = $event->id;
+        }
+        $code = PromoCode::where('code',$code)->where('event_id',$x_event_id)->where('is_active',1)->first();
+        if(!$code){
+            return redirect()->back()->with('status-failure','Invalid code');
+        }
+        $ticket_types = $code->ticket_types;
+        $ticket_types = $ticket_types->map(function($ticket_type) use ($code){
+            $ticket_type->is_disabled = false;
+            $ticket_type->price = $ticket_type->price - ($ticket_type->price * ($code->discount/100));
+            return $ticket_type;
+        });
+        $theme = $event->themes()->where('is_active',1)->first();
+        $data = [];
+        $data['ticket_types'] = $ticket_types;
+        $data['theme'] = $theme;
+        $data['event'] = $event;
+        $payment_methods = EventPaymentMethod::where('event_id',$x_event_id)->where('is_active',true)->get();
+        $global_payment_methods = PaymentMethod::all();
+        $payment_methods = $payment_methods->map(function($payment_method) use ($global_payment_methods){
+            $global_payment_method = $global_payment_methods->where('id',$payment_method->payment_method_id)->first();
+            if($payment_method->name == null)
+                $payment_method->name = $global_payment_method->name;
+            $payment_method->logo = $global_payment_method->logo;
+            return $payment_method;
+        });
+        $data['payment_methods'] = $payment_methods;
+        $data['i_have_a_code'] = false;
+        $data['code'] = $code;
+        if($code->discount > 0)
+            $data['discount'] = $code->discount;
+        return view('instructions', $data);
+    }
+    public function instructions_code_show_tickets_store(Request $request, $x_event_id){
+        return $this->instructions_store($request, $x_event_id);
     }
 
     public function instructions_store(Request $request, $x_event_id, $code = null)
@@ -136,28 +185,31 @@ class PostController extends Controller
             return redirect()->back()->with('error', 'Please select a payment method');
         }
         $event = Event::findOrFail($x_event_id);
-        $ticket_types = $event->ticket_types;
-        if(!$code){
-            $request->validate([
-                'quantity' => 'array',
-                'quantity.*' => 'numeric|min:0|max:10',
-            ]);
-            $total = 0;
-            $i = 0;
-            foreach ($ticket_types as $ticket_type) {
-                $price = $ticket_type->price * $request->quantity[$i];
-                $total += $price;
-                $i++;
+        $ticket_types = $event->ticket_types()->where(['is_visible'=> 1, 'is_disabled'=>0])->get();
+        
+        $theme = $event->themes()->where('is_active', 1)->first();
+        $questions = $event->questions;
+        if($request->has('promo_code')){
+            $code = PromoCode::where('code',$request->promo_code)->where('event_id',$x_event_id)->where('is_active',1)->first();
+            if(!$code){
+                return redirect()->back()->with('status-failure','Invalid code');
             }
+            $ticket_types = $code->ticket_types;
         }
-        else{
-            $total = $code->ticket_type->price - $code->discount/100 * $code->ticket_type->price;
+        $request->validate([
+            'quantity' => 'array',
+            'quantity.*' => 'numeric|min:0|max:10',
+        ]);
+        $total = 0;
+        $i = 0;
+        foreach ($ticket_types as $ticket_type) {
+            $price = $ticket_type->price * $request->quantity[$i];
+            $total += $price;
+            $i++;
         }
         if ($total == 0) {
             return redirect()->back()->with('error', 'You must select at least on ticket');
         }
-        $theme = $event->themes()->where('is_active', 1)->first();
-        $questions = $event->questions;
         return view('form', ['payment_method' => $request->payment_method, 'ticket_types' => $ticket_types, 'total' => $total, 'quantity' => $request->quantity, 'theme' => $theme, 'event' => $event, 'questions' => $questions, 'code' => $code]);
     }
 
@@ -227,7 +279,7 @@ class PostController extends Controller
         // }
 
     }
-    private function generate_post_ticket(&$post, $ticket){
+    private function generate_post_ticket(&$post, $ticket, $theme, $event){
         $unique_id = $this->generate_random_string(6);
         $post_ticket = new PostTicket();
         $post_ticket->post_id = $post->id;
@@ -269,17 +321,14 @@ class PostController extends Controller
             'phone_number' => "required",
             'payment_method'=>"required",
             'promo_code' => 'nullable|exists:promo_codes,code',
-            'ticket_type_id' => 'required_with:promo_code|exists:ticket_types,id',
+            // 'ticket_type_id' => 'required_with:promo_code|exists:ticket_types,id',
             'unique_code' => 'required|unique:posts,code',
+            'quantity' => 'array|required',
+            'quantity.*' => 'numeric|min:0|max:10',
         ],[
             'unique_code.unique' => 'You have already registered, if you have any questions please contact us.',
         ]);
-        if(!$request->promo_code){
-            $request->validate([
-                'quantity' => 'array|required',
-                'quantity.*' => 'numeric|min:0|max:10',
-            ]);
-        }
+       
         // check if promo code is valid on the selected ticket type
         if ($request->promo_code) {
             $promo = PromoCode::where('code', $request->promo_code)
@@ -306,8 +355,19 @@ class PostController extends Controller
         }
         $event = Event::findOrFail($x_event_id);
         $questions  = $event->questions;
-        if (strpos(trim($request->name), ' ') === false) {
+        $ticket_types = [];
+        if($request->promo_code){
+            $promo = PromoCode::where('code', $request->promo_code)->where('is_active', 1)->where('max_uses', '>', 'used')->first();
+            if(!$promo){
+                session()->flash('status-failure', 'Promo code is not valid.');
+                session()->flashInput($request->input());
+                return redirect()->back();
+            }
+            $ticket_types = $promo->ticket_types;
+        }else{
             $ticket_types = $event->ticket_types;
+        }
+        if (strpos(trim($request->name), ' ') === false) {
             session()->flash('status-failure', 'Please enter your full name.');
             session()->flashInput($request->input());
             return view('form', ['ticket_types' => $ticket_types, 'total' => $request->total, 'quantity' => $request->quantity, 'payment_method'=>$request->payment_method, 'questions' => $questions, 'code' => $request->promo_code, 'event' => $event]);
@@ -344,38 +404,32 @@ class PostController extends Controller
             return redirect()->back()->with('status-failure', 'Phone number must be numbers only!');
         }
         $post->code = $request->unique_code;
-        $post->save();
-        if($request->promo_code){
-            $promo = PromoCode::where('code', $request->promo_code)->first();
-            $ticket = $promo->ticket_type;
-            $ticket_type = TicketType::where('event_id',$x_event_id)->first();
-            if(!$ticket_type){
-                return redirect()->back()->with('status-failure', 'Promo code is not valid for the selected ticket type.');
-            }
-            $this->generate_post_ticket($post, $ticket);
-            $post->total_price = $ticket->price - (($promo->discount/100)*$ticket->price);
-            $post->promo_code_id = $promo->id;
-            $post->save();
-            $promo->uses = $promo->uses + 1;
-            if($promo->uses == $promo->max_uses){
-                $promo->is_active = 0;
-            }
-            $promo->save();
-        }else{
-            $total_price = 0;
-            $j=0;
-            $tickets = Event::findOrFail($x_event_id)->ticket_types;
-            foreach($request->quantity as $quantity){
-                $ticket = $tickets[$j];
-                for($i = 0; $i<$quantity*$ticket->person; $i++){
-                    $this->generate_post_ticket($post, $ticket);
+        $total_price = 0;
+        $j=0;
+        $tickets = $ticket_types;
+        foreach($request->quantity as $quantity){
+            $ticket = $tickets[$j];
+            for($i = 0; $i<$quantity*$ticket->person; $i++){
+                $post->save();
+                $response = $this->generate_post_ticket($post, $ticket, $theme, $event);
+                if($response){
+                    return $response;
                 }
-                $total_price += $quantity*$ticket->price;
-                $j++;
             }
-            $post->total_price = $total_price;
-            $post->save();
+            if(isset($promo)){
+                $total_price += ($ticket->price - (($promo->discount / 100) * $ticket->price))*$quantity;
+                $post->promo_code_id = $promo->id;
+                $promo->uses = $promo->uses + $quantity;
+                if ($promo->uses == $promo->max_uses) {
+                    $promo->is_active = 0;
+                }
+            }else{
+                $total_price += $quantity * $ticket->price;
+            }
+            $j++;
         }
+        $post->total_price = $total_price;
+        $post->save();
         // OPAY
         // if($request->payment_method == "credit_card"){
         //     // calculate the total amount

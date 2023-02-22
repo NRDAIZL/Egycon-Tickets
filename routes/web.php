@@ -142,6 +142,8 @@ Route::get('/{x_event_id}', [PostController::class, 'instructions'])->name('inst
 Route::post( '/{x_event_id}', [PostController::class, 'instructions_store']);
 Route::get('/{x_event_id}/code', [ PostController::class, 'instructions_code'])->name('promo_code');
 Route::post('/{x_event_id}/code', [PostController::class, 'instructions_code_store']);
+Route::get('/{x_event_id}/code/{code}', [PostController::class, 'instructions_code_show_tickets'])->name( 'promo_code_tickets');
+Route::post('/{x_event_id}/code/{code}', [PostController::class, 'instructions_code_show_tickets_store']);
 
 Route::get('/payment_test',[PostController::class, 'online_payment'])->name('payment_test');
 Route::get('verify-payment',[PostController::class, 'verify_payment'])->name('verify-payment');
