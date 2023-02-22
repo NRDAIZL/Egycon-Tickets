@@ -14,11 +14,21 @@ Dashboard
               Dashboard
             </h2>
             <!-- Cards -->
-            <div class="text-center py-32 w-2/3 mx-auto dark:text-white">
+            <h3 class="text-xl text-gray-700 dark:text-gray-200">
+              {{ $event->name }} Insights
+            </h3>
+            <div class="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-4 gap-4 my-4 flex-wrap">
+                <livewire:cards.total-tickets :event_id="$event_id" />
+                <livewire:cards.total-requests :event_id="$event_id" />
+                <livewire:cards.accepted-requests :event_id="$event_id" />
+                <livewire:cards.successful-scans :event_id="$event_id" />
+            </div>
+            <div class="text-center py-12 w-full xl:w-2/3 mx-auto dark:text-white">
                {{-- <div class="w-48 h-48 text-center flex items-center justify-center mx-auto">
                 <img src="{{ asset('logo.png') }}" class="w-full h-full object-contain" alt="">
               </div> --}}
-            <div class="dark:bg-neutral-300 text-black">
+            
+            <div class="dark:bg-neutral-300 text-black overflow-hidden">
               <livewire:show-requests-graph :event_id="$event_id" />
               <livewire:show-scans-graph :event_id="$event_id" />
             </div>

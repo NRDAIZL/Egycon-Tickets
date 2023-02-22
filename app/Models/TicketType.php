@@ -38,4 +38,9 @@ class TicketType extends Model
     {
         return $this->belongsToMany(PromoCode::class, 'promo_code_ticket_type', 'ticket_type_id', 'promo_code_id');
     }
+
+    public function tickets()
+    {
+        return $this->hasMany(PostTicket::class);
+    }
 }
