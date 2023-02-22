@@ -129,9 +129,11 @@ Egycon Tickets
   Continue
   </button>
   @if(!$i_have_a_code)
-  <button type='button' disabled class="text-center w-64 mx-2 text-xl bg-green-500 hover:bg-green-400 mt-4 py-2 text-black font-bold border-4 border-black opacity-50">
-    I have a code
-  </button>
+  <a href="{{ route('promo_code',$event->slug??$event->id) }}">
+    <button type='button' class="text-center w-64 mx-2 text-xl bg-yellow-600 mt-4 py-2 text-black font-bold  hover:bg-yellow-500 border-4 border-black">
+        I have a code
+    </button>
+  </a>
   @endif
  
  </div>

@@ -50,8 +50,12 @@ class PostController extends Controller
         // check if $x_event_id is slug or id
         if(is_numeric($x_event_id)){
             $event = Event::findOrFail($x_event_id);
-            if($event->slug != null)
-                return redirect()->route('instructions',['x_event_id'=>$event->slug]);
+            if($event->slug != null){
+                if($i_have_a_code)
+                    return redirect()->route('promo_code', ['x_event_id' => $event->slug]);
+                else
+                return redirect()->route('instructions', ['x_event_id' => $event->slug]);
+            }
         }else{
             $event = Event::where('slug',$x_event_id)->first();
             if (!$event) {
@@ -359,7 +363,7 @@ class PostController extends Controller
         $questions  = $event->questions;
         $ticket_types = [];
         if($request->promo_code){
-            $promo = PromoCode::where('code', $request->promo_code)->where('is_active', 1)->where('max_uses', '>', 'used')->first();
+            $promo = PromoCode::where('event_id',$x_event_id)->where('code', $request->promo_code)->where('is_active', 1)->where('max_uses', '>', 'used')->first();
             if(!$promo){
                 session()->flash('status-failure', 'Promo code is not valid.');
                 session()->flashInput($request->input());
