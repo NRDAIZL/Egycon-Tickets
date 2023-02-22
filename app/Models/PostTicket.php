@@ -22,7 +22,7 @@ class PostTicket extends Model
     {
         return $this->belongsTo(Post::class);
     }
-
+    
     public function isAvailable($date){
         $event_day = $this->ticket_type->event_days->where('date', $date)->first();
         if($event_day){

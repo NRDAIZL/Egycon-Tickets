@@ -31,6 +31,7 @@ Tickets
                       <th class="px-4 py-3">Ticket Type</th>
                       <th class="px-4 py-3">Persons</th>
                       <th class="px-4 py-3">Price</th>
+                      <th class="px-4 py-3">Accepted Requests</th>
                       <th class="px-4 py-3">Actions</th>
                     </tr>
                   </thead>
@@ -58,6 +59,13 @@ Tickets
                         <div class="flex items-center text-sm">
                           <div>
                             <p class="font-semibold">{{ $ticket_type->price }} EGP</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="px-2 py-3">
+                        <div class="flex items-center text-sm">
+                          <div>
+                            <p class="font-semibold">{{ $ticket_type->tickets_count }}</p>
                           </div>
                         </div>
                       </td>

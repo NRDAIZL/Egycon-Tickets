@@ -43,4 +43,8 @@ class TicketType extends Model
     {
         return $this->hasMany(PostTicket::class);
     }
+
+    public function posts(){
+        return $this->hasManyThrough(Post::class, PostTicket::class, 'ticket_type_id', 'id', 'id', 'post_id');
+    }
 }

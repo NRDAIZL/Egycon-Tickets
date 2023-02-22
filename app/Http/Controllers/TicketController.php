@@ -5,10 +5,21 @@ namespace App\Http\Controllers;
 use App\Models\TicketType;
 use Illuminate\Http\Request;
 
+use function PHPSTORM_META\map;
+
 class TicketController extends Controller
 {
     public function view($event_id){
-        $ticket_types = auth()->user()->events()->where('event_id',$event_id)->first()->ticket_types()->withTrashed()->paginate(15);
+        $ticket_types = auth()->user()->events()->where('event_id',$event_id)->first()->ticket_types()->with(['posts.ticket'=>function($query){
+            return $query->where('status',1)->get();
+        }])->withTrashed()->paginate(15);
+        $ticket_types->map(function($ticket_type){
+            $ticket_type->tickets_count = 0;
+            foreach ($ticket_type->posts as $post) {
+                $ticket_type->tickets_count += $post->ticket->count();
+            }
+            return $ticket_type;
+        });
         return view('admin.tickets.view',['ticket_types'=>$ticket_types]);
     }
 
