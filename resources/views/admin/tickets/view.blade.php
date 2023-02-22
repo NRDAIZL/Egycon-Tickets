@@ -65,7 +65,7 @@ Tickets
                       <td class="px-2 py-3">
                         <div class="flex items-center text-sm">
                           <div>
-                            <p class="font-semibold">{{ $ticket_type->tickets_count }}</p>
+                            <p class="font-semibold">{{ $ticket_type->accepted_tickets_count }}</p>
                           </div>
                         </div>
                       </td>

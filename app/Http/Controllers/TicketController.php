@@ -4,22 +4,25 @@ namespace App\Http\Controllers;
 
 use App\Models\TicketType;
 use Illuminate\Http\Request;
+use stdClass;
 
 use function PHPSTORM_META\map;
 
 class TicketController extends Controller
 {
     public function view($event_id){
-        $ticket_types = auth()->user()->events()->where('event_id',$event_id)->first()->ticket_types()->with(['posts.ticket'=>function($query){
-            return $query->where('status',1)->get();
-        }])->withTrashed()->paginate(15);
-        $ticket_types->map(function($ticket_type){
-            $ticket_type->tickets_count = 0;
-            foreach ($ticket_type->posts as $post) {
-                $ticket_type->tickets_count += $post->ticket->count();
+        $ticket_types = auth()->user()->events()->where('event_id',$event_id)->first()->ticket_types()->withTrashed()->paginate(15);
+        $posts = auth()->user()->events()->where('event_id', $event_id)->first()->posts()->where('status', 1)->with('ticket')->get();
+        $accepted_tickets_count = [];
+        foreach ($posts as $post) {
+            $accepted_tickets = $post->ticket;
+            foreach ($accepted_tickets as $ticket) {
+                $accepted_tickets_count[$ticket->ticket_type_id] = isset($accepted_tickets_count[$ticket->ticket_type_id]) ? $accepted_tickets_count[$ticket->ticket_type_id] + 1 : 1;
             }
-            return $ticket_type;
-        });
+        }
+        foreach ($ticket_types as $ticket_type) {
+            $ticket_type->accepted_tickets_count = isset($accepted_tickets_count[$ticket_type->id]) ? $accepted_tickets_count[$ticket_type->id] : 0;
+        }
         return view('admin.tickets.view',['ticket_types'=>$ticket_types]);
     }
 
