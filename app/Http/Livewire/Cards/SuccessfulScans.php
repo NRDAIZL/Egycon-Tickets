@@ -3,6 +3,7 @@
 namespace App\Http\Livewire\Cards;
 
 use App\Models\Event;
+use App\Models\PostTicket;
 use Livewire\Component;
 
 class SuccessfulScans extends Component
@@ -14,11 +15,8 @@ class SuccessfulScans extends Component
     public function mount()
     {
         $event = Event::find($this->event_id);
-        $ticket_types = $event->ticket_types()->get();
-        $tickets_count = 0;
-        foreach ($ticket_types as $ticket_type) {
-            $tickets_count += $ticket_type->tickets()->where('status', 1)->count();
-        }
+        $ticket_types = $event->ticket_types;
+        $tickets_count = PostTicket::whereIn('ticket_type_id', $ticket_types->pluck('id'))->where('scanned_at', '!=', null)->count();
         $this->subtitle = $tickets_count;
     }
 
