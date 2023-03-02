@@ -371,7 +371,8 @@ class PostController extends Controller
             }
             $ticket_types = $promo->ticket_types;
         }else{
-            $ticket_types = $event->ticket_types;
+            // $ticket_types = $event->ticket_types;
+            $ticket_types = TicketType::where('event_id',$x_event_id)->where(['is_active' => 1, 'is_visible' => 1])->get();
         }
         if (strpos(trim($request->name), ' ') === false) {
             session()->flash('status-failure', 'Please enter your full name.');
