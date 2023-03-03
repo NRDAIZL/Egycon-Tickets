@@ -189,7 +189,7 @@ class PostController extends Controller
             return redirect()->back()->with('error', 'Please select a payment method');
         }
         $event = Event::findOrFail($x_event_id);
-        $ticket_types = $event->ticket_types()->where(['is_visible'=> 1, 'is_disabled'=>0])->get();
+        $ticket_types = $event->ticket_types()->where(['is_visible'=> 1])->get();
         
         $theme = $event->themes()->where('is_active', 1)->first();
         $questions = $event->questions;
