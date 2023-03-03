@@ -189,7 +189,7 @@ class PostController extends Controller
             return redirect()->back()->with('error', 'Please select a payment method');
         }
         $event = Event::findOrFail($x_event_id);
-        $ticket_types = $event->ticket_types()->where(['is_visible'=> 1])->get();
+        $ticket_types = $event->ticket_types()->where(['is_visible'=> 1])->orderBy('is_disabled')->get();
         
         $theme = $event->themes()->where('is_active', 1)->first();
         $questions = $event->questions;
@@ -372,7 +372,7 @@ class PostController extends Controller
             $ticket_types = $promo->ticket_types;
         }else{
             // $ticket_types = $event->ticket_types;
-            $ticket_types = TicketType::where('event_id',$x_event_id)->where(['is_active' => 1, 'is_visible' => 1])->get();
+            $ticket_types = TicketType::where('event_id',$x_event_id)->where(['is_active' => 1, 'is_visible' => 1])->orderBy('is_disabled')->get();
         }
         if (strpos(trim($request->name), ' ') === false) {
             session()->flash('status-failure', 'Please enter your full name.');
