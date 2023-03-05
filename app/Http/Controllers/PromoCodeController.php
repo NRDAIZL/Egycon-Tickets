@@ -191,10 +191,10 @@ class PromoCodeController extends Controller
 
     public function show_requests_for_promo_code($event_id, $promo_code_id)
     {
-        $promo_code = auth()->user()->events()->where('event_id', $event_id)->first()->promo_codes()->where('id',$promo_code_id)->where(function ($query) {
+        $promo_code = auth()->user()->events()->where('event_id', $event_id)->first()->promo_codes()->where('id',$promo_code_id)->first();
+        $requests = $promo_code->posts()->where(function ($query) {
             return $query->where('status', '!=', null)->orWhere('picture', '!=', "");
-        })->first();
-        $requests = $promo_code->posts();
+        });
         $requests = $requests->paginate(15);
 
         return view('admin.requests', ['requests'=>$requests,'query'=> "", 'promo_code'=>$promo_code]);
