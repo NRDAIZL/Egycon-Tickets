@@ -579,10 +579,15 @@ class PostController extends Controller
             $q = $request->q;
             $posts = $posts->where(function($query) use ($q){
                 return $query->orWhere('email', 'like', '%' . $q . '%')->orWhere('phone_number', 'like', '%' . $q . '%')->orWhere('id', 'like', '%' . $q . '%')->orWhere('name', 'like', '%' . $q . '%');
-            })->paginate(1000);
+            });
         }else{
-            $posts = $posts->where('event_id',$event_id)->orderBy('created_at',"DESC")->limit(1000)->paginate(15);
+            $posts = $posts->where('event_id',$event_id)->orderBy('created_at',"DESC");
         }
+        // filter if status is null and no reciept
+        $posts = $posts->where(function($query){
+            return $query->where('status','!=',null)->where('picture','!=',null);
+        });
+        $posts = $posts->paginate(15);
         return view('admin.requests',['requests'=>$posts, 'query'=>$q]);
     }
 
