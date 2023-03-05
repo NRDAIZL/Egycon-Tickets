@@ -150,7 +150,9 @@
                 <span class="ml-4">Requests</span>
                 @php
                   // get pending requests
-                  $pending_requests = App\Models\Event::find($event_id)->posts()->where('status',null)->count();
+                  $pending_requests = App\Models\Event::find($event_id)->posts()->where(function ($query) {
+                      return $query->where('status', '=', null)->where('picture', '!=', "");
+                  })->count();
                 @endphp
                 @if($pending_requests > 0)
                 <span class="ml-auto text-sm font-medium text-white flex items-center justify-center w-7 h-7 rounded-full bg-red-500">

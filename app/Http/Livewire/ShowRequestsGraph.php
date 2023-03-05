@@ -19,7 +19,9 @@ class ShowRequestsGraph extends Component
         $event = Event::find($this->event_id);
         $this->event = $event;
 
-        $posts = Post::with('ticket')->where('event_id', $this->event_id)->get();
+        $posts = Post::with('ticket')->where('event_id', $this->event_id)->where(function ($query) {
+            return $query->where('status', '!=', null)->orWhere('picture', '!=', "");
+        })->get();
         // get the number of posts for each day
         $this->data = $posts->groupBy(function($date) {
             return \Carbon\Carbon::parse($date->created_at)->format('Y-m-d');

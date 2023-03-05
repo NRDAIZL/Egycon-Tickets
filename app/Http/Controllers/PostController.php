@@ -585,9 +585,13 @@ class PostController extends Controller
         }
         // filter if status is null and no reciept
         $posts = $posts->where(function($query){
-            return $query->where('status','!=',null)->where('picture','!=',null);
+                return $query->where('status','!=', null)->orWhere('picture','!=', "");
         });
-        $posts = $posts->paginate(15);
+        if($request->has('q')) {
+            $posts = $posts->paginate(1000);
+        }else{
+            $posts = $posts->paginate(15);
+        }   
         return view('admin.requests',['requests'=>$posts, 'query'=>$q]);
     }
 

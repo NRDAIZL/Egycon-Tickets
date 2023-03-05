@@ -14,7 +14,9 @@ class TotalRequests extends Component
     public $event_id;
     public function mount(){
         $event = Event::find($this->event_id);
-        $this->subtitle = $event->posts->count();
+        $this->subtitle = $event->posts()->where(function ($query) {
+            return $query->where('status', '!=', null)->orWhere('picture', '!=', "");
+        })->count();
     }
     public function render()
     {
