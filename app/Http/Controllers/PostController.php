@@ -578,7 +578,12 @@ class PostController extends Controller
         if($request->has('q')){
             $q = $request->q;
             $posts = $posts->where(function($query) use ($q){
-                return $query->orWhere('email', 'like', '%' . $q . '%')->orWhere('phone_number', 'like', '%' . $q . '%')->orWhere('id', 'like', '%' . $q . '%')->orWhere('name', 'like', '%' . $q . '%');
+                return $query
+                ->orWhere('email', 'like', '%' . $q . '%')
+                ->orWhere('phone_number', 'like', '%' . $q . '%')
+                ->orWhere('id', 'like', '%' . $q . '%')
+                ->orWhere('order_reference_id', 'like', '%' . $q . '%')
+                ->orWhere('name', 'like', '%' . $q . '%');
             });
         }else{
             $posts = $posts->where('event_id',$event_id)->orderBy('created_at',"DESC");

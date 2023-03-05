@@ -89,7 +89,10 @@ Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
                             <img src="{{ asset('images/'.$request->picture) }}" class="transition-all absolute top-0 left-0 flex justify-center items-center opacity-100 hover:opacity-40 w-full h-full object-cover" alt=""> 
                           </div>    
                           @elseif ($request->payment_method == "credit_card")
-                            Order Reference: <br> <b>{{ $request->order_reference_id }}<b>
+                            Order Reference: <br> 
+                            <b>
+                              {!! str_replace("$query","<span class='bg-yellow-100'>$query</span>",$request->order_reference_id) !!}
+                            <b>
                           @else
                           N/A               
                             @endif
