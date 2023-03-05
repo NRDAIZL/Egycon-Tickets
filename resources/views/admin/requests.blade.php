@@ -54,7 +54,7 @@ Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
                       <td class="px-4 py-3">
                         <div class="flex items-center text-sm">
                           <div>
-                            <p class="font-semibold">{!! str_replace("$query","<span class='bg-yellow-100'>$query</span>",$request->id) !!} {{ $request->event->id }}</p>
+                            <p class="font-semibold">{!! str_replace("$query","<span class='bg-yellow-100'>$query</span>",$request->id) !!}</p>
                           </div>
                         </div>
                       </td>
