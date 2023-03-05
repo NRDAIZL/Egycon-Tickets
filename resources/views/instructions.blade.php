@@ -93,12 +93,7 @@ Egycon Tickets
             <h1 class="text-2xl mx-2">{{ $payment_method->name }}</h1>
           </label>
         @endforeach
-        <label class="flex items-center">
-            <input type="radio" 
-            disabled
-             class="mr-2">
-            <h1 class="text-2xl mx-2 opacity-70">Credit Card (Soon)</h1>
-          </label>
+        
         {{-- <label class="flex items-center ml-4">
           <input type="radio" onchange="document.querySelector('#vodafone-cash-instructions').classList.add('hidden');" name="payment_method" value="credit_card" class="mr-2">
           <h1 class="text-2xl mx-2">Credit Card</h1>

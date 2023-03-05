@@ -53,7 +53,7 @@ Egycon Tickets
   data-orderId="{{ $order->merchantOrderId }}"
   data-merchantId="{{ $event_payment_method->account_name }}"
   data-merchantRedirect="{{ route('payment-success',['x_event_id'=>$data->event_id]) }}"
-  data-mode="test"
+  data-mode="live"
   data-metaData='{{ 
   json_encode(
     [
