@@ -98,6 +98,7 @@ users
                     >
                       <th class="px-4 py-3">Name</th>
                       <th class="px-4 py-3">Email</th>
+                      <th class="px-4 py-3">Roles</th>
                       <th class="px-4 py-3">Actions</th>
                     </tr>
                   </thead>
@@ -118,6 +119,15 @@ users
                         <div class="flex items-center text-sm">
                           <div>
                             <p class="font-semibold">{{ $user->email }}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="px-2 py-3">
+                        <div class="flex items-center text-sm">
+                          <div>
+                            <p class="font-semibold">
+                              {{ implode(',',array_map('ucfirst',$user->roles->pluck('name')->toArray())) }}
+                            </p>
                           </div>
                         </div>
                       </td>

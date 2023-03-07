@@ -80,6 +80,9 @@ class EventController extends Controller
             'registration_end' => $registration_end,
             'slug' => $slug,
         ]);
+        setPermissionsTeamId($event->id);
+        $user = auth()->user();
+        $user->assignRole('admin');
 
         return redirect()->route('admin.event_settings.event_days',['event_id'=>$event->id]);
     }

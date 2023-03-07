@@ -13,6 +13,8 @@ Dashboard
             >
               Dashboard
             </h2>
+            @include('admin.includes.alerts')
+
             <!-- Cards -->
             <h3 class="text-xl text-gray-700 dark:text-gray-200">
               {{ $event->name }} Insights

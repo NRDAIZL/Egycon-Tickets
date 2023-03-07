@@ -16,9 +16,22 @@ class HasEventId
      */
     public function handle(Request $request, Closure $next)
     {
-        if(!$request->has('event_id')){
-            return redirect()->route('admin.events.index');
+        // get route parameters
+        $routeParameters = $request->route()->parameters();
+        // check if event_id is present in route parameters
+        if (!isset($routeParameters['event_id'])) {
+            return redirect()->route('admin.events.view')->with('error','Event not found!');
         }
+        $event_id = $routeParameters['event_id'];
+        $user = auth()->user();
+        $user_events = $user->events;
+        $user_events_ids = $user_events->pluck('id')->toArray();
+        if (!in_array($event_id,
+            $user_events_ids
+        )) {
+            return redirect()->route('admin.events.view')->with('error', 'Event not found!');
+        }
+        setPermissionsTeamId($routeParameters['event_id']);
         return $next($request);
     }
 }

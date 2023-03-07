@@ -133,6 +133,8 @@ class UserController extends Controller
         
         $event = $invitation->event()->first();
         $event->users()->attach($user->id);
+        setPermissionsTeamId($event->id);
+        $user->assignRole($invitation->role_id);
         $invitation->update([
             'accepted_at' => now()
         ]);
@@ -147,6 +149,8 @@ class UserController extends Controller
         }
         // group users and invitations
         $users = $event->users()->get();
+        setPermissionsTeamId($event->id);
+        
         // get invitations that expiration date is not passed by 7 days
         $invitations = $event->invitations()->where('accepted_at', null)->where('expires_at', '>', now()->subDays(7))->get();
         return view('admin.users.view', compact('event','users','invitations'));
