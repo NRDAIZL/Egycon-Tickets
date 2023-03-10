@@ -16,7 +16,8 @@ class SuccessfulScans extends Component
     {
         $event = Event::find($this->event_id);
         $ticket_types = $event->ticket_types;
-        $tickets_count = PostTicket::whereIn('ticket_type_id', $ticket_types->pluck('id'))->where('scanned_at', '!=', null)->count();
+        // get sum of post tickets scans
+        $tickets_count = PostTicket::whereIn('ticket_type_id', $ticket_types->pluck('id'))->sum('scans');
         $this->subtitle = $tickets_count;
     }
 

@@ -14,6 +14,7 @@ use App\Http\Controllers\PromoCodeController;
 use App\Http\Controllers\QRCodeTicketController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\UserController;
+use App\Models\PostTicket;
 
 /*
 |--------------------------------------------------------------------------
@@ -165,3 +166,14 @@ Route::get('/{x_event_id}/thank_you',[PostController::class, 'thank_you'])->name
 // Route::get('/',function(){
 //     return view('tickets_suspended');
 // });
+
+Route::get('set/scans', function () {
+    $post_tickets = PostTicket::all();
+    foreach ($post_tickets as $ticket) {
+        if($ticket->scanned_at != null){
+            $ticket->scans = 1;
+            $ticket->save();
+        }
+    }
+    return 'done';
+});
