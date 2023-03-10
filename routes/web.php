@@ -167,13 +167,13 @@ Route::get('/{x_event_id}/thank_you',[PostController::class, 'thank_you'])->name
 //     return view('tickets_suspended');
 // });
 
-Route::get('set/scans', function () {
-    $post_tickets = PostTicket::all();
-    foreach ($post_tickets as $ticket) {
-        if($ticket->scanned_at != null){
-            $ticket->scans = 1;
-            $ticket->save();
-        }
-    }
-    return 'done';
-});
+// Route::get('set/scans', function () {
+//     $post_tickets = PostTicket::all();
+//     foreach ($post_tickets as $ticket) {
+//         if($ticket->scanned_at != null){
+//             $ticket->scans = 1;
+//             $ticket->save();
+//         }
+//     }
+//     return 'done';
+// });

@@ -102,6 +102,7 @@ class EventController extends Controller
                 ], 404);
             } else if ($status == 1 && $data->status != 2) {
                 $data->status = 2;
+                $data->scans += 1;
                 $data->scanned_at = now();
                 $data->save();
                 return response()->json([
