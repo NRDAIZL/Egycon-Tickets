@@ -46,6 +46,8 @@ class PostController extends Controller
     public function instructions_code(Request $request, $x_event_id){
         return $this->instructions($request, $x_event_id, true);
     }
+
+    
     public function instructions(Request $request, $x_event_id, $i_have_a_code = null){
         // check if $x_event_id is slug or id
         if(is_numeric($x_event_id)){
@@ -345,12 +347,12 @@ class PostController extends Controller
             if(!$promo){
                 session()->flash('status-failure', 'Promo code is not valid.');
                 session()->flashInput($request->input());
-                return redirect()->back();
+                return redirect()->route('promo_code_tickets', ['event_id' => $x_event_id, 'code' => $request->promo_code]);
             }
             if ($promo->ticket_type_id != $request->ticket_type_id) {
                 session()->flash('status-failure', 'Promo code is not valid.');
                 session()->flashInput($request->input());
-                return redirect()->back();
+                return redirect()->route('promo_code_tickets', ['event_id' => $x_event_id, 'code' => $request->promo_code]);
             }
             
         }
@@ -367,7 +369,7 @@ class PostController extends Controller
             if(!$promo){
                 session()->flash('status-failure', 'Promo code is not valid.');
                 session()->flashInput($request->input());
-                return redirect()->back();
+                return redirect()->route('promo_code_tickets', ['event_id' => $x_event_id, 'code' => $request->promo_code]);
             }
             $ticket_types = $promo->ticket_types;
         }else{
@@ -430,7 +432,8 @@ class PostController extends Controller
                 if ($promo->uses == $promo->max_uses) {
                     $promo->is_active = 0;
                 }
-            }else{
+                $promo->save();
+            } else {
                 $total_price += $quantity * $ticket->price;
             }
             $j++;

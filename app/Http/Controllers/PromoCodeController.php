@@ -149,7 +149,8 @@ class PromoCodeController extends Controller
     {
         $request->validate([
             'quantity' => 'required|numeric|min:1',
-            'ticket_type_id' => 'required',
+            'ticket_type_id' => 'required|array',
+            'ticket_type_id.*' => 'required|exists:ticket_types,id',
             'discount' => 'required|numeric|min:0|max:100',
             'max_uses' => 'required|numeric|min:1',
             'is_active' => 'required|boolean',
@@ -159,19 +160,23 @@ class PromoCodeController extends Controller
         for ($i=0; $i < $request->quantity; $i++) { 
             $promo_codes[] = [
                 'code' => self::generate_random_string(6),
-                'ticket_type_id' => $request->ticket_type_id,
+                // 'ticket_type_id' => $request->ticket_type_id,
                 'discount' => $request->discount,
                 'max_uses' => $request->max_uses,
                 'is_active' => $request->is_active??0,
                 'event_id' => $event_id,
                 'uses' => 0,
             ];
+            
         }
         $event->promo_codes()->insert($promo_codes);
         $promo_codes_collections = Collection::make();
         foreach ($promo_codes as $promo_code) {
-            $promo_codes_collections->push(PromoCode::where('code',$promo_code['code'])->first());
+            $promo_code_collection = PromoCode::where('code', $promo_code['code'])->first();
+            $promo_code_collection->ticket_types()->sync($request->ticket_type_id);
+            $promo_codes_collections->push($promo_code_collection);
         }
+
         $exports = (new PromoCodeExport($event_id, $promo_codes_collections));
         $ticket_type = TicketType::where('id',$request->ticket_type_id)->first();
         $ticket_type_name = preg_replace('/[^A-Za-z0-9\-]/', '', $ticket_type->name);

@@ -45,22 +45,28 @@ Generate Promo Codes
                 <i class="las la-ticket-alt text-xl"></i>
                 Ticket Type <span class="text-red-500">*</span>
                 </span>
-                <select
-                name="ticket_type_id"
-                  required
-                  class="block w-full mt-1 text-sm border dark:border-gray-600 dark:bg-gray-700 focus:border-purple-400 focus:outline-none focus:shadow-outline-purple dark:text-gray-300 dark:focus:shadow-outline-gray form-input"
-                >
-                    <option value="">Select Ticket Type</option>
+                
                     @foreach ($ticket_types as $type)
-                    <option
-                    @if(old('type')) selected @endif
-                    value="{{ $type->id }}"
-                    data-price="{{ $type->price }}"
-                    >
-                    {{ $type->name }}
-                    </option>
+                    <label class="text-gray-700 dark:text-gray-400 block mt-1 ml-4">
+                        <input
+                        type="checkbox"
+                        name="ticket_type_id[]"
+                        @php
+                        if(isset($promo_code)){
+                            if(in_array($type->id,$promo_code->ticket_types->pluck('id')->toArray())){
+                                echo "checked";
+                            }
+                        }else if (old('ticket_type_id')) {
+                            if(in_array($type->id,old('ticket_type_id'))){
+                                echo "checked";
+                            }
+                        }
+                        @endphp
+                        value="{{ $type->id }}"
+                        >
+                        {{ $type->name }}
+                    </label>
                     @endforeach
-                </select>
               </label>
               <label class="block text-sm">
                 <span class="text-gray-700 dark:text-gray-400">

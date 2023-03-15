@@ -27,7 +27,7 @@ class PromoCodeExport implements FromCollection, WithHeadings, WithMapping
         if($this->data){
             return $this->data;
         }
-        return PromoCode::where('event_id',$this->event_id)->get();
+        return PromoCode::where('event_id',$this->event_id)->with('ticket_types')->get();
     }
 
     public function headings(): array
@@ -49,7 +49,7 @@ class PromoCodeExport implements FromCollection, WithHeadings, WithMapping
         return [
             $promoCode->id,
             $promoCode->code,
-            $promoCode->ticket_type->name,
+            $promoCode->ticket_types->implode('name', ', '), // implode ticket types
             $promoCode->discount,
             $promoCode->max_uses,
             $promoCode->uses,
