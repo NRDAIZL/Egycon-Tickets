@@ -93,6 +93,9 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
 
             Route::get('/register', [PostController::class, 'onspot_registration'])->name('register');
             Route::post('/register', [PostController::class, 'onspot_registration_post']);
+
+            Route::get('/view_tickets/{id}', [PostController::class, 'view_tickets'])->name('view_tickets');
+
         });
         
         Route::get('qr_progress', function () {
@@ -141,7 +144,6 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
             Route::post('/import', [PostController::class, 'import_sheet_store']);
         });
 
-        Route::get('/view_tickets/{id}', [PostController::class, 'view_tickets'])->name('view_tickets');
         
         Route::get('/', [DashboardController::class, 'index'])->name('home');
 
