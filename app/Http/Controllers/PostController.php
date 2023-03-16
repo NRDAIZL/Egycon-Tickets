@@ -70,7 +70,7 @@ class PostController extends Controller
         $theme = $event->themes()->where('is_active',1)->first();
         $ticket_types = $event->ticket_types()->where(['is_active'=>1, 'is_visible'=>1])->orderBy('is_disabled')->get();
         if($ticket_types->count() == 0 ){
-            return view('tickets_suspended');
+            return view('tickets_suspended',['theme' => $theme]);
         }
         if(session()->get('errors')){
             $questions = $event->questions;
