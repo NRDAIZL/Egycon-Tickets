@@ -69,6 +69,13 @@ Tickets
                           </div>
                         </div>
                       </td>
+                      <td class="px-2 py-3">
+                        <div class="flex items-center text-sm">
+                          <div>
+                            <p class="font-semibold">{{ $ticket_type->get_scans_count() }}</p>
+                          </div>
+                        </div>
+                      </td>
                       <td class="px-4 py-3">
                         @if($ticket_type->trashed())
                         <a href="{{ route('admin.tickets.restore', ['id'=>$ticket_type->id,'event_id'=>$event_id]) }}"><button class="bg-green-500 text-white py-2 px-8 rounded-md">

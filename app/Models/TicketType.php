@@ -47,4 +47,9 @@ class TicketType extends Model
     public function posts(){
         return $this->hasManyThrough(Post::class, PostTicket::class, 'ticket_type_id', 'id', 'id', 'post_id');
     }
+
+    public function get_scans_count(){
+        $scans = PostTicket::where('ticket_type_id',$this->id)->where('scanned_at',"!=",NULL)->count();
+        return $scans;
+    }
 }

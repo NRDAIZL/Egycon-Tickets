@@ -20,7 +20,7 @@ class ShowScansGraph extends Component
         $event = Event::find($this->event_id);
         $this->event = $event;
 
-        $ticket_types = $event->ticket_types;
+        $ticket_types = $event->ticket_types()->withTrashed();
         $PostTickets = PostTicket::whereIn('ticket_type_id', $ticket_types->pluck('id'))->where('scanned_at','!=',null)->get();
       
         $PostTickets = $PostTickets->filter(function ($value, $key) {
