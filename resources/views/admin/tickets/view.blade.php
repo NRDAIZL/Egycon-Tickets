@@ -32,6 +32,7 @@ Tickets
                       <th class="px-4 py-3">Persons</th>
                       <th class="px-4 py-3">Price</th>
                       <th class="px-4 py-3">Accepted Requests</th>
+                      <th class="px-4 py-3">Scans</th>
                       <th class="px-4 py-3">Actions</th>
                     </tr>
                   </thead>
