@@ -45,9 +45,29 @@ class EventController extends Controller
 
             $ticket_type = $data->ticket_type;
             // check if ticket_type event_day is today
-            $today = Carbon::today();
+            $today = Carbon::now();
+            // $today = date("Y-m-d H:i:s", strtotime("2023-03-31 00:55:00"));
+            // $today = Carbon::parse($today);
+            // dd($today->toDateString());
             $event_day = $ticket_type->event_days;
             $event_day = $event_day->where('date', $today->toDateString())->first();
+            // ticket may be valid for the next day if end time is after midnight
+            // check if end time is after midnight
+            if (!$event_day){
+                // get event day for the previous day
+                $event_day = $ticket_type->event_days;
+                $event_day = $event_day->where('date', $today->subDay()->toDateString())->first();
+                if ($event_day){
+                    $start_time = Carbon::parse($event_day->start_time)->setDate($today->year, $today->month, $today->day);
+                    $today = Carbon::now();
+                    $end_time = Carbon::parse($event_day->end_time)->setDate($today->year, $today->month, $today->day);
+                    // dd($start_time->toDateTimeString(), $end_time->toDateTimeString(), $today->toDateTimeString());
+                    // dd($end_time->hour < 6 , $end_time->hour < $start_time->hour , $today > $start_time, $today < $end_time);
+                    if (!($end_time->hour < 6 && $end_time->hour < $start_time->hour && $today < $start_time && $today < $end_time)){
+                        $event_day = null;
+                    }
+                }
+            }
             if (!$event_day) {
                 return response()->json([
                     'status' => 'error',
