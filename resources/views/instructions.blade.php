@@ -81,13 +81,16 @@ Egycon Tickets
           $payment_method = $payment_method->first();
           // get payment methods where name is vodafone cash
           $vodafone_cash = $payment_methods->where('name','Vodafone Cash')->all();
+          $instapay = $payment_methods->where('name','InstaPay')->all();
         @endphp
           <label class="flex items-center">
             <input type="radio" 
               @if($payment_method->name == "Vodafone Cash")
-                onchange="document.querySelector('#vodafone-cash-instructions').classList.remove('hidden');"
+                onchange="document.querySelector('#vodafone-cash-instructions').classList.remove('hidden');document.querySelector('#instapay-instructions').classList.add('hidden');"
+              @elseif($payment_method->name == "InstaPay")
+                onchange="document.querySelector('#vodafone-cash-instructions').classList.add('hidden');document.querySelector('#instapay-instructions').classList.remove('hidden');"
               @else
-                onchange="document.querySelector('#vodafone-cash-instructions').classList.add('hidden');"
+                onchange="document.querySelector('#vodafone-cash-instructions').classList.add('hidden');document.querySelector('#instapay-instructions').classList.add('hidden');"
               @endif
             name="payment_method" value="{{ str_replace(' ','_',strtolower($payment_method->name)) }}" class="mr-2">
             <h1 class="text-2xl mx-2">{{ $payment_method->name }}</h1>
@@ -110,6 +113,22 @@ Egycon Tickets
       <h1 class="text-2xl font-bold  mx-2">
         {{-- format number add space between numbers  --}}
         {{ implode(' ', str_split($vodafone_c->account_number, 4)) }}
+      </h1>
+      @endforeach
+    </div>
+    </div>
+    <h1 class=" mt-4 text-2xl mr-4">4) Take a photo/screenshot of your reciept then hit continue.</h1>
+    <p class="text-xl">*reciept must show date of payment and total amount</p>
+  </div>
+  @endif
+  @if(count($instapay ?? []) > 0)
+  <div id='instapay-instructions' class="hidden">
+    <div class="flex items-center my-4">
+    <h1 class="text-2xl mr-2">3) Transfer the total amount to</h1>
+    <div>
+      @foreach ($instapay as $instapay_option)
+      <h1 class="text-2xl font-bold  mx-2">
+        {{$instapay_option->account_number}}
       </h1>
       @endforeach
     </div>

@@ -115,9 +115,12 @@ class PostController extends Controller
             'code' => 'required',
         ]);
 
-        $code = PromoCode::where('code',$request->code)->where('event_id',$x_event_id)->where('is_active',1)->first();
+        $code = PromoCode::where('code',$request->code)->where('event_id',$x_event_id)->first();
         if(!$code){
             return redirect()->back()->with('status-failure','Invalid code');
+        }
+        if($code->is_active != 1 || $code->max_uses <= $code->uses){
+            return redirect()->back()->with('status-failure','This code has reached the maximum number of uses');
         }
         $ticket_types = $code->ticket_types;
         return redirect()->route('promo_code_tickets',['x_event_id'=>$x_event_id,'code'=>$request->code]);
@@ -134,9 +137,12 @@ class PostController extends Controller
             }
             $x_event_id = $event->id;
         }
-        $code = PromoCode::where('code',$code)->where('event_id',$x_event_id)->where('is_active',1)->first();
+        $code = PromoCode::where('code',$code)->where('event_id',$x_event_id)->first();
         if(!$code){
             return redirect()->back()->with('status-failure','Invalid code');
+        }
+        if($code->is_active != 1 || $code->max_uses <= $code->uses){
+            return redirect()->back()->with('status-failure','This code has reached the maximum number of uses');
         }
         $ticket_types = $code->ticket_types;
         $ticket_types = $ticket_types->map(function($ticket_type) use ($code){
@@ -196,9 +202,12 @@ class PostController extends Controller
         $theme = $event->themes()->where('is_active', 1)->first();
         $questions = $event->questions;
         if($request->has('promo_code')){
-            $code = PromoCode::where('code',$request->promo_code)->where('event_id',$x_event_id)->where('is_active',1)->first();
+            $code = PromoCode::where('code',$request->promo_code)->where('event_id',$x_event_id)->first();
             if(!$code){
-                return redirect()->back()->with('status-failure','Invalid code');
+            return redirect()->back()->with('status-failure','Invalid code');
+            }
+            if($code->is_active != 1 || $code->max_uses <= $code->uses){
+                return redirect()->back()->with('status-failure','This code has reached the maximum number of uses');
             }
             $ticket_types = $code->ticket_types;
         }
@@ -341,7 +350,7 @@ class PostController extends Controller
         if ($request->promo_code) {
             $promo = PromoCode::where('code', $request->promo_code)
             ->where('is_active', 1)
-            ->where('max_uses', '>', 'used')
+            ->where('max_uses', '>', 'uses')
             ->where('event_id',$x_event_id)
             ->first();
             if(!$promo){
@@ -365,7 +374,7 @@ class PostController extends Controller
         $questions  = $event->questions;
         $ticket_types = [];
         if($request->promo_code){
-            $promo = PromoCode::where('event_id',$x_event_id)->where('code', $request->promo_code)->where('is_active', 1)->where('max_uses', '>', 'used')->first();
+            $promo = PromoCode::where('event_id',$x_event_id)->where('code', $request->promo_code)->where('is_active', 1)->where('max_uses', '>', 'uses')->first();
             if(!$promo){
                 session()->flash('status-failure', 'Promo code is not valid.');
                 session()->flashInput($request->input());
@@ -416,8 +425,23 @@ class PostController extends Controller
         $total_price = 0;
         $j=0;
         $tickets = $ticket_types;
+        $total_quantity = array_sum($request->quantity);
         foreach($request->quantity as $quantity){
             $ticket = $tickets[$j];
+            if(isset($promo)){
+                if($total_quantity > $promo->max_uses - $promo->uses && $quantity != 0){
+                    return redirect()->back()->with('status-failure', 'Number of tickets exceeds limit!');
+                }
+                $total_price += ($ticket->price - (($promo->discount / 100) * $ticket->price))*$quantity;
+                $post->promo_code_id = $promo->id;
+                $promo->uses = $promo->uses + $quantity;
+                if ($promo->uses >= $promo->max_uses) {
+                    $promo->is_active = 0;
+                }
+                
+            } else {
+                $total_price += $quantity * $ticket->price;
+            }
             for($i = 0; $i<$quantity*$ticket->person; $i++){
                 $post->save();
                 $response = $this->generate_post_ticket($post, $ticket, $theme, $event);
@@ -425,17 +449,7 @@ class PostController extends Controller
                     return $response;
                 }
             }
-            if(isset($promo)){
-                $total_price += ($ticket->price - (($promo->discount / 100) * $ticket->price))*$quantity;
-                $post->promo_code_id = $promo->id;
-                $promo->uses = $promo->uses + $quantity;
-                if ($promo->uses == $promo->max_uses) {
-                    $promo->is_active = 0;
-                }
-                $promo->save();
-            } else {
-                $total_price += $quantity * $ticket->price;
-            }
+            
             $j++;
         }
         $post->total_price = $total_price;
@@ -484,8 +498,12 @@ class PostController extends Controller
             if(!$event_payment_method){
                 return redirect()->back()->with(["error" =>"An error occurred while processing your request. Please try again later. Error code: 4", 'theme' => $theme, 'event' => $event]);
             }
+            if(isset($promo))
+                $promo->save();
             return view('kashier', ['data' =>$data, 'theme' => $theme, 'event' => $event, 'event_payment_method' => $event_payment_method]);
         }
+        if(isset($promo))
+            $promo->save();
         return redirect()->route('thank_you', ['x_event_id' => $x_event_id]);        
     }
 
