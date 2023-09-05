@@ -54,6 +54,7 @@ class EventController extends Controller
             // ticket may be valid for the next day if end time is after midnight
             // check if end time is after midnight
             if (!$event_day){
+                //TODO: Get back later to this part
                 // get event day for the previous day
                 $event_day = $ticket_type->event_days;
                 $event_day = $event_day->where('date', $today->subDay()->toDateString())->first();
