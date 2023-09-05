@@ -58,6 +58,7 @@ Email Template
                 >
                     <option @if(@$template->type == 'approved') selected @endif value="approved">Approved</option>
                     <option @if(@$template->type == 'declined') selected @endif value="declined">Declined</option>
+                    <option @if(@$template->type == 'reservation') selected @endif value="reservation">Reservation</option>
                 </select>
             </label>
             <label class="block text-sm">

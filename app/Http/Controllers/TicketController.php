@@ -12,15 +12,20 @@ class TicketController extends Controller
 {
     public function view($event_id){
         $ticket_types = auth()->user()->events()->where('event_id',$event_id)->first()->ticket_types()->withTrashed()->paginate(15);
-        $posts = auth()->user()->events()->where('event_id', $event_id)->first()->posts()->where('status', 1)->with('ticket')->get();
+        $posts = auth()->user()->events()->where('event_id', $event_id)->first()->posts()->with('ticket')->get();
         $accepted_tickets_count = [];
+        $total_tickets_count = [];
         foreach ($posts as $post) {
-            $accepted_tickets = $post->ticket;
-            foreach ($accepted_tickets as $ticket) {
-                $accepted_tickets_count[$ticket->ticket_type_id] = isset($accepted_tickets_count[$ticket->ticket_type_id]) ? $accepted_tickets_count[$ticket->ticket_type_id] + 1 : 1;
+                $tickets = $post->ticket;
+                foreach ($tickets as $ticket) {
+                    $total_tickets_count[$ticket->ticket_type_id] = isset($total_tickets_count[$ticket->ticket_type_id]) ? $total_tickets_count[$ticket->ticket_type_id] + 1 : 1;
+                    if($post->status == 1){
+                        $accepted_tickets_count[$ticket->ticket_type_id] = isset($accepted_tickets_count[$ticket->ticket_type_id]) ? $accepted_tickets_count[$ticket->ticket_type_id] + 1 : 1;
+                    }
             }
         }
         foreach ($ticket_types as $ticket_type) {
+            $ticket_type->total_requests = isset($total_tickets_count[$ticket_type->id]) ? $total_tickets_count[$ticket_type->id] : 0;
             $ticket_type->accepted_tickets_count = isset($accepted_tickets_count[$ticket_type->id]) ? $accepted_tickets_count[$ticket_type->id] : 0;
         }
         return view('admin.tickets.view',['ticket_types'=>$ticket_types]);
@@ -44,7 +49,7 @@ class TicketController extends Controller
             'name'=>"required|string",
             "price"=>"required|numeric",
             "persons"=>"required|numeric",
-            'type'=>'required|in:qr,discount,noticket',
+            'type'=>'required|in:qr,discount,noticket,reservation',
             'event_days'=>'required|array',
             'event_days.*'=>'required|numeric',
             'scan_type'=>'required|in:once,once_per_day',

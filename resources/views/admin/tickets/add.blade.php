@@ -87,6 +87,7 @@ tickets
                 <option value="qr" @if(old('type') == "qr" || @$ticket_type->type == "qr") selected @endif>QR Code</option>
                 <option value="discount" @if(old('type') == "discount" || @$ticket_type->type == "discount") selected @endif>Discount Code</option>
                 <option value="noticket" @if(old('type') == "noticket" || @$ticket_type->type == "noticket") selected @endif>No Ticket (Just registers on the system, user won't get any ticket)</option>
+                <option value="reservation" @if(old('type') == "reservation" || @$ticket_type->type == "reservation") selected @endif>Reservation (Sends email confirmation without QR Code on purchase)</option>
                 </select>
               </label>
               <div class="block text-sm">

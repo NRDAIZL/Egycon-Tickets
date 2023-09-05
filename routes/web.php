@@ -103,6 +103,7 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
         })->name('qr_progress');
 
         Route::get('/requests', [PostController::class, 'view_requests'])->name('requests');
+        Route::get('/requests/ticket-type/{ticket_type_id}', [PostController::class, 'view_ticket_type_requests'])->name('requests_by_ticket_type');
 
         // ! Admin only
         Route::middleware('check_permissions:admin')->group(function(){

@@ -54,28 +54,28 @@ Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
                       <td class="px-4 py-3">
                         <div class="flex items-center text-sm">
                           <div>
-                            <p class="font-semibold">{!! str_replace("$query","<span class='bg-yellow-100'>$query</span>",$request->id) !!}</p>
+                            <p class="font-semibold">{!! str_ireplace("$query","<span class='bg-yellow-100'>$query</span>",$request->id) !!}</p>
                           </div>
                         </div>
                       </td>
                       <td class="px-4 py-3">
                         <div class="flex items-center text-sm">
                           <div>
-                            <p class="font-semibold">{!! str_replace("$query","<span class='bg-yellow-100'>$query</span>",$request->name) !!}</p>
+                            <p class="font-semibold">{!! str_ireplace("$query","<span class='bg-yellow-100'>$query</span>",$request->name) !!}</p>
                           </div>
                         </div>
                       </td>
                       <td class="px-2 py-3">
                         <div class="flex items-center text-sm">
                           <div>
-                            <p class="font-semibold">{!! str_replace("$query","<span class='bg-yellow-100'>$query</span>",$request->email) !!}</p>
+                            <p class="font-semibold">{!! str_ireplace("$query","<span class='bg-yellow-100'>$query</span>",$request->email) !!}</p>
                           </div>
                         </div>
                       </td>
                       <td class="px-2 py-3">
                         <div class="flex items-center text-sm">
                           <div>
-                            <p class="font-semibold">{!! str_replace("$query","<span class='bg-yellow-100'>$query</span>",$request->phone_number) !!}</p>
+                            <p class="font-semibold">{!! str_ireplace("$query","<span class='bg-yellow-100'>$query</span>",$request->phone_number) !!}</p>
                           </div>
                         </div>
                       </td>
@@ -91,7 +91,7 @@ Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
                           @elseif ($request->payment_method == "credit_card")
                             Order Reference: <br> 
                             <b>
-                              {!! str_replace("$query","<span class='bg-yellow-100'>$query</span>",$request->order_reference_id) !!}
+                              {!! str_ireplace("$query","<span class='bg-yellow-100'>$query</span>",$request->order_reference_id) !!}
                             <b>
                           @else
                           N/A               

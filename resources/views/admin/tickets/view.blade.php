@@ -31,6 +31,7 @@ Tickets
                       <th class="px-4 py-3">Ticket Type</th>
                       <th class="px-4 py-3">Persons</th>
                       <th class="px-4 py-3">Price</th>
+                      <th class="px-4 py-3">Total Requests</th>
                       <th class="px-4 py-3">Accepted Requests</th>
                       <th class="px-4 py-3">Scans</th>
                       <th class="px-4 py-3">Actions</th>
@@ -61,6 +62,15 @@ Tickets
                           <div>
                             <p class="font-semibold">{{ $ticket_type->price }} EGP</p>
                           </div>
+                        </div>
+                      </td>
+                      <td class="px-2 py-3">
+                        <div class="flex items-center text-sm">
+                          <a href="{{ route('admin.requests_by_ticket_type', ['ticket_type_id'=>$ticket_type->id,'event_id'=>$event_id]) }}">
+                            <div>
+                              <p class="font-semibold">{{ $ticket_type->total_requests }}</p>
+                            </div>
+                          </a>
                         </div>
                       </td>
                       <td class="px-2 py-3">

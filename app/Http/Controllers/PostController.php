@@ -321,7 +321,7 @@ class PostController extends Controller
                 $post->delete();
                 return redirect()->back()->with(["error" => "An error occurred while processing your request. Please try again later. Error code: 1", 'theme' => $theme, 'event' => $event]);
             }
-        } else if($ticket->type == "noticket"){
+        } else if($ticket->type == "reservation" || $ticket->type == "noticket"){
             $post_ticket->code = null;
         } else {
             $post->delete();
@@ -558,7 +558,6 @@ class PostController extends Controller
                     'Subject' => $subject,
                     'HtmlBody' => $body,
                     'Tag' => $request->event->name,
-                    'Headers' => ["X-CUSTOM-HEADER" => "Header content"],
                     'MessageStream' => "outbound" // here you can set your custom Message Stream
                 ];
 
@@ -613,12 +612,50 @@ class PostController extends Controller
         $posts = $posts->where(function($query){
                 return $query->where('status','!=', null)->orWhere('picture','!=', "");
         });
+        
         if($request->has('q')) {
             $posts = $posts->paginate(1000);
         }else{
             $posts = $posts->paginate(15);
         }   
         return view('admin.requests',['requests'=>$posts, 'query'=>$q]);
+    }
+
+    public function view_ticket_type_requests(Request $request, $event_id, $ticket_type_id)
+    {
+        $q = false;
+        $statusPriorities = [1, 0];
+
+        $evnt = Event::find($event_id);
+        if ($evnt == null) {
+            return redirect()->back()->with(["error" => "An error occurred while processing your request. Please try again later. Error code: 3"]);
+        }
+        $ticket_type = TicketType::where('id', $ticket_type_id)->where('event_id', $event_id)->withTrashed()->first();
+        $posts = $ticket_type->posts()->with(['ticket.ticket_type', 'ticket_type', 'provider'])->orderByRaw('FIELD (posts.status, ' . implode(', ', $statusPriorities) . ') ASC');
+        if ($request->has('q')) {
+            $q = $request->q;
+            $posts = $posts->where(function ($query) use ($q) {
+                return $query
+                    ->orWhere('email', 'like', '%' . $q . '%')
+                    ->orWhere('phone_number', 'like', '%' . $q . '%')
+                    ->orWhere('posts.id', 'like', '%' . $q . '%')
+                    ->orWhere('order_reference_id', 'like', '%' . $q . '%')
+                    ->orWhere('name', 'like', '%' . $q . '%');
+            });
+        } else {
+            $posts = $posts->where('event_id', $event_id)->orderBy('created_at', "DESC");
+        }
+        // filter if status is null and no reciept
+        $posts = $posts->where(function ($query) {
+            return $query->where('posts.status', '!=', null)->orWhere('picture', '!=', "");
+        });
+
+        if ($request->has('q')) {
+            $posts = $posts->paginate(1000);
+        } else {
+            $posts = $posts->paginate(15);
+        }
+        return view('admin.requests', ['requests' => $posts, 'query' => $q]);
     }
 
     public function accept($event_id = null,$id, $through_payment = false){
@@ -630,18 +667,28 @@ class PostController extends Controller
                 return redirect()->back()->with(["error" => "You are not allowed to view this page!"]);
             }
         }
-        
         foreach($post->ticket as $ticket){
-            $email_template = EventEmailTemplate::where('event_id',$post->event_id)->where('type','approved')->first();
+            if($ticket->ticket_type->type == "reservation"){
+                $email_template = EventEmailTemplate::where('event_id', $post->event_id)->where('type', 'reservation')->first();
+            }else{
+                $email_template = EventEmailTemplate::where('event_id', $post->event_id)->where('type', 'approved')->first();
+            }
             if(!$email_template){
-                // get html value from assets 
-                $body = file_get_contents(public_path('emails/approved.html'));
-                $subject = "Your ticket has been approved!";
                 $email_template = new stdClass();
+                if($ticket->ticket_type->type == "reservation"){
+                    // get html value from assets 
+                    $body = file_get_contents(public_path('emails/reservation.html'));
+                    $subject = "Your request has been approved!";
+                    $email_template->type = 'reservation';
+                }else{
+                    $body = file_get_contents(public_path('emails/approved.html'));
+                    $subject = "Your ticket has been approved!";
+                    $email_template->type = 'approved';
+                }
                 $email_template->event_id = $post->event_id;
-                $email_template->type = 'approved';
                 $email_template->body = $body;
                 $email_template->subject = $subject;
+                dd($email_template);
             }
             $this->send_email($ticket,$post, $email_template);
         }
