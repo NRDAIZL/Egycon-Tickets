@@ -192,10 +192,7 @@ class PostController extends Controller
         if ($request->has('name')) {
             return $this->store($request, $x_event_id);
         }
-        $payment_method = $request->payment_method;
-        if (!$payment_method) {
-            return redirect()->back()->with('error', 'Please select a payment method');
-        }
+        
         $event = Event::findOrFail($x_event_id);
         $ticket_types = $event->ticket_types()->where(['is_visible'=> 1])->orderBy('is_disabled')->get();
         
@@ -216,16 +213,43 @@ class PostController extends Controller
             'quantity.*' => 'numeric|min:0|max:10',
         ]);
         $total = 0;
+        
+        $i = 0;
+        // check if any of selected tickets where quantity > 0 is a reservation ticket
+        $total_reservation_ticket = 0;
+        foreach ($ticket_types as $ticket_type) {
+            if($ticket_type->type == "reservation" && $request->quantity[$i] > 0){
+                $total_reservation_ticket += $request->quantity[$i];
+            }
+            $i++;
+        }
+
+        if($total_reservation_ticket > 5){
+            return redirect()->back()->with('status-failure', 'You cannot select more than 5 reservation tickets');
+        }
+
+        $request_include_reservations = $total_reservation_ticket > 0;
         $i = 0;
         foreach ($ticket_types as $ticket_type) {
+            // check if request includes not reservation tickets and reservation tickets at the same time and return error
+            if($request_include_reservations && $ticket_type->type != "reservation" && $request->quantity[$i] > 0){
+                return redirect()->back()->with('status-failure', 'You cannot select reservation tickets with other tickets');
+            }
             $price = $ticket_type->price * $request->quantity[$i];
             $total += $price;
             $i++;
         }
-        if ($total == 0) {
-            return redirect()->back()->with('error', 'You must select at least on ticket');
+
+        if ($total == 0 && !$request_include_reservations) {
+            return redirect()->back()->with('status-failure', 'You must select at least on ticket');
         }
-        return view('form', ['payment_method' => $request->payment_method, 'ticket_types' => $ticket_types, 'total' => $total, 'quantity' => $request->quantity, 'theme' => $theme, 'event' => $event, 'questions' => $questions, 'code' => $code]);
+
+        $payment_method = $request->payment_method;
+        if (!$payment_method && !$request_include_reservations) {
+            return redirect()->back()->with('status-failure', 'Please select a payment method');
+        }
+        $payment_method = $request_include_reservations ? "reservation" : $payment_method;
+        return view('form', ['reservation'=> $request_include_reservations, 'payment_method' => $payment_method, 'ticket_types' => $ticket_types, 'total' => $total, 'quantity' => $request->quantity, 'theme' => $theme, 'event' => $event, 'questions' => $questions, 'code' => $code]);
     }
 
     public function delete_all_view(){
@@ -235,7 +259,7 @@ class PostController extends Controller
     
     public function delete_all(Request $request, $event_id){
         if(strtoupper($request->random_string) != strtoupper($request->random_string_confirm)){
-            return redirect()->back()->with('error','The text does not match. Please try again');
+            return redirect()->back()->with('status-failure','The text does not match. Please try again');
         }
         $posts = Event::find($event_id)->posts;
         $post_tickets = PostTicket::whereIn('post_id',$posts->pluck('id'))->get();
@@ -319,13 +343,13 @@ class PostController extends Controller
                 $discount_ticket->save();
             } else {
                 $post->delete();
-                return redirect()->back()->with(["error" => "An error occurred while processing your request. Please try again later. Error code: 1", 'theme' => $theme, 'event' => $event]);
+                return redirect()->back()->with(["status-failure" => "An error occurred while processing your request. Please try again later. Error code: 1", 'theme' => $theme, 'event' => $event]);
             }
         } else if($ticket->type == "reservation" || $ticket->type == "noticket"){
             $post_ticket->code = null;
         } else {
             $post->delete();
-            return redirect()->back()->with(["error" => "An error occurred while processing your request. Please try again later. Error code: 2", 'theme' => $theme, 'event' => $event]);
+            return redirect()->back()->with(["status-failure" => "An error occurred while processing your request. Please try again later. Error code: 2", 'theme' => $theme, 'event' => $event]);
         }
         $post_ticket->save();
     }
@@ -423,11 +447,41 @@ class PostController extends Controller
         }
         $post->code = $request->unique_code;
         $total_price = 0;
-        $j=0;
         $tickets = $ticket_types;
         $total_quantity = array_sum($request->quantity);
+
+        $i = 0;
+        // check if any of selected tickets where quantity > 0 is a reservation ticket
+        $total_reservation_ticket = 0;
+        foreach ($ticket_types as $ticket_type) {
+            if ($ticket_type->type == "reservation" && $request->quantity[$i] > 0) {
+                $total_reservation_ticket += $request->quantity[$i];
+            }
+            $i++;
+        }
+        if ($total_reservation_ticket > 5) {
+            return redirect()->back()->with('status-failure', 'You cannot select more than 5 reservation tickets');
+        }
+        // check if the same email has already created a reservation ticket in the same event
+        $posts = Post::where('email', $request->email)->where('event_id', $x_event_id)->get();
+        foreach ($posts as $post) {
+            $post_tickets = $post->ticket;
+            foreach ($post_tickets as $post_ticket) {
+                if ($post_ticket->ticket_type->type == "reservation") {
+                    return redirect()->back()->with('status-failure', 'You\'ve already created a reservation. Please check your email for the confirmation.');
+                }
+            }
+        }
+        $request_include_reservations = $total_reservation_ticket > 0;
+
+        $j = 0;
         foreach($request->quantity as $quantity){
+            
             $ticket = $tickets[$j];
+            if ($request_include_reservations && $ticket->type != "reservation" && $quantity > 0) {
+                return redirect()->back()->with('status-failure', 'You cannot select reservation tickets with other tickets');
+            }
+
             if(isset($promo)){
                 if($total_quantity > $promo->max_uses - $promo->uses && $quantity != 0){
                     return redirect()->back()->with('status-failure', 'Number of tickets exceeds limit!');
@@ -453,6 +507,9 @@ class PostController extends Controller
             $j++;
         }
         $post->total_price = $total_price;
+        if($request->payment_method == "reservation" && $total_quantity == $total_reservation_ticket){
+           return $this->accept($x_event_id, $post->id, true);
+        }
         $post->save();
         // OPAY
         // if($request->payment_method == "credit_card"){
@@ -492,11 +549,11 @@ class PostController extends Controller
             $data->event_id = $x_event_id;
             $payment_methods = PaymentMethod::where('name','Kashier')->first();
             if(!$payment_methods){
-                return redirect()->back()->with(["error" =>"An error occurred while processing your request. Please try again later. Error code: 3", 'theme' => $theme, 'event' => $event]);
+                return redirect()->back()->with(["status-failure" =>"An error occurred while processing your request. Please try again later. Error code: 3", 'theme' => $theme, 'event' => $event]);
             }
             $event_payment_method = EventPaymentMethod::where('event_id',$x_event_id)->where('payment_method_id',$payment_methods->id)->first();
             if(!$event_payment_method){
-                return redirect()->back()->with(["error" =>"An error occurred while processing your request. Please try again later. Error code: 4", 'theme' => $theme, 'event' => $event]);
+                return redirect()->back()->with(["status-failure" =>"An error occurred while processing your request. Please try again later. Error code: 4", 'theme' => $theme, 'event' => $event]);
             }
             if(isset($promo))
                 $promo->save();
@@ -592,7 +649,7 @@ class PostController extends Controller
 
         $evnt = Event::find($event_id);
         if($evnt == null){
-            return redirect()->back()->with(["error" => "An error occurred while processing your request. Please try again later. Error code: 3"]);
+            return redirect()->back()->with(["status-failure" => "An error occurred while processing your request. Please try again later. Error code: 3"]);
         }
         $posts = $evnt->posts()->with(['ticket.ticket_type','ticket_type','provider'])->orderByRaw('FIELD (status, ' . implode(', ', $statusPriorities) . ') ASC');
         if($request->has('q')){
@@ -610,7 +667,9 @@ class PostController extends Controller
         }
         // filter if status is null and no reciept
         $posts = $posts->where(function($query){
-                return $query->where('status','!=', null)->orWhere('picture','!=', "");
+                return $query->where('status','!=', null)->orWhere('picture', '!=', "")->orWhere(function ($q) {
+                    return $q->where('picture', null)->orWhere('payment_method', 'reservation');
+                });
         });
         
         if($request->has('q')) {
@@ -628,7 +687,7 @@ class PostController extends Controller
 
         $evnt = Event::find($event_id);
         if ($evnt == null) {
-            return redirect()->back()->with(["error" => "An error occurred while processing your request. Please try again later. Error code: 3"]);
+            return redirect()->back()->with(["status-failure" => "An error occurred while processing your request. Please try again later. Error code: 3"]);
         }
         $ticket_type = TicketType::where('id', $ticket_type_id)->where('event_id', $event_id)->withTrashed()->first();
         $posts = $ticket_type->posts()->with(['ticket.ticket_type', 'ticket_type', 'provider'])->orderByRaw('FIELD (posts.status, ' . implode(', ', $statusPriorities) . ') ASC');
@@ -664,7 +723,7 @@ class PostController extends Controller
             $user_events = auth()->user()->events()->pluck('event_id')->toArray();
             // check if post event is in user events
             if (!in_array($post->event_id, $user_events) || $event_id != $post->event_id) {
-                return redirect()->back()->with(["error" => "You are not allowed to view this page!"]);
+                return redirect()->back()->with(["status-failure" => "You are not allowed to view this page!"]);
             }
         }
         foreach($post->ticket as $ticket){
@@ -705,7 +764,7 @@ class PostController extends Controller
         $user_events = auth()->user()->events()->pluck('event_id')->toArray();
         // check if all event ids are in user events
         if (!empty(array_diff($event_ids, $user_events))) {
-            return redirect()->back()->with(["error" => "You are not allowed to view this page!"]);
+            return redirect()->back()->with(["status-failure" => "You are not allowed to view this page!"]);
         }
         return view('admin.view_tickets',['post'=>$post]);
     }
@@ -773,7 +832,7 @@ class PostController extends Controller
             $user_events = auth()->user()->events()->pluck('event_id')->toArray();
             // check if post event is in user events
             if (!in_array($post->event_id, $user_events) || $event_id != $post->event_id) {
-                return redirect()->back()->with(["error" => "You are not allowed to view this page!"]);
+                return redirect()->back()->with(["status-failure" => "You are not allowed to view this page!"]);
             }
         }
         $email_template = EventEmailTemplate::where('event_id', $post->event_id)->where('type', 'declined')->first();
@@ -796,7 +855,7 @@ class PostController extends Controller
         $user_events = auth()->user()->events()->pluck('event_id')->toArray();
         // check if post event is in user events
         if (!in_array($post->event_id, $user_events)) {
-            return redirect()->back()->with(["error" => "You are not allowed to view this page!"]);
+            return redirect()->back()->with(["status-failure" => "You are not allowed to view this page!"]);
         }
         foreach($post->ticket as $ticket){
             $ticket->delete();
@@ -865,11 +924,11 @@ class PostController extends Controller
                         $discount_ticket->save();
                     }else{
                         $post->delete();
-                        return redirect()->back()->with(["error"=>"There are no discount tickets left!"]);
+                        return redirect()->back()->with(["status-failure"=>"There are no discount tickets left!"]);
                     }
                 }else{
                     $post->delete();
-                    return redirect()->back()->with(["error" => "There are no settings enabled for ticket codes!"]);
+                    return redirect()->back()->with(["status-failure" => "There are no settings enabled for ticket codes!"]);
                 }
                 $post_ticket->save();
                 $post_ticket = PostTicket::with('ticket_type')->find($post_ticket->id);

@@ -23,6 +23,8 @@ Egycon Tickets
       Vodafone Cash
     @elseif($payment_method == 'instapay' || old('payment_method') == 'instapay' )
       InstaPay
+    @elseif($payment_method == "reservation")
+      On Door
     @else
       Credit Card 
     @endif
