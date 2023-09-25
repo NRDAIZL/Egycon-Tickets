@@ -17,7 +17,11 @@ class TotalTickets extends Component
         $posts = $event->posts()->where('status',1)->get();
         $tickets_count = 0;
         foreach ($posts as $post) {
-            $tickets_count += $post->ticket->count();
+            foreach($post->ticket as $ticket_type){
+                if($ticket_type->ticket_type->type != "reservation"){
+                    $tickets_count += 1;
+                }
+            }
         }
         $this->subtitle = $tickets_count;
     }

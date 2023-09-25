@@ -10,7 +10,12 @@ Egycon Tickets
   @endphp
   
   @isset($code)
-    <input type="hidden" name="promo_code" value="{{ $code->code }}">
+    @php
+        if(!is_string($code)){
+            $code = $code->code;
+        }
+    @endphp
+    <input type="hidden" name="promo_code" value="{{ $code }}">
   @endisset
   @foreach ($ticket_types as $type)
     <input type="hidden" name="quantity[]" value="{{ $quantity[$i] }}">

@@ -84,17 +84,11 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
         Route::resource('payment_methods', PaymentMethodController::class)->middleware('check_permissions:admin');
 
         // ! Admin and Organizer
-        Route::middleware('check_permissions:admin,organizer')->group(function(){
-            Route::get('generate_qr_codes', [QRCodeTicketController::class, 'generate_qr_codes'])->name('generate_qr_codes');
-            Route::post('generate_qr_codes', [QRCodeTicketController::class, 'generate_qr_codes_post']);
-
-            Route::get('generate_qr_tickets', [QRCodeTicketController::class, 'generate_qr_tickets'])->name('generate_qr_tickets');
-            Route::post('generate_qr_tickets', [QRCodeTicketController::class, 'generate_qr_tickets_post']);
-
-            Route::get('/register', [PostController::class, 'onspot_registration'])->name('register');
-            Route::post('/register', [PostController::class, 'onspot_registration_post']);
+        Route::middleware('check_permissions:organizer|admin')->group(function(){
+         
 
             Route::get('/view_tickets/{id}', [PostController::class, 'view_tickets'])->name('view_tickets');
+            Route::get('/view_tickets/{id}/{ticket_id}', [PostController::class, 'scan_ticket'])->name('scan_ticket');
 
         });
         
@@ -107,6 +101,15 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
 
         // ! Admin only
         Route::middleware('check_permissions:admin')->group(function(){
+            Route::get('generate_qr_codes', [QRCodeTicketController::class, 'generate_qr_codes'])->name('generate_qr_codes');
+            Route::post('generate_qr_codes', [QRCodeTicketController::class, 'generate_qr_codes_post']);
+
+            Route::get('generate_qr_tickets', [QRCodeTicketController::class, 'generate_qr_tickets'])->name('generate_qr_tickets');
+            Route::post('generate_qr_tickets', [QRCodeTicketController::class, 'generate_qr_tickets_post']);
+
+            Route::get('/register', [PostController::class, 'onspot_registration'])->name('register');
+            Route::post('/register', [PostController::class, 'onspot_registration_post']);
+            
             Route::get('/requests/accept/{id}', [PostController::class, 'accept'])->name('accept');
             Route::get('/requests/reject/{id}', [PostController::class, 'reject'])->name('reject');
             Route::get('/requests/delete/{id}', [PostController::class, 'destroy'])->name('requests.delete');

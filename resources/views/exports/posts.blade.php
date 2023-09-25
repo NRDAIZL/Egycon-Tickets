@@ -8,6 +8,7 @@
                       <th>Phone</th>
                       <th>Ticket Type</th>
                       <th>Status</th>
+                      <th>Promo Code</th>
                       <th>Date</th>
                     </tr>
                   </thead>
@@ -90,6 +91,9 @@
                           Declined
                         </span>
                         @endif
+                      </td>
+                      <td>
+                          {{ $request->promo_code->code ?? "N/A" }}
                       </td>
                       <td >
                         {{ date('Y/m/d h:i A',strtotime($request->created_at)) }}

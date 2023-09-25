@@ -397,6 +397,7 @@ class PostController extends Controller
         $event = Event::findOrFail($x_event_id);
         $questions  = $event->questions;
         $ticket_types = [];
+        $theme = $event->themes()->where('is_active', 1)->first();
         if($request->promo_code){
             $promo = PromoCode::where('event_id',$x_event_id)->where('code', $request->promo_code)->where('is_active', 1)->where('max_uses', '>', 'uses')->first();
             if(!$promo){
@@ -412,7 +413,7 @@ class PostController extends Controller
         if (strpos(trim($request->name), ' ') === false) {
             session()->flash('status-failure', 'Please enter your full name.');
             session()->flashInput($request->input());
-            return view('form', ['ticket_types' => $ticket_types, 'total' => $request->total, 'quantity' => $request->quantity, 'payment_method'=>$request->payment_method, 'questions' => $questions, 'code' => $request->promo_code, 'event' => $event]);
+            return view('form', ['ticket_types' => $ticket_types, 'theme'=>$theme, 'total' => $request->total, 'quantity' => $request->quantity, 'payment_method'=>$request->payment_method, 'questions' => $questions, 'code' => $request->promo_code, 'event' => $event]);
         }
 
         // get submited question answers and store them in an array
@@ -421,7 +422,7 @@ class PostController extends Controller
             $answers[$question->question] = $request->input('question_'.$question->id);
         }
 
-        $theme = $event->themes()->where('is_active', 1)->first();
+        
 
         $post = new Post;
         $post->payment_method = $request->payment_method;
@@ -462,17 +463,18 @@ class PostController extends Controller
         if ($total_reservation_ticket > 5) {
             return redirect()->back()->with('status-failure', 'You cannot select more than 5 reservation tickets');
         }
+        $request_include_reservations = $total_reservation_ticket > 0;
+
         // check if the same email has already created a reservation ticket in the same event
         $posts = Post::where('email', $request->email)->where('event_id', $x_event_id)->get();
-        foreach ($posts as $post) {
-            $post_tickets = $post->ticket;
+        foreach ($posts as $P) {
+            $post_tickets = $P->ticket;
             foreach ($post_tickets as $post_ticket) {
-                if ($post_ticket->ticket_type->type == "reservation") {
-                    return redirect()->back()->with('status-failure', 'You\'ve already created a reservation. Please check your email for the confirmation.');
+                if ($post_ticket->ticket_type->type == "reservation" && $request_include_reservations) {
+                    return redirect()->back()->with('status-failure', 'Failed to register your request. Maximum number of reservations is: 1 per email.');
                 }
             }
         }
-        $request_include_reservations = $total_reservation_ticket > 0;
 
         $j = 0;
         foreach($request->quantity as $quantity){
@@ -576,10 +578,6 @@ class PostController extends Controller
             return;
         }
         if (str_contains(strtolower($ticket->ticket_type->type), 'discount')) {
-            return;
-        }
-        // check if ticket is a BUS ticket (no email will be sent)
-        if (str_contains(strtolower($ticket->ticket_type->type), 'bus')) {
             return;
         }
         try {
@@ -727,6 +725,11 @@ class PostController extends Controller
             }
         }
         foreach($post->ticket as $ticket){
+                
+            // check if ticket is a BUS ticket (no email will be sent)
+            if (str_contains(strtolower($ticket->ticket_type->name), 'bus')) {
+                $ticket->ticket_type->type = "reservation";
+            }
             if($ticket->ticket_type->type == "reservation"){
                 $email_template = EventEmailTemplate::where('event_id', $post->event_id)->where('type', 'reservation')->first();
             }else{
@@ -767,6 +770,16 @@ class PostController extends Controller
             return redirect()->back()->with(["status-failure" => "You are not allowed to view this page!"]);
         }
         return view('admin.view_tickets',['post'=>$post]);
+    }
+    
+    public function scan_ticket($event_id,$id,$ticket_id){
+        $ticket = PostTicket::where('id', $ticket_id)->where('post_id',$id)->first();
+        if(!$ticket){
+            return redirect()->back();
+        }
+        $ticket->scanned_at = date("Y-m-d H:i:s");
+        $ticket->save();
+        return redirect()->back();
     }
     
     private function send_declined_email($request, $email_template = null)
@@ -954,7 +967,7 @@ class PostController extends Controller
             $data['user_first_name'],
             $data['user_last_name'],
             $data['user_email'],
-            $data['user_phone'],
+            $data['user_phone']
         );
         $post = Post::find($data['order_id']);
         $post->external_service_provider_payment_method = 'opay';
