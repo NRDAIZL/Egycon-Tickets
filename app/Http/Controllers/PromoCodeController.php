@@ -219,15 +219,19 @@ class PromoCodeController extends Controller
             return $query->where('status', '!=', null)->orWhere('picture', '!=', "");
         });
         $ticket_types_counts = [];
-        $ticket_types_requests_count = [];
+        $ticket_type_counts_scanned = [];
         foreach($requests->get() as $request){
             foreach($request->ticket as $ticket){
                 $ticket_types_counts[$ticket->ticket_type_id] = isset($ticket_types_counts[$ticket->ticket_type_id]) ? $ticket_types_counts[$ticket->ticket_type_id] + 1 : 1;
+                if($ticket->scanned_at != null){
+                    $ticket_type_counts_scanned[$ticket->ticket_type_id] = isset($ticket_type_counts_scanned[$ticket->ticket_type_id]) ? $ticket_type_counts_scanned[$ticket->ticket_type_id] + 1 : 1;
+                }
             }
         }
         $ticket_types =  TicketType::withTrashed()->whereIn('id',array_keys($ticket_types_counts))->get();
         foreach($ticket_types as $ticket_type){
-            $ticket_type->count = $ticket_types_counts[$ticket_type->id];
+            $ticket_type->count = isset($ticket_types_counts[$ticket_type->id]) ? $ticket_types_counts[$ticket_type->id] : 0;
+            $ticket_type->count_scanned = isset($ticket_type_counts_scanned[$ticket_type->id]) ? $ticket_type_counts_scanned[$ticket_type->id] : 0;
         }
         $promo_code = auth()->user()->events()->where('event_id', $event_id)->first()->promo_codes()->where('id',$promo_code_id)->first();
         return view('admin.promo_codes.tickets',['tickets'=> $ticket_types,'promo_code'=>$promo_code]);

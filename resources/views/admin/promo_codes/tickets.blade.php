@@ -37,6 +37,7 @@ Promo Code Tickets
                     <tr>
                       <th class="px-4 py-3">Name</th>
                       <th class="px-4 py-3">Count</th>
+                      <th class="px-4 py-3">Scanned </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -47,6 +48,7 @@ Promo Code Tickets
                     >
                         <td class="px-4 py-3 text-center">{{ $ticket->name }}</td>
                         <td class="px-4 py-3 text-center">{{ $ticket->count }}</td>
+                        <td class="px-4 py-3 text-center">{{ $ticket->count_scanned }}</td>
                       </tr>
                     @endforeach
                   </tbody>
