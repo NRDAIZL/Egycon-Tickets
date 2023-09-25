@@ -16,6 +16,9 @@ class TicketController extends Controller
         $accepted_tickets_count = [];
         $total_tickets_count = [];
         foreach ($posts as $post) {
+                if($post->status == null && $post->picture == null){
+                    continue;
+                }
                 $tickets = $post->ticket;
                 foreach ($tickets as $ticket) {
                     $total_tickets_count[$ticket->ticket_type_id] = isset($total_tickets_count[$ticket->ticket_type_id]) ? $total_tickets_count[$ticket->ticket_type_id] + 1 : 1;

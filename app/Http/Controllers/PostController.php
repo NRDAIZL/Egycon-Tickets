@@ -688,7 +688,7 @@ class PostController extends Controller
             return redirect()->back()->with(["status-failure" => "An error occurred while processing your request. Please try again later. Error code: 3"]);
         }
         $ticket_type = TicketType::where('id', $ticket_type_id)->where('event_id', $event_id)->withTrashed()->first();
-        $posts = $ticket_type->posts()->with(['ticket.ticket_type', 'ticket_type', 'provider'])->orderByRaw('FIELD (posts.status, ' . implode(', ', $statusPriorities) . ') ASC');
+        $posts = $ticket_type->posts()->with(['ticket.ticket_type', 'ticket_type', 'provider'])->orderBy('status', 'DESC')->orderBy('created_at', "DESC");
         if ($request->has('q')) {
             $q = $request->q;
             $posts = $posts->where(function ($query) use ($q) {
