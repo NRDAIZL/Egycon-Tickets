@@ -63,6 +63,7 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
             Route::post('/generate', [PromoCodeController::class, 'generate_store']);
             Route::get('/export', [PromoCodeController::class, 'export'])->name('export');
             Route::get('/{promo_code_id}/requests', [PromoCodeController::class, 'show_requests_for_promo_code'])->name('requests');
+            Route::get('/{promo_code_id}/tickets', [PromoCodeController::class, 'show_tickets_for_promo_code'])->name('tickets');
 
         });
         Route::prefix('/event_settings')->middleware('check_permissions:admin')->as('event_settings.')->group(function(){

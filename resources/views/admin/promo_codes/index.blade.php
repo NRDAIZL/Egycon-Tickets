@@ -42,6 +42,7 @@ Promo Codes
                       <th class="px-4 py-3">Discount</th>
                       <th class="px-4 py-3">Max Uses</th>
                       <th class="px-4 py-3">Uses</th>
+                      <th class="px-4 py-3">Ticket Types</th>
                       <th class="px-4 py-3">Status</th>
                       <th class="px-4 py-3">Actions</th>
                     </tr>
@@ -90,7 +91,16 @@ Promo Codes
                         <div class="flex items-center text-sm">
                           <div>
                             <a class="text-xs underline" href="{{ route('admin.promo_codes.requests', ['promo_code_id'=>$promo_code->id,'event_id'=>$event_id]) }}">
-                              <p class="font-semibold">{{ $promo_code->uses }}</p>
+                              <p class="font-semibold">{{ $promo_code->requests_count }}</p>
+                            </a>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="px-2 py-3">
+                        <div class="flex items-center text-sm">
+                          <div>
+                            <a class="text-xs underline" href="{{ route('admin.promo_codes.tickets', ['promo_code_id'=>$promo_code->id,'event_id'=>$event_id]) }}">
+                              <p class="font-semibold">{{ $promo_code->ticket_types_count }}</p>
                             </a>
                           </div>
                         </div>

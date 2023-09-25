@@ -30,6 +30,15 @@ class PromoCodeController extends Controller
     public function index($event_id)
     {
         $promo_codes = auth()->user()->events()->where('event_id',$event_id)->first()->promo_codes()->with('ticket_types')->paginate(15);
+        foreach($promo_codes as $promo_code){
+            $promo_code->ticket_types_count = $promo_code->ticket_types()->withTrashed()->count();
+        }
+        // count request uses
+        foreach($promo_codes as $promo_code){
+            $promo_code->requests_count = $promo_code->posts()->where(function ($query) {
+                return $query->where('status', '!=', null)->orWhere('picture', '!=', "");
+            })->count();
+        }
         return view('admin.promo_codes.index',['promo_codes'=>$promo_codes]);
     }
 
@@ -203,5 +212,24 @@ class PromoCodeController extends Controller
         $requests = $requests->paginate(15);
 
         return view('admin.requests', ['requests'=>$requests,'query'=> "", 'promo_code'=>$promo_code]);
+    }
+
+    public function show_tickets_for_promo_code($event_id, $promo_code_id){
+        $requests = auth()->user()->events()->where('event_id', $event_id)->first()->posts()->where('promo_code_id',$promo_code_id)->where(function ($query) {
+            return $query->where('status', '!=', null)->orWhere('picture', '!=', "");
+        });
+        $ticket_types_counts = [];
+        $ticket_types_requests_count = [];
+        foreach($requests->get() as $request){
+            foreach($request->ticket as $ticket){
+                $ticket_types_counts[$ticket->ticket_type_id] = isset($ticket_types_counts[$ticket->ticket_type_id]) ? $ticket_types_counts[$ticket->ticket_type_id] + 1 : 1;
+            }
+        }
+        $ticket_types =  TicketType::withTrashed()->whereIn('id',array_keys($ticket_types_counts))->get();
+        foreach($ticket_types as $ticket_type){
+            $ticket_type->count = $ticket_types_counts[$ticket_type->id];
+        }
+        $promo_code = auth()->user()->events()->where('event_id', $event_id)->first()->promo_codes()->where('id',$promo_code_id)->first();
+        return view('admin.promo_codes.tickets',['tickets'=> $ticket_types,'promo_code'=>$promo_code]);
     }
 }
