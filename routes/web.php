@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\QRCodeTicketController;
 use App\Http\Controllers\TicketController;
+use App\Http\Controllers\SubTicketController;
 use App\Http\Controllers\UserController;
 
 /*
@@ -50,7 +51,7 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
         });
         Route::prefix('/event_settings')->as('event_settings.')->group(function(){
             Route::get('/event_days', [EventController::class, 'edit_event_days'])->name('event_days');
-            Route::post('/event_days', [EventController::class, 'store_event_days']);   
+            Route::post('/event_days', [EventController::class, 'store_event_days']);
             Route::get('/theme', [EventController::class, 'edit_theme'])->name('theme');
             Route::post('/theme', [EventController::class, 'store_theme']);
         });
@@ -82,6 +83,14 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
             Route::get('/restore/{id}', [TicketController::class, 'restore'])->name('restore');
         });
 
+        Route::prefix('/sub_tickets')->as('sub_tickets.')->group(function () {
+            Route::get('/', [SubTicketController::class, 'view'])->name('view');
+            Route::get('/add', [SubTicketController::class, 'add'])->name('add');
+            Route::post('/add', [SubTicketController::class, 'store']);
+            Route::get('/trash/{id}', [SubTicketController::class, 'trash'])->name('delete');
+            Route::get('/restore/{id}', [SubTicketController::class, 'restore'])->name('restore');
+        });
+
         Route::prefix('/codes')->as('codes.')->group(function () {
             Route::get('/', [DiscountCodeController::class, 'index'])->name('view');
             Route::get('/add', [DiscountCodeController::class, 'create'])->name('add');
@@ -96,14 +105,14 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
             Route::get('/invite', [UserController::class, 'invite'])->name('invite');
             Route::post('/invite', [UserController::class, 'invite_post']);
         });
-        
+
         Route::get('/register',[PostController::class, 'onspot_registration'])->name('register');
         Route::post('/register', [PostController::class, 'onspot_registration_post']);
 
         Route::get('/import', [PostController::class, 'import_sheet'])->name('import');
         Route::post('/import', [PostController::class, 'import_sheet_store']);
     });
-   
+
 
 });
 

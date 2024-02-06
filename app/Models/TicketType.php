@@ -25,4 +25,8 @@ class TicketType extends Model
     {
         return $this->belongsTo(Event::class);
     }
+
+    public function sub_ticket_types(){
+        return $this->hasMany(SubTicketType::class);
+    }
 }
