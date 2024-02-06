@@ -25,11 +25,9 @@ class SubTicketController extends Controller
             "ticket_type_id"=>"required|exists:ticket_types,id",
 
         ]);
-        $ticket = auth()->user()->events()->where('event_id',$event_id)->first()->ticket_types()->where("id",$request->ticket_type_id)->first()->create([
+        $ticket = auth()->user()->events()->where('event_id',$event_id)->first()->ticket_types()->where("id",$request->ticket_type_id)->first()->sub_ticket_types()->create([
             'name' => $request->name,
             'price' => $request->price,
-            'person' => $request->persons,
-            'type' => $request->type,
             'is_active' => true,
         ]);
 
