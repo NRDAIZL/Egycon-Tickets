@@ -6,7 +6,7 @@ Egycon Tickets
 @section('content-outsideform')
   @csrf
   <h1 class="text-2xl text-white">
-    Please review your order before proceeding to payment:
+    Please review your order information before proceeding to payment:
   </h1>
   <table class="w-full border border-solid border-white my-4">
     <thead>
@@ -27,6 +27,7 @@ Egycon Tickets
       </tr>
     </tbody>
   </table>
+
       @php
         function generateKashierOrderHash($order,$event_payment_method){
             $mid = $event_payment_method->account_name; //your merchant id
@@ -44,6 +45,9 @@ Egycon Tickets
         $order->merchantOrderId = $data->order_reference_id;
         $hash = generateKashierOrderHash($order,$event_payment_method);
       @endphp
+        <h1 class="text-2xl text-white mb-2">
+      Order total: {{$order->amount}} {{$order->currency}}
+  </h1>
      <script
   id="kashier-iFrame"
   src="https://checkout.kashier.io/kashier-checkout.js"

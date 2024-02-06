@@ -43,6 +43,8 @@ class UserController extends Controller
                 return redirect()->back()->with('error', 'User already exists in this event');
             }
             $event->users()->attach($user->id);
+            $user->assignRole($request->role);
+
             return redirect()->back()->with('success', 'User added to event successfully');
         }
         
