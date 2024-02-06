@@ -4,13 +4,13 @@ requests
 @endsection
 @section('title')
 Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
-  
+
 @endsection
 @section('content')
         <main class="h-full pb-16 overflow-y-auto">
           <div class="container grid px-6 mx-auto">
             {{-- if on promo_codes page hide search bar --}}
-            @if(!isset($promo_code)) 
+            @if(!isset($promo_code))
             <form action="">
                 <div class="flex  my-4">
                   <button class=" w-14 rounded-l-md flex items-center justify-center dark:bg-slate-800 border-l border-t border-b border-gray-800"> <i class="las la-search text-xl text-purple-500 "></i> </button>
@@ -25,7 +25,7 @@ Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
               Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
               <a href="{{ route('admin.requests.export',$event_id) }}"><button class="mx-8 py-1 px-4 text-sm rounded-md bg-purple-500 hover:bg-purple-600 text-white"> <i class="las la-download"></i> Export All Requests</button></a>
             </h2>
-           
+
             <div class="w-full overflow-hidden rounded-lg shadow-xs">
               <div class="w-full overflow-x-auto">
                 <table class="w-full whitespace-no-wrap" id="images">
@@ -42,14 +42,14 @@ Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
                       <th class="px-4 py-3">Status</th>
                       <th class="px-4 py-3">Date</th>
                       <th class="px-4 py-3">Actions</th>
-                      
+
                     </tr>
                   </thead>
                   <tbody
                     class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800"
                   >
                     @foreach ($requests as $request)
-                        
+
                     <tr class="text-gray-700 dark:text-gray-400">
                       <td class="px-4 py-3">
                         <div class="flex items-center text-sm">
@@ -82,19 +82,19 @@ Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
                       <td class="px-4 py-3 text-sm">
                             @if($request->picture)
                         <div class="w-12 h-12 relative">
-                            
+
                             <div class=" bg-black absolute w-full h-full top-0 left-0 flex justify-center items-center">
                                 <i class="las la-search-plus text-xl"></i>
-                            </div>      
-                            <img src="{{ asset('images/'.$request->picture) }}" class="transition-all absolute top-0 left-0 flex justify-center items-center opacity-100 hover:opacity-40 w-full h-full object-cover" alt=""> 
-                          </div>    
+                            </div>
+                            <img src="{{ asset('images/'.$request->picture) }}" class="transition-all absolute top-0 left-0 flex justify-center items-center opacity-100 hover:opacity-40 w-full h-full object-cover" alt="">
+                          </div>
                           @elseif ($request->payment_method == "credit_card")
-                            Order Reference: <br> 
+                            Order Reference: <br>
                             <b>
                               {!! str_ireplace("$query","<span class='bg-yellow-100'>$query</span>",$request->order_reference_id) !!}
                             <b>
                           @else
-                          N/A               
+                          N/A
                             @endif
                       </td>
                       <td class="px-4 py-3 text-sm">
@@ -102,7 +102,7 @@ Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
                           @php
                             $similar = [];
                             $similar_person = [];
-                            
+
                             $tickets = [];
                           foreach ($request->ticket as $ticket){
                             if(!isset($ticket->ticket_type)){
@@ -110,7 +110,7 @@ Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
                                     continue;
                             }
                             if(!isset($similar[$ticket->ticket_type->name])){
-                               
+
                               $similar[$ticket->ticket_type->name] = 1;
 
                               $similar_person[$ticket->ticket_type->name] = $ticket->ticket_type->person;
@@ -118,7 +118,7 @@ Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
                               $similar[$ticket->ticket_type->name]++;
                             }
                           }
-                          
+
                           foreach ($similar as $key => $value) {
                             $tickets[] = $value/$similar_person[$key] . " " . str_replace("$query","<span class='bg-yellow-100'>$query</span>",$key);
                           }
@@ -154,8 +154,8 @@ Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
                         <span
                           class="px-2 py-1 font-semibold leading-tight text-green-600 bg-green-100 rounded-full dark:bg-green-600 dark:text-green-100"
                         >
-                          Approved 
-                          
+                          Approved
+
 
                         </span>
                         @if($request->provider)
@@ -174,7 +174,7 @@ Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
                         @endif
                         @if($request->external_service_provider_payment_method == 'opay')
                         <span class="font-bold mx-2">
-                          Reference: {{ $request->external_service_provider_order_id; }}
+                          Reference: {{ $request->external_service_provider_order_id }}
                         </span>
                         @endif
                       </td>

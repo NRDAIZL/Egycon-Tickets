@@ -14,7 +14,7 @@ class SubTicketController extends Controller
 
     public function add($event_id){
         $ticket_types = auth()->user()->events()->where('event_id',$event_id)->first()->ticket_types()->paginate(15);
-        return view('admin.sub_tickets.add', ['ticket_type'=>$ticket_types]);
+        return view('admin.sub_tickets.add', ['ticket_types'=>$ticket_types]);
     }
 
     public function store($event_id,Request $request)
