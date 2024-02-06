@@ -51,6 +51,83 @@
               </a>
             </li>
           </ul>
+          <ul class="">
+            <li class="relative px-6 py-3">
+             
+              <a
+                class="inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200"
+                href="{{ route('instructions',$event_id) }}"
+              >
+                <i class="las la-eye text-xl"></i>
+                <span class="ml-4">Preview Payment Form</span>
+              </a>
+            </li>
+            <li class="relative px-6 py-3">
+                @if($page == 'event-settings')
+                <span
+                    class="absolute inset-y-0 left-0 w-1 bg-purple-600 rounded-tr-lg rounded-br-lg"
+                    aria-hidden="true"
+                ></span>
+                @endif
+              <button
+                class="inline-flex items-center justify-between w-full text-sm font-semibold transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200"
+                @click="toggleEventSettingsMenu"
+                aria-haspopup="true"
+              >
+                <span class="inline-flex items-center">
+                  <i class="las la-cog text-2xl"></i>
+                  <span class="ml-4">Event Settings</span>
+                </span>
+                <svg
+                  class="w-4 h-4"
+                  aria-hidden="true"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                    clip-rule="evenodd"
+                  ></path>
+                </svg>
+              </button>
+              <template x-if="isEventSettingsMenuOpen">
+                <ul
+                  x-transition:enter="transition-all ease-in-out duration-300"
+                  x-transition:enter-start="opacity-25 max-h-0"
+                  x-transition:enter-end="opacity-100 max-h-xl"
+                  x-transition:leave="transition-all ease-in-out duration-300"
+                  x-transition:leave-start="opacity-100 max-h-xl"
+                  x-transition:leave-end="opacity-0 max-h-0"
+                  class="p-2 mt-2 space-y-2 overflow-hidden text-sm font-medium text-gray-500 rounded-md shadow-inner bg-gray-50 dark:text-gray-400 dark:bg-gray-900"
+                  aria-label="submenu"
+                >
+                  <li
+                    class="px-2 py-1 transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200"
+                  >
+                    <a class="w-full" href="{{ route('admin.event_settings.templates',$event_id) }}">
+                      Email Templates
+                    </a>
+                  </li>
+                  <li
+                    class="px-2 py-1 transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200"
+                  >
+                    <a class="w-full" href="{{ route('admin.event_settings.theme',$event_id) }}">
+                      Edit Event Theme
+                    </a>
+                  </li>
+                  <li
+                    class="px-2 py-1 transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200"
+                  >
+                    <a class="w-full" href="{{ route('admin.event_settings.questions',$event_id) }}">
+                      Form Additional Questions
+                    </a>
+                  </li>
+                </ul>
+              </template>
+            </li>
+          </ul>
+          
           @else
           <h1 class="text-xl font-bold px-4 py-4">
             Please select/create an event to continue
@@ -73,7 +150,9 @@
                 <span class="ml-4">Requests</span>
                 @php
                   // get pending requests
-                  $pending_requests = App\Models\Event::find($event_id)->posts()->where('status',null)->count();
+                  $pending_requests = App\Models\Event::find($event_id)->posts()->where(function ($query) {
+                      return $query->where('status', '=', null)->where('picture', '!=', "");
+                  })->count();
                 @endphp
                 @if($pending_requests > 0)
                 <span class="ml-auto text-sm font-medium text-white flex items-center justify-center w-7 h-7 rounded-full bg-red-500">
@@ -140,6 +219,21 @@
               >
                 <i class="las la-trash-alt text-xl"></i>
                 <span class="ml-4">Clear Tickets</span>
+              </a>
+            </li>
+            <li class="relative px-6 py-3">
+              @if($page == 'promo-codes')
+              <span
+                class="absolute inset-y-0 left-0 w-1 bg-purple-600 rounded-tr-lg rounded-br-lg"
+                aria-hidden="true"
+              ></span>
+              @endif
+              <a
+                class="inline-flex items-center w-full text-sm font-semibold text-gray-500 transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200 dark:text-gray-400"
+                href="{{ route('admin.promo_codes.view',$event_id) }}"
+              >
+                <i class="las la-percentage text-xl"></i>
+                <span class="ml-4">Promo Codes</span>
               </a>
             </li>
             <li class="relative px-6 py-3 hidden ">

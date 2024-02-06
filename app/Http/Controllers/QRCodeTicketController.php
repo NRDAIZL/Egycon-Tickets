@@ -19,7 +19,7 @@ class QRCodeTicketController extends Controller
     public function generate_qr_codes_post(Request $request, $event_id){
         $request->validate([
             'ticket_type_id' => 'required|exists:ticket_types,id',
-            'quantity' => 'required|numeric|max:200',
+            'quantity' => 'required|numeric|max:500',
         ]);
         $ticket_type = TicketType::find($request->ticket_type_id);
         $event = $ticket_type->event;
@@ -75,8 +75,10 @@ class QRCodeTicketController extends Controller
     public function generate_qr_tickets_post(Request $request ,$event_id){
         $request->validate([
             'ticket_type_id' => 'required|exists:ticket_types,id',
-            'quantity' => 'required|numeric|max:200',
+            'quantity' => 'required|numeric|max:500',
             'template' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'start_number' => 'nullable|numeric|min:1|max:999999',
+            
         ]);
 
         $ticket_type = TicketType::find($request->ticket_type_id);
@@ -102,32 +104,60 @@ class QRCodeTicketController extends Controller
         }else{
             $image = imagecreatefromjpeg($template);
         }
+        // create temp image
+        $temp_image = imagecreatetruecolor($width, $height);
+        // copy image to temp image
+        imagecopy($temp_image, $image, 0, 0, 0, 0, $width, $height);
+        
         $directory_name = date('Y-m-d') . "-" . $event->id . "-" . uniqid();
         $directory_path = storage_path('app/qrcodes/' . $directory_name);
         if (!file_exists($directory_path)) {
             mkdir($directory_path, 0777, true);
         }
         $qr_options = new QROptions([
-            'version'    => 5,
+            'version'    => 3,
             'outputType' => QRCode::OUTPUT_IMAGE_JPG,
             'eccLevel'   => QRCode::ECC_L,
             'imageTransparent' => false,
             'imagickFormat' => 'jpg',
             'imageTransparencyBG' => [255, 255, 255],
+            'quietzoneSize' => 2,
         ]);
+        $quietzone_size_px = 20;
+        $i = $request->start_number??1;
+        $end_at = $request->start_number + $request->quantity;
+        $total = $request->quantity;
 
-        foreach($qr_codes as $qr_code){
-            $post_ticket = new PostTicket();
-            $post_ticket->ticket_type_id = $ticket_type->id;
-            $post_ticket->code = $qr_code;
-            $post_ticket->save();
+        // add progress to session
+        // create file in storage instead of session
+        $progress_file = fopen(storage_path('app/' . auth()->user()->id."_progress.txt"), "wa+");
+        // save directory name to session
+        $request->session()->put('progress_directory_name', $directory_name);
+        fwrite($progress_file, "0");
+        foreach($qr_codes as $key=>$qr_code){
+            $image = imagecreatetruecolor($width, $height);
+            imagecopy($image, $temp_image, 0, 0, 0, 0, $width, $height);
+
+            // check if a ticket with the same serial number generated before
+            if(PostTicket::where('serial_number', $i)->where('ticket_type_id', $ticket_type->id)->exists()){
+                $post_ticket = PostTicket::where('serial_number', $i)->where('ticket_type_id', $ticket_type->id)->first();
+                // get qr code of the ticket which was generated before
+                $qr_code = $post_ticket->code;
+                $qr_codes[$key] = $qr_code;
+            }else{
+                $post_ticket = new PostTicket();
+                $post_ticket->ticket_type_id = $ticket_type->id;
+                $post_ticket->code = $qr_code;
+                $post_ticket->serial_number = $i;
+                $post_ticket->save();
+            }
             $qrcode = new QRCode($qr_options);
             // qrcode render to storage not public
             $qrcode->render($qr_code, $directory_path."/" . $qr_code . ".jpg");
             // create image from qrcode
             $qrcode_image = imagecreatefromjpeg($directory_path."/" . $qr_code . ".jpg");
             // scale to 600x600
-            $qrcode_image = imagescale($qrcode_image, 600, 600);
+            $qrcode_image = imagescale($qrcode_image, 525, 525);
             // get qrcode image dimension
             $qrcode_height = imagesy($qrcode_image);
             $qrcode_width = imagesx($qrcode_image);
@@ -136,33 +166,60 @@ class QRCodeTicketController extends Controller
             imagecopymerge($image, $qrcode_image, $width - $qrcode_width, $height - $qrcode_height, 0, 0, $qrcode_width, $qrcode_height, 100);
 
             // write QR code text top of qr code image
-            $text_color = imagecolorallocate($image, 255, 255, 255);
+            $text_color = imagecolorallocate($image, 0, 0, 0);
             $font = public_path('fonts/CenturyGothic.ttf');
             $font_size = 30;
             $text = $qr_code;
             $text_width = imagettfbbox($font_size, 0, $font, $text)[2];
+            // $text_height = -1*imagettfbbox($font_size, 0, $font, $text)[5];
             // $text_height = imagettfbbox($font_size, 0, $font, $text)[3];
             imagettftext(
             $image, 
             $font_size, 
             0,
-            ($width - $text_width) - (($qrcode_width - $text_width) / 2), // x position
-            $height - $qrcode_height - 10, // y position
+            ($width - $text_width) - $quietzone_size_px, // x position
+            $height - $qrcode_height, // y position
             $text_color, 
             $font, 
             $text);
-
+            // display text on top right of qr code image
+            
+            if($request->start_number){
+                $serial_number = str_pad($i, 6, '0', STR_PAD_LEFT);
+                // $serial_number_width = imagettfbbox($font_size, 0, $font, $serial_number)[2];
+                // $serial_number_height = -1*imagettfbbox($font_size, 0, $font, $serial_number)[5];
+                imagettftext(
+                    $image,
+                    $font_size,
+                    0,
+                    ($width - $qrcode_width) + $quietzone_size_px, // x position
+                    $height - $qrcode_height, // y position
+                    $text_color,
+                    $font,
+                    $serial_number
+                );
+            }
             // save image
             imagejpeg($image, $directory_path."/" . $qr_code . ".jpg");
+            // destroy image
+            imagedestroy($image);
+            $i++;
+            fwrite($progress_file, "\n".round(($i - $request->start_number) / $total * 80));
         }
+        fwrite($progress_file, "\n" . round(80));
         // zip file
         $zip_file_name = $directory_name . ".zip";
         $zip_file_path = storage_path('app/qrcodes/' . $zip_file_name);
         $zip = new \ZipArchive();
         $zip->open($zip_file_path, \ZipArchive::CREATE);
+        $i = 1;
         foreach($qr_codes as $qr_code){
             $zip->addFile($directory_path."/" . $qr_code . ".jpg", $qr_code . ".jpg");
+            fwrite($progress_file, "\n" . round(($i - $request->start_number) / $total * 20 + 80));
+            $i++;
         }
+        fwrite($progress_file, "\n" . round(100));
+        fclose($progress_file);
         $zip->close();
         return response()->download($zip_file_path)->deleteFileAfterSend(true);
     }

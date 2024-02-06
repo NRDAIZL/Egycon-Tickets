@@ -18,10 +18,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.41.1/apexcharts.min.js" integrity="sha512-Gpg0M5UOTFSHGglemXUOUzL1LyO8MT0fxmEAjGN8jNlY6oSOsLerF1/vuXrqJXKyV5QIay12trwDDhmRJHZisA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
+    @livewireStyles
     <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=1.0.0" />
     <script
-      src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js"
+      src="{{ asset('js/alpine.min.js') }}"
       defer
     ></script>
   
@@ -186,8 +188,10 @@
         @yield('content')
       </div>
     </div>
+      @livewireScripts
       <script
       src="{{ asset('js/app.js') }}"
     ></script>
+    @yield('scripts')
   </body>
 </html>

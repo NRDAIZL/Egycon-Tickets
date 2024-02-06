@@ -3,22 +3,27 @@
 requests
 @endsection
 @section('title')
-Requests
+Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
+  
 @endsection
 @section('content')
         <main class="h-full pb-16 overflow-y-auto">
           <div class="container grid px-6 mx-auto">
+            {{-- if on promo_codes page hide search bar --}}
+            @if(!isset($promo_code)) 
             <form action="">
                 <div class="flex  my-4">
                   <button class=" w-14 rounded-l-md flex items-center justify-center dark:bg-slate-800 border-l border-t border-b border-gray-800"> <i class="las la-search text-xl text-purple-500 "></i> </button>
                   <input name="q" placeholder="Search phone, email, order id" type="text" class="w-full py-2 px-4  flex-1  dark:bg-slate-800 rounded-r-md dark:text-white border-t border-r border-b border-l-0 border-gray-800 ">
                 </div>
             </form>
+            @endif
+            @include('admin.includes.alerts')
             <h2
               class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"
             >
-              Requests 
-              <a href="{{ route('admin.requests.export',$event_id) }}"><button class="mx-8 py-1 px-4 rounded-md bg-purple-500 hover:bg-purple-400 text-white"> <i class="las la-download"></i> Export</button></a>
+              Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
+              <a href="{{ route('admin.requests.export',$event_id) }}"><button class="mx-8 py-1 px-4 text-sm rounded-md bg-purple-500 hover:bg-purple-600 text-white"> <i class="las la-download"></i> Export All Requests</button></a>
             </h2>
            
             <div class="w-full overflow-hidden rounded-lg shadow-xs">
@@ -37,6 +42,7 @@ Requests
                       <th class="px-4 py-3">Status</th>
                       <th class="px-4 py-3">Date</th>
                       <th class="px-4 py-3">Actions</th>
+                      
                     </tr>
                   </thead>
                   <tbody
@@ -48,28 +54,28 @@ Requests
                       <td class="px-4 py-3">
                         <div class="flex items-center text-sm">
                           <div>
-                            <p class="font-semibold">{!! str_replace("$query","<span class='bg-yellow-100'>$query</span>",$request->id) !!}</p>
+                            <p class="font-semibold">{!! str_ireplace("$query","<span class='bg-yellow-100'>$query</span>",$request->id) !!}</p>
                           </div>
                         </div>
                       </td>
                       <td class="px-4 py-3">
                         <div class="flex items-center text-sm">
                           <div>
-                            <p class="font-semibold">{!! str_replace("$query","<span class='bg-yellow-100'>$query</span>",$request->name) !!}</p>
+                            <p class="font-semibold">{!! str_ireplace("$query","<span class='bg-yellow-100'>$query</span>",$request->name) !!}</p>
                           </div>
                         </div>
                       </td>
                       <td class="px-2 py-3">
                         <div class="flex items-center text-sm">
                           <div>
-                            <p class="font-semibold">{!! str_replace("$query","<span class='bg-yellow-100'>$query</span>",$request->email) !!}</p>
+                            <p class="font-semibold">{!! str_ireplace("$query","<span class='bg-yellow-100'>$query</span>",$request->email) !!}</p>
                           </div>
                         </div>
                       </td>
                       <td class="px-2 py-3">
                         <div class="flex items-center text-sm">
                           <div>
-                            <p class="font-semibold">{!! str_replace("$query","<span class='bg-yellow-100'>$query</span>",$request->phone_number) !!}</p>
+                            <p class="font-semibold">{!! str_ireplace("$query","<span class='bg-yellow-100'>$query</span>",$request->phone_number) !!}</p>
                           </div>
                         </div>
                       </td>
@@ -82,6 +88,11 @@ Requests
                             </div>      
                             <img src="{{ asset('images/'.$request->picture) }}" class="transition-all absolute top-0 left-0 flex justify-center items-center opacity-100 hover:opacity-40 w-full h-full object-cover" alt=""> 
                           </div>    
+                          @elseif ($request->payment_method == "credit_card")
+                            Order Reference: <br> 
+                            <b>
+                              {!! str_ireplace("$query","<span class='bg-yellow-100'>$query</span>",$request->order_reference_id) !!}
+                            <b>
                           @else
                           N/A               
                             @endif
@@ -113,6 +124,10 @@ Requests
                           }
                           @endphp
                             {!! implode(',',$tickets) !!}
+                            @if($request->promo_code_id)
+                            <br>
+                            <span class="text-xs text-gray-500">Promo Code: {{ $request->promo_code->code }}</span>
+                            @endif
                         </a>
                       </td>
                       <td class="px-4 py-3 text-xs">
@@ -177,7 +192,7 @@ Requests
                             data-content="By continuing, you ensure that this request is completely accepted and cannot be undone. An email will be sent to them confirming their request and providing a QR Code image to be able to enter the event!"
                             data-action="{{ route('admin.accept',['id'=>$request->id,'event_id'=>$event_id]) }}"
                             @endif
-                            class="flex items-center group disabled:hover:bg-inherit disabled:cursor-not-allowed  hover:bg-gray-300 dark:hover:bg-gray-600 justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400 focus:outline-none focus:shadow-outline-gray"
+                            class="flex items-center group disabled:hover:bg-inherit disabled:cursor-not-allowed  hover:bg-gray-300 dark:hover:bg-gray-600 justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400  focus:shadow-outline-gray"
                             aria-label="Accept"
                           >
                             <i class="las la-check text-xl group-disabled:text-gray-500 text-green-500"></i>
@@ -191,7 +206,7 @@ Requests
                             data-content="By continuing, you ensure that this request is completely rejected and cannot be undone. An email will be sent to them informing them with the status of their request!"
                             data-action="{{ route('admin.reject',['id'=>$request->id,'event_id'=>$event_id]) }}"
                             @endif
-                            class="flex items-center group disabled:hover:bg-inherit disabled:cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600 justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400 focus:outline-none focus:shadow-outline-gray"
+                            class="flex items-center group disabled:hover:bg-inherit disabled:cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600 justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400  focus:shadow-outline-gray"
                             aria-label="Reject"
                           >
                             <i class="las la-times text-xl group-disabled:text-gray-500 text-red-500"></i>
@@ -205,7 +220,7 @@ Requests
                             data-content="By continuing, you ensure that this request is completely DELETED and cannot be undone."
                             data-action="{{ route('admin.requests.delete',['id'=>$request->id,'event_id'=>$event_id]) }}"
                             @endif
-                            class="flex items-center group disabled:hover:bg-inherit disabled:cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600 justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400 focus:outline-none focus:shadow-outline-gray"
+                            class="flex items-center group disabled:hover:bg-inherit disabled:cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600 justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400  focus:shadow-outline-gray"
                             aria-label="Reject"
                           >
                             <i class="las la-trash-alt text-xl group-disabled:text-gray-500 text-red-500"></i>

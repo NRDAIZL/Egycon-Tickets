@@ -8,6 +8,7 @@ Tickets
 @section('content')
         <main class="h-full pb-16 overflow-y-auto">
           <div class="container grid px-6 mx-auto">
+            @include('admin.includes.alerts')
               <div class="flex justify-between items-center">
 
             <h2
@@ -30,6 +31,9 @@ Tickets
                       <th class="px-4 py-3">Ticket Type</th>
                       <th class="px-4 py-3">Persons</th>
                       <th class="px-4 py-3">Price</th>
+                      <th class="px-4 py-3">Total Requests</th>
+                      <th class="px-4 py-3">Accepted Requests</th>
+                      <th class="px-4 py-3">Scans</th>
                       <th class="px-4 py-3">Actions</th>
                     </tr>
                   </thead>
@@ -60,6 +64,29 @@ Tickets
                           </div>
                         </div>
                       </td>
+                      <td class="px-2 py-3">
+                        <div class="flex items-center text-sm">
+                          <a href="{{ route('admin.requests_by_ticket_type', ['ticket_type_id'=>$ticket_type->id,'event_id'=>$event_id]) }}">
+                            <div>
+                              <p class="font-semibold">{{ $ticket_type->total_requests }}</p>
+                            </div>
+                          </a>
+                        </div>
+                      </td>
+                      <td class="px-2 py-3">
+                        <div class="flex items-center text-sm">
+                          <div>
+                            <p class="font-semibold">{{ $ticket_type->accepted_tickets_count }}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="px-2 py-3">
+                        <div class="flex items-center text-sm">
+                          <div>
+                            <p class="font-semibold">{{ $ticket_type->get_scans_count() }}</p>
+                          </div>
+                        </div>
+                      </td>
                       <td class="px-4 py-3">
                         @if($ticket_type->trashed())
                         <a href="{{ route('admin.tickets.restore', ['id'=>$ticket_type->id,'event_id'=>$event_id]) }}"><button class="bg-green-500 text-white py-2 px-8 rounded-md">
@@ -68,9 +95,13 @@ Tickets
                         @else
                         <a href="{{ route('admin.tickets.delete', ['id'=>$ticket_type->id,'event_id'=>$event_id]) }}">
                           <button class="bg-red-600 text-white py-2 px-8 rounded-md">
-                            Delete
+                            Archive
                         </button></a>
                         @endif
+                        <a href="{{ route('admin.tickets.edit', ['id'=>$ticket_type->id,'event_id'=>$event_id]) }}">
+                          <button class="bg-transparent hover:bg-neutral-200 transition-colors text-green-500 py-2 px-4 rounded-md">
+                            <i class="las la-pen text-xl"></i>
+                        </button></a>
                       </td>
                     </tr>
                     @endforeach

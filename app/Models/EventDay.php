@@ -19,4 +19,9 @@ class EventDay extends Model
     {
         return $this->belongsTo(Event::class);
     }
+
+    public function ticket_types()
+    {
+        return $this->belongsToMany(TicketType::class, 'ticket_type_event_day', 'event_day_id', 'ticket_type_id');
+    }
 }

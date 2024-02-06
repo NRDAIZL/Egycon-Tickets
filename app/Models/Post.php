@@ -30,5 +30,10 @@ class Post extends Model
     {
         return $this->belongsTo(Event::class);
     }
+
+    public function promo_code()
+    {
+        return $this->belongsTo(PromoCode::class);
+    }
     
 }

@@ -21,9 +21,9 @@ Edit Requests
             </form>  
             
            <br>
-           @if(session()->has('message'))
+           @if(session()->has('success'))
             <div class="bg-green-200 text-green-600 font-bold text-lg py-4 px-8">
-              {{ session()->get('message') }}
+              {{ session()->get('success') }}
             </div>
           @endif
           @if(session()->has('error'))

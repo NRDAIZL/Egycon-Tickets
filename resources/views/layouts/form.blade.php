@@ -30,6 +30,10 @@
       body{
           font-family:'Gothic';
           background-image: url({{ asset($registration_page_background) }});
+          background-size: cover;
+          background-repeat: no-repeat;
+          background-position: center;
+          
       }
       .form-bg{
           background-color: {{ $registration_form_background_color }};
@@ -38,24 +42,25 @@
   </style>
 </head>
 
-<body class="bg-white w-full h-full flex justify-center items-center">
+<body class="bg-white w-full h-full flex justify-center">
 <div class=" px-4 w-full lg:w-2/3 2xl:w-1/2 mx-auto text-center">
-  <div class="form-bg bg-slate-100 border-8 border-black shadow-md rounded-lg">
-    <div class=" w-full h-48 relative">
+  <div class=" w-full relative my-4">
         <img src="{{ asset($registration_page_header_image) }}" class="w-full h-full object-right-top" alt="">
-        <img src="{{ asset( $logo) }}" class="absolute left-1/2 hidden sm:block top-1/2 -translate-y-1/2 -translate-x-1/2 transform h-2/3 " alt="">
+        {{-- <img src="{{ asset( $logo) }}" class="absolute left-1/2 hidden sm:block top-1/2 -translate-y-1/2 -translate-x-1/2 transform h-2/3 " alt=""> --}}
         {{-- <img src="{{ asset('images/vodafone cash.png') }}" class="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 transform h-1/2 lg:h-2/3 " alt=""> --}}
             {{-- <img src="{{ asset('logo.png') }}" alt=""> --}}
     </div>
+  <div class="form-bg bg-slate-100 border-8 border-white shadow-md">
+    
 <form method="POST" class="w-full"  enctype="multipart/form-data">
     <div class="py-4 px-4 md:px-8 lg:px-16 xl:px-32">
-         @if($errors->any())
-    <div class="alert alert-danger">
-      @foreach ($errors->all() as $input_error)
-        {!! $input_error !!}<br>
-      @endforeach 
-    </div>
-  @endif
+    @if($errors->any())
+      <div class="alert alert-danger">
+        @foreach ($errors->all() as $input_error)
+          {!! $input_error !!}<br>
+        @endforeach 
+      </div>
+    @endif
   @if(session('status-success'))
     <div class="alert alert-success">
         {{ session('status-success') }}
@@ -67,6 +72,18 @@
     </div>
   @endif
 @yield('content')
+
+<div class="mt-8 text-center text-white">
+    
+  <p>Address: Villa 48 Narges 3, 5th settlement - New Cairo.</p>
+  <p>
+  Phone/WhatsApp: <a href="tel:+201017595077" class="text-white">+201017595077</a> | <a href="tel:+201027927479" class="text-white">+201027927479</a>
+  </p>
+  <div class="mt-4">
+      <a target="_blank" href="https://www.facebook.com/egycon.official" class=" text-white"><i class="lab la-facebook text-4xl"></i></a>
+      <a target="_blank" href="https://www.instagram.com/egycon.official" class=" text-white"><i class="lab la-instagram text-4xl"></i></a>
+  </div>
+</div>
 </div>
 </form>
 <div class="py-4">

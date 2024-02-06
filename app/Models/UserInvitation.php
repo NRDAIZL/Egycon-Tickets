@@ -18,6 +18,7 @@ class UserInvitation extends Model
         'accepted_at',
         'event_id'
     ];
+    
 
     public function invitedBy(){
         return $this->belongsTo(User::class, 'invited_by');
@@ -37,6 +38,10 @@ class UserInvitation extends Model
 
     public function scopeNotExpired($query){
         return $query->whereNull('expires_at')->orWhere('expires_at', '>', now());
+    }
+
+    public function role(){
+        return $this->belongsTo(Role::class);
     }
 
     public function event(){
