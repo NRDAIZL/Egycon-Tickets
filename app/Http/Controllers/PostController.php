@@ -781,7 +781,7 @@ class PostController extends Controller
     }
 
     public function view_tickets($event_id,$id){
-        $post = Post::with('ticket.ticket_type')->findOrFail($id);
+        $post = Post::with('ticket.ticket_type','ticket.sub_ticket_type')->findOrFail($id);
         // get all event ids through ticket_types
         $event_ids = $post->ticket_type->pluck('event_id')->toArray();
         // get all events that user has access to
