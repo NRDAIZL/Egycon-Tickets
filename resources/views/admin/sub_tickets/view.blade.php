@@ -40,7 +40,7 @@ Tickets
                   >
                     @foreach ($ticket_types as $ticket_type)
                         @if($ticket_type->sub_ticket_types()->count() > 0)
-                            @foreach($ticket_type->sub_ticket_types()->get() as $sub_ticket_type)
+                            @foreach($ticket_type->sub_ticket_types()->withTrashed()->get() as $sub_ticket_type)
                                 <tr class="text-gray-700 dark:text-gray-400">
                                 <td class="px-4 py-3">
                                     <div class="flex items-center text-sm">
@@ -79,11 +79,11 @@ Tickets
                                 </td>
                                 <td class="px-4 py-3">
                                     @if($sub_ticket_type->trashed())
-                                    <a href="{{ route('admin.tickets.restore', ['id'=>$sub_ticket_type->id,'event_id'=>$event_id]) }}"><button class="bg-green-500 text-white py-2 px-8 rounded-md">
+                                    <a href="{{ route('admin.sub_tickets.restore', ['id'=>$sub_ticket_type->id,'event_id'=>$event_id]) }}"><button class="bg-green-500 text-white py-2 px-8 rounded-md">
                                         Restore
                                     </button></a>
                                     @else
-                                    <a href="{{ route('admin.tickets.delete', ['id'=>$sub_ticket_type->id,'event_id'=>$event_id]) }}">
+                                    <a href="{{ route('admin.sub_tickets.delete', ['id'=>$sub_ticket_type->id,'event_id'=>$event_id]) }}">
                                     <button class="bg-red-600 text-white py-2 px-8 rounded-md">
                                         Delete
                                     </button></a>
