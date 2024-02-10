@@ -39,8 +39,8 @@ Tickets
                     class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800"
                   >
                     @foreach ($ticket_types as $ticket_type)
-                        @if($ticket_type->sub_ticket_types()->count())
-                            @foreach($ticket_type->sub_ticket_types() as $sub_ticket_type)
+                        @if($ticket_type->sub_ticket_types()->count() > 0)
+                            @foreach($ticket_type->sub_ticket_types()->get() as $sub_ticket_type)
                                 <tr class="text-gray-700 dark:text-gray-400">
                                 <td class="px-4 py-3">
                                     <div class="flex items-center text-sm">

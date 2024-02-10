@@ -3,12 +3,13 @@
 Egycon Tickets
 @endsection
 @section('content')
-  
+
   @csrf
   @php
     $i=0;
+    $ticket_type_quantities = [];
   @endphp
-  
+
   @isset($code)
     @php
         if(!is_string($code)){
@@ -20,6 +21,7 @@ Egycon Tickets
   @foreach ($ticket_types as $type)
     <input type="hidden" name="quantity[]" value="{{ $quantity[$i] }}">
     @php
+      $ticket_type_quantities[$type->id] = (int) $quantity[$i];
       $i++;
     @endphp
   @endforeach
@@ -31,7 +33,7 @@ Egycon Tickets
     @elseif($payment_method == "reservation")
       On Door
     @else
-      Credit Card 
+      Credit Card
     @endif
   </p>
   <input type="hidden" name="payment_method" value="{{ old('payment_method')??$payment_method }}">
@@ -49,6 +51,27 @@ Egycon Tickets
     <p class="text-white">Phone</p>
     <input required  value="{{ old('phone_number') }}"  name='phone_number' placeholder='Phone Number' class="w-full py-2 px-4 border border-slate-400" type='text'>
   </label>
+  @php
+      $i = 0;
+  @endphp
+    @foreach ($ticket_types as $type)
+       @if(count($type->sub_ticket_types()->get()) > 0)
+        @for($j = 0; $j < $ticket_type_quantities[$type->id]; $j++)
+            <label class="text-center text-lg w-full my-2">
+                <p class="text-white">Choose Type: {{$type->name}} {{$j+1}}</p>
+                <select required name='sub_ticket_{{$type->id}}[]' class="w-full py-2 px-4 border border-slate-400">
+                        <option selected disabled value="">Choose Ticket Type</option>
+                        @foreach($type->sub_ticket_types()->get() as $sub_ticket)
+                        <option value="{{ $sub_ticket->id }}">{{ $sub_ticket->name }}</option>
+                        @endforeach
+                </select>
+            </label>
+            @endfor
+       @endif
+       @php
+           $i++;
+       @endphp
+    @endforeach
 
   @foreach ($questions as $question)
       {{-- questions can be of type text, radio, checkbox, select --}}

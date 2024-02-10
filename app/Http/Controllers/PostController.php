@@ -1,35 +1,36 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Exports\PostsExport;
-use App\Http\Controllers\API\EventController;
-use App\Imports\PostImport;
-use App\Mail\TicketEmail;
-use App\Models\Event;
-use App\Models\EventEmailTemplate;
-use App\Models\EventPaymentMethod;
-use App\Models\ExternalServiceProvider;
-use App\Models\PaymentMethod;
-use Illuminate\Http\Request;
-use App\Models\Post;
-use App\Models\PostTicket;
-use App\Models\PromoCode;
-use App\Models\TicketDiscountCode;
-use App\Models\TicketType;
+use DB;
+use stdClass;
+use Exception;
 use Carbon\Carbon;
+use App\Models\Post;
+use App\Models\Event;
+use App\Mail\TicketEmail;
+use App\Models\PromoCode;
+use App\Models\PostTicket;
+use App\Models\TicketType;
+use App\Imports\PostImport;
+use App\Exports\PostsExport;
+use Illuminate\Http\Request;
+use Postmark\PostmarkClient;
+use App\Models\PaymentMethod;
+use App\Models\SubTicketType;
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
-use Exception;
-use Illuminate\Contracts\Session\Session;
-use Postmark\PostmarkClient;
-use Postmark\Models\PostmarkException;
-use DB;
+use App\Models\EventEmailTemplate;
+use App\Models\EventPaymentMethod;
+use App\Models\TicketDiscountCode;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
-use Nafezly\Payments\Classes\KashierPayment;
+use Postmark\Models\PostmarkException;
+use App\Models\ExternalServiceProvider;
+use Illuminate\Contracts\Session\Session;
 use Nafezly\Payments\Classes\OpayPayment;
-use stdClass;
+use Nafezly\Payments\Classes\KashierPayment;
+use App\Http\Controllers\API\EventController;
 
 class PostController extends Controller
 {
@@ -47,7 +48,7 @@ class PostController extends Controller
         return $this->instructions($request, $x_event_id, true);
     }
 
-    
+
     public function instructions(Request $request, $x_event_id, $i_have_a_code = null){
         // check if $x_event_id is slug or id
         if(is_numeric($x_event_id)){
@@ -192,10 +193,10 @@ class PostController extends Controller
         if ($request->has('name')) {
             return $this->store($request, $x_event_id);
         }
-        
+
         $event = Event::findOrFail($x_event_id);
         $ticket_types = $event->ticket_types()->where(['is_visible'=> 1])->orderBy('is_disabled')->get();
-        
+
         $theme = $event->themes()->where('is_active', 1)->first();
         $questions = $event->questions;
         if($request->has('promo_code')){
@@ -213,7 +214,7 @@ class PostController extends Controller
             'quantity.*' => 'numeric|min:0|max:10',
         ]);
         $total = 0;
-        
+
         $i = 0;
         // check if any of selected tickets where quantity > 0 is a reservation ticket
         $total_reservation_ticket = 0;
@@ -256,7 +257,7 @@ class PostController extends Controller
         $random_string = substr(str_shuffle("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 4);
         return view('admin.reset-tickets',['random_string'=>$random_string]);
     }
-    
+
     public function delete_all(Request $request, $event_id){
         if(strtoupper($request->random_string) != strtoupper($request->random_string_confirm)){
             return redirect()->back()->with('status-failure','The text does not match. Please try again');
@@ -272,7 +273,7 @@ class PostController extends Controller
         return redirect()->route('admin.home',$event_id)->with('success','All tickets have been deleted');
     }
 
-   
+
     public function edit_requests()
     {
         return view('admin.edit-requests');
@@ -289,7 +290,7 @@ class PostController extends Controller
         $response = json_decode($response->getContent());
         return back()->with($response->status, $response->message);
         // $data = PostTicket::with('post','ticket_type')->where('code',$request->code)->first();
-        // // check if data related to event 
+        // // check if data related to event
         // if($data){
         //     $check_event_id = $data->ticket_type->event_id;
         //     if($check_event_id != $event_id){
@@ -318,11 +319,14 @@ class PostController extends Controller
         // }
 
     }
-    private function generate_post_ticket(&$post, $ticket, $theme, $event){
+    private function generate_post_ticket(&$post, $ticket, $theme, $event, $sub_ticket_type_id){
         $unique_id = $this->generate_random_string(6);
         $post_ticket = new PostTicket();
         $post_ticket->post_id = $post->id;
         $post_ticket->ticket_type_id = $ticket->id;
+        if($sub_ticket_type_id != null){
+            $post_ticket->sub_ticket_type_id = $sub_ticket_type_id;
+        }
         if ($ticket->type == "qr") {
             $post_ticket->code = $unique_id;
             $qr_options = new QROptions([
@@ -369,7 +373,7 @@ class PostController extends Controller
         ],[
             'unique_code.unique' => 'You have already registered, if you have any questions please contact us.',
         ]);
-       
+
         // check if promo code is valid on the selected ticket type
         if ($request->promo_code) {
             $promo = PromoCode::where('code', $request->promo_code)
@@ -387,7 +391,7 @@ class PostController extends Controller
                 session()->flashInput($request->input());
                 return redirect()->route('promo_code_tickets', ['event_id' => $x_event_id, 'code' => $request->promo_code]);
             }
-            
+
         }
         if ($request->payment_method == "vodafone_cash") {
             $request->validate([
@@ -422,7 +426,7 @@ class PostController extends Controller
             $answers[$question->question] = $request->input('question_'.$question->id);
         }
 
-        
+
 
         $post = new Post;
         $post->payment_method = $request->payment_method;
@@ -454,9 +458,22 @@ class PostController extends Controller
         $i = 0;
         // check if any of selected tickets where quantity > 0 is a reservation ticket
         $total_reservation_ticket = 0;
+        $selected_sub_ticket_types = [];
         foreach ($ticket_types as $ticket_type) {
             if ($ticket_type->type == "reservation" && $request->quantity[$i] > 0) {
                 $total_reservation_ticket += $request->quantity[$i];
+            }
+            if($ticket_type->sub_ticket_types()->count() > 0){
+                $selected_sub_ticket_types[$ticket_type->id] = [];
+                foreach($request["sub_ticket_".$ticket_type->id] as $sub_ticket_type){
+                    $sub_ticket_type = SubTicketType::find($sub_ticket_type);
+                    if($sub_ticket_type == null || empty($sub_ticket_type)){
+                        return redirect()->back()->with('status-failure', 'Invalid sub ticket selection');
+                    }
+                    for($j = 0; $j < $ticket_type->person; $j++){
+                        $selected_sub_ticket_types[$ticket_type->id][] = $sub_ticket_type->id;
+                    }
+                }
             }
             $i++;
         }
@@ -478,7 +495,7 @@ class PostController extends Controller
 
         $j = 0;
         foreach($request->quantity as $quantity){
-            
+
             $ticket = $tickets[$j];
             if ($request_include_reservations && $ticket->type != "reservation" && $quantity > 0) {
                 return redirect()->back()->with('status-failure', 'You cannot select reservation tickets with other tickets');
@@ -494,18 +511,22 @@ class PostController extends Controller
                 if ($promo->uses >= $promo->max_uses) {
                     $promo->is_active = 0;
                 }
-                
+
             } else {
                 $total_price += $quantity * $ticket->price;
             }
             for($i = 0; $i<$quantity*$ticket->person; $i++){
                 $post->save();
-                $response = $this->generate_post_ticket($post, $ticket, $theme, $event);
+                $sub_ticket_type = null;
+                if(isset($selected_sub_ticket_types[$ticket->id])){
+                    $sub_ticket_type = $selected_sub_ticket_types[$ticket->id];
+                }
+                $response = $this->generate_post_ticket($post, $ticket, $theme, $event, $sub_ticket_type);
                 if($response){
                     return $response;
                 }
             }
-            
+
             $j++;
         }
         $post->total_price = $total_price;
@@ -563,7 +584,7 @@ class PostController extends Controller
         }
         if(isset($promo))
             $promo->save();
-        return redirect()->route('thank_you', ['x_event_id' => $x_event_id]);        
+        return redirect()->route('thank_you', ['x_event_id' => $x_event_id]);
     }
 
     public function thank_you($x_event_id){
@@ -587,7 +608,7 @@ class PostController extends Controller
                 "ticket_type" => $ticket->ticket_type->name,
                 "order_id" => $request->id,
                 // "date"=>date('Y/m/d'),
-                
+
             ];
             $template_id = 0;
             if($ticket->code != null){
@@ -618,7 +639,7 @@ class PostController extends Controller
 
                 $sendResult = $client->sendEmailBatch([$message]);
             }
-            
+
             // $sendResult = $client->sendEmailWithTemplate(
             //     "egycon@gamerslegacy.net",
             //     $request->email,
@@ -669,12 +690,12 @@ class PostController extends Controller
                     return $q->where('picture', null)->orWhere('payment_method', 'reservation');
                 });
         });
-        
+
         if($request->has('q')) {
             $posts = $posts->paginate(1000);
         }else{
             $posts = $posts->paginate(15);
-        }   
+        }
         return view('admin.requests',['requests'=>$posts, 'query'=>$q]);
     }
 
@@ -725,7 +746,7 @@ class PostController extends Controller
             }
         }
         foreach($post->ticket as $ticket){
-                
+
             // check if ticket is a BUS ticket (no email will be sent)
             if (str_contains(strtolower($ticket->ticket_type->name), 'bus')) {
                 $ticket->ticket_type->type = "reservation";
@@ -738,7 +759,7 @@ class PostController extends Controller
             if(!$email_template){
                 $email_template = new stdClass();
                 if($ticket->ticket_type->type == "reservation"){
-                    // get html value from assets 
+                    // get html value from assets
                     $body = file_get_contents(public_path('emails/reservation.html'));
                     $subject = "Your request has been approved!";
                     $email_template->type = 'reservation';
@@ -763,7 +784,7 @@ class PostController extends Controller
         $post = Post::with('ticket.ticket_type')->findOrFail($id);
         // get all event ids through ticket_types
         $event_ids = $post->ticket_type->pluck('event_id')->toArray();
-        // get all events that user has access to 
+        // get all events that user has access to
         $user_events = auth()->user()->events()->pluck('event_id')->toArray();
         // check if all event ids are in user events
         if (!empty(array_diff($event_ids, $user_events))) {
@@ -771,7 +792,7 @@ class PostController extends Controller
         }
         return view('admin.view_tickets',['post'=>$post]);
     }
-    
+
     public function scan_ticket($event_id,$id,$ticket_id){
         $ticket = PostTicket::where('id', $ticket_id)->where('post_id',$id)->first();
         if(!$ticket){
@@ -781,7 +802,7 @@ class PostController extends Controller
         $ticket->save();
         return redirect()->back();
     }
-    
+
     private function send_declined_email($request, $email_template = null)
     {
 
@@ -850,7 +871,7 @@ class PostController extends Controller
         }
         $email_template = EventEmailTemplate::where('event_id', $post->event_id)->where('type', 'declined')->first();
         if (!$email_template) {
-            // get html value from assets 
+            // get html value from assets
             $body = file_get_contents(public_path('emails/declined.html'));
             $subject = "Your request has been declined";
             $email_template = new stdClass();
@@ -888,7 +909,7 @@ class PostController extends Controller
             'provider_id'=>'required|exists:external_service_providers,id'
         ]);
         $array = Excel::toArray(PostImport::class,$request->file('sheet'));
-        
+
         foreach($array[0] as $k=>$row){
             if($row[1]==null||$k == 0 || Post::where('external_service_provider_order_id',intval($row[0]))->where('external_service_provider_id',$request->provider_id)->first()){
                 continue;
@@ -1056,8 +1077,8 @@ class PostController extends Controller
     // private function send_email_with_template($post, $type = 'approved', $data = [], $event_id){
     //     $event = Event::find($post->event_id);
     //     // $ticket_type = TicketType::find($post_ticket->ticket_type_id);
-       
-        
+
+
     //     Mail::to($post->email)->send(new TicketEmail($body,$subject));
     // }
 }
