@@ -15,7 +15,7 @@ Tickets
             >
               Tickets
             </h2>
-            <a href="{{ route('admin.tickets.add',$event_id) }}"><button class="bg-purple-600 text-white py-2 px-8 rounded-md">
+            <a href="{{ route('admin.sub_tickets.add',$event_id) }}"><button class="bg-purple-600 text-white py-2 px-8 rounded-md">
                 Add Ticket Type
             </button></a>
               </div>
