@@ -519,7 +519,7 @@ class PostController extends Controller
                 $post->save();
                 $sub_ticket_type = null;
                 if(isset($selected_sub_ticket_types[$ticket->id])){
-                    $sub_ticket_type = $selected_sub_ticket_types[$ticket->id];
+                    $sub_ticket_type = $selected_sub_ticket_types[$ticket->id][$i];
                 }
                 $response = $this->generate_post_ticket($post, $ticket, $theme, $event, $sub_ticket_type);
                 if($response){
