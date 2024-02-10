@@ -17,17 +17,21 @@ class PostTicket extends Model
     public function discount_code(){
         return $this->belongsTo(TicketDiscountCode::class);
     }
-    
+
     public function post()
     {
         return $this->belongsTo(Post::class);
     }
-    
+
     public function isAvailable($date){
         $event_day = $this->ticket_type->event_days->where('date', $date)->first();
         if($event_day){
             return true;
         }
         return false;
+    }
+
+    public function sub_ticket_type(){
+        return $this->belongsTo(SubTicketType::class);
     }
 }

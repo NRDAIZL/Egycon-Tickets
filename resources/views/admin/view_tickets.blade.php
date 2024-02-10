@@ -49,7 +49,7 @@
                     foreach ($similar as $key=>$value){
                         $tickets[] =  $value/$similar_person[$key] . " " . $key;
                     }
-                   
+
                     @endphp
                     {{ implode(", ", $tickets) }}
             </td>
@@ -69,7 +69,12 @@
     </table>
     {{-- Display tickets QR Code --}}
     @foreach ($post->ticket as $ticket)
-        <p>{{ $ticket->ticket_type->name }} - ID: {{ $ticket->id }} 
+        @php
+            $sub_ticket_type = null;
+            if($post->sub_ticket_type()->first() != null)
+                $sub_ticket_type = $post->sub_ticket_type()->first()->name;
+        @endphp
+        <p>{{ $ticket->ticket_type->name }}@if($sub_ticket_type) - {{$sub_ticket_type}}@endif - ID: {{ $ticket->id }}
         <a href="{{ route('admin.scan_ticket', ["event_id"=>$event_id, "id"=>$post->id, "ticket_id"=>$ticket->id])}}">
             <button type="button" {{ $ticket->scanned_at != null ? "disabled" : "" }} class="{{ $ticket->scanned_at == null ? "bg-purple-500" : "bg-red-500" }}  text-white px-4 py-2 rounded-md">
             @if($ticket->scanned_at != null)
