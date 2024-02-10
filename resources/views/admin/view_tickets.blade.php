@@ -70,7 +70,7 @@
     {{-- Display tickets QR Code --}}
     @foreach ($post->ticket as $ticket)
 
-        <p>{{ $ticket->ticket_type->name }}@if($ticket->sub_ticket_type != null) - {{$ticket->sub_ticket_type }} @endif - ID: {{ $ticket->id }}
+        <p>{{ $ticket->ticket_type->name }}@if($ticket->sub_ticket_type != null) - {{$ticket->sub_ticket_type->name }} @endif - ID: {{ $ticket->id }}
         <a href="{{ route('admin.scan_ticket', ["event_id"=>$event_id, "id"=>$post->id, "ticket_id"=>$ticket->id])}}">
             <button type="button" {{ $ticket->scanned_at != null ? "disabled" : "" }} class="{{ $ticket->scanned_at == null ? "bg-purple-500" : "bg-red-500" }}  text-white px-4 py-2 rounded-md">
             @if($ticket->scanned_at != null)
