@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use OwenIt\Auditing\Contracts\Auditable;
 
-class UserInvitation extends Model
+class UserInvitation extends Model implements Auditable
 {
+    use \OwenIt\Auditing\Auditable;
     use HasFactory;
 
     protected $fillable = [
@@ -18,11 +20,11 @@ class UserInvitation extends Model
         'accepted_at',
         'event_id'
     ];
-    
+
 
     public function invitedBy(){
         return $this->belongsTo(User::class, 'invited_by');
-    }    
+    }
 
     public function scopePending($query){
         return $query->whereNull('accepted_at');

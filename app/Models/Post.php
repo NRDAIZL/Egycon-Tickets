@@ -5,9 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use OwenIt\Auditing\Contracts\Auditable;
 
-class Post extends Model
+class Post extends Model implements Auditable
 {
+    use \OwenIt\Auditing\Auditable;
+
     use HasFactory, SoftDeletes;
 
     public function ticket()
@@ -20,7 +23,7 @@ class Post extends Model
     {
         return $this->belongsToMany(TicketType::class, 'post_tickets', 'post_id', 'ticket_type_id');
     }
-    
+
 
     public function provider(){
         return $this->belongsTo(ExternalServiceProvider::class,'external_service_provider_id');
@@ -35,5 +38,5 @@ class Post extends Model
     {
         return $this->belongsTo(PromoCode::class);
     }
-    
+
 }

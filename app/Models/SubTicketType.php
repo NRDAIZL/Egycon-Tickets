@@ -6,9 +6,12 @@ use App\Models\TicketType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use OwenIt\Auditing\Contracts\Auditable;
 
-class SubTicketType extends Model
+class SubTicketType extends Model implements Auditable
 {
+    use \OwenIt\Auditing\Auditable;
+
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
