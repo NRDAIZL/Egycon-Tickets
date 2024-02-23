@@ -14,11 +14,11 @@ class PostsExport implements FromView
     {
         $this->event_id = $event_id;
     }
-   
+
     public function view(): View
     {
         $event = auth()->user()->events()->where('event_id',$this->event_id)->first();
-        $posts = $event->posts()->with(['ticket.ticket_type','ticket_type','provider','promo_code'])->orderBy('status')->get();
+        $posts = $event->posts()->with(['ticket.ticket_type','ticket.sub_ticket_type','ticket_type','provider','promo_code'])->orderBy('status')->get();
         return view('exports.posts', [
             'requests' => $posts
         ]);

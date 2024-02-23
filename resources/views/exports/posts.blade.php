@@ -15,7 +15,7 @@
                   <tbody
                   >
                     @foreach ($requests as $request)
-                        
+
                     <tr >
                       <td>
                         <div >
@@ -50,11 +50,17 @@
                           $similar = [];
                           $similar_person = [];
                         foreach ($request->ticket as $ticket){
-                          if(!isset($similar[$ticket->ticket_type->name])){
-                            $similar[$ticket->ticket_type->name] = 1;
-                            $similar_person[$ticket->ticket_type->name] = $ticket->ticket_type->person;
+                            $ticket_name = "";
+                            $ticket_name = $ticket->ticket_type->name;
+                            if($ticket->sub_ticket_type != null)
+                            {
+                                $ticket_name += " (" + $ticket->sub_ticket_type->name + ")"
+                            }
+                          if(!isset($similar[$ticket_name])){
+                            $similar[$ticket_name] = 1;
+                            $similar_person[$ticket_name] = $ticket->ticket_type->person;
                           }else{
-                            $similar[$ticket->ticket_type->name]++;
+                            $similar[$ticket_name]++;
                           }
                         }
                         @endphp
@@ -73,8 +79,8 @@
                         <span
                           class="text-green-600"
                         >
-                          Approved 
-                          
+                          Approved
+
 
                         </span>
                         @if($request->provider)

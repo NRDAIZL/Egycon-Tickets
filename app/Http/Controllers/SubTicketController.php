@@ -19,7 +19,7 @@ class SubTicketController extends Controller
     }
 
     public function view_posts($event_id, $id){
-        dd("Temporarily Disabled");
+        echo "Temporarily Disabled!";
         // $post_tickets = SubTicketType::withTrashed()->find($id)->post_tickets()->groupBy('post_id')->get();
         // $posts = new Collection();
         // foreach($post_tickets as $post_ticket){
