@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\SubTicketType;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 
 class SubTicketController extends Controller
@@ -18,7 +19,11 @@ class SubTicketController extends Controller
     }
 
     public function view_posts($event_id, $id){
-        $posts = SubTicketType::withTrashed()->find($id)->posts()->paginate(1000);
+        $post_tickets = SubTicketType::withTrashed()->find($id)->post_tickets()->groupBy('post_id')->get();
+        $posts = new Collection();
+        foreach($posts as $post){
+            $posts->add($post);
+        }
         return view('admin.requests',['requests'=>$posts, 'query'=>false]);
     }
 

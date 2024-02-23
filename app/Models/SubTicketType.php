@@ -26,8 +26,8 @@ class SubTicketType extends Model implements Auditable
         return $this->belongsTo(TicketType::class);
     }
 
-    public function posts(){
-        return $this->hasManyThrough(Post::class, TicketType::class,"id","id");
+    public function post_tickets(){
+        return $this->hasMany(PostTicket::class);
     }
 
 
