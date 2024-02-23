@@ -22,12 +22,19 @@ class SubTicketController extends Controller
         $post_tickets = SubTicketType::withTrashed()->find($id)->post_tickets()->groupBy('post_id')->get();
         $posts = new Collection();
         foreach($post_tickets as $post_ticket){
-            if($post_ticket->post()->first() != null)
-            $posts->add($post_ticket->post()->where(function($query){
+            if($post_ticket->post()->first() != null){
+                $post = $post_ticket->post()->first();
+                $post= $post->where(function($query){
                 return $query->where('status','!=', null)->orWhere('picture', '!=', "")->orWhere(function ($q) {
                     return $q->where('picture', null)->orWhere('payment_method', 'reservation');
                 });
-        })->first());
+        })->first();
+                if($post->first() != null)
+                $posts->add($post->first());
+
+            }
+
+
         }
         return view('admin.requests',['requests'=>$posts, 'query'=>false]);
     }
