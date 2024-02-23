@@ -234,10 +234,8 @@ Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
                 </table>
               </div>
             <div class="mt-4">
-            @if($requests->hasPages())
-             {{$requests->links('pagination::tailwind')}}
+                {{$products->links('pagination::tailwind') ?? ''}}
             </div>
-            @endif
           </div>
         </main>
 
