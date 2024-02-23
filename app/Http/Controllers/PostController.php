@@ -463,7 +463,7 @@ class PostController extends Controller
             if ($ticket_type->type == "reservation" && $request->quantity[$i] > 0) {
                 $total_reservation_ticket += $request->quantity[$i];
             }
-            if($ticket_type->sub_ticket_types()->count() > 0){
+            if($ticket_type->sub_ticket_types()->count() > 0 && $request->quantity[$i] > 0){
                 $selected_sub_ticket_types[$ticket_type->id] = [];
                 foreach($request["sub_ticket_".$ticket_type->id] as $sub_ticket_type){
                     $sub_ticket_type = SubTicketType::find($sub_ticket_type);
