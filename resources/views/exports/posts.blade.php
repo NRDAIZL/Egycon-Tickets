@@ -54,7 +54,7 @@
                             $ticket_name = $ticket->ticket_type->name;
                             if($ticket->sub_ticket_type != null)
                             {
-                                $ticket_name += " (" + $ticket->sub_ticket_type->name + ")";
+                                $ticket_name = $ticket_name. " (" . $ticket->sub_ticket_type->name . ")";
                             }
                           if(!isset($similar[$ticket_name])){
                             $similar[$ticket_name] = 1;
