@@ -171,6 +171,7 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
             Route::post('/add', [SubTicketController::class, 'store']);
             Route::get('/trash/{id}', [SubTicketController::class, 'trash'])->name('delete');
             Route::get('/restore/{id}', [SubTicketController::class, 'restore'])->name('restore');
+            Route::get('{id}/requests', [SubTicketController::class, 'view_posts'])->name('requests');
         });
 
         Route::prefix('/codes')->as('codes.')->group(function () {

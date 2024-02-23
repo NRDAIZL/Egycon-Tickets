@@ -17,6 +17,11 @@ class SubTicketController extends Controller
         return view('admin.sub_tickets.add', ['ticket_types'=>$ticket_types]);
     }
 
+    public function view_posts($event_id, $id){
+        $posts = SubTicketType::withTrashed()->find($id)->posts()->paginate(1000);
+        return view('admin.requests',['requests'=>$posts, 'query'=>false]);
+    }
+
     public function store($event_id,Request $request)
     {
         $request->validate([

@@ -78,6 +78,7 @@ Tickets
                                     </div>
                                 </td>
                                 <td class="px-4 py-3">
+
                                     @if($sub_ticket_type->trashed())
                                     <a href="{{ route('admin.sub_tickets.restore', ['id'=>$sub_ticket_type->id,'event_id'=>$event_id]) }}"><button class="bg-green-500 text-white py-2 px-8 rounded-md">
                                         Restore
@@ -88,6 +89,10 @@ Tickets
                                         Delete
                                     </button></a>
                                     @endif
+                                    <a href="{{ route('admin.sub_tickets.requests', ['id'=>$sub_ticket_type->id,'event_id'=>$event_id]) }}">
+                                    <button class="bg-transparent hover:bg-neutral-200 transition-colors text-purple-500 py-2 px-4 rounded-md">
+                                        <i class="las la-eye text-xl"></i>
+                                    </button></a>
                                 </td>
                                 </tr>
                         @endforeach
