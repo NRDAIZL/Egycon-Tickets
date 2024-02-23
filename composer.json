@@ -18,6 +18,7 @@
         "livewire/livewire": "^2.11",
         "maatwebsite/excel": "^3.1",
         "nafezly/payments": "^2.4",
+        "owen-it/laravel-auditing": "^13.6",
         "spatie/laravel-permission": "^5.7",
         "wildbit/postmark-php": "^4.0"
     },
