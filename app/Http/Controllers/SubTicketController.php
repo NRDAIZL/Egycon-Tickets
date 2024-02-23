@@ -19,24 +19,25 @@ class SubTicketController extends Controller
     }
 
     public function view_posts($event_id, $id){
-        $post_tickets = SubTicketType::withTrashed()->find($id)->post_tickets()->groupBy('post_id')->get();
-        $posts = new Collection();
-        foreach($post_tickets as $post_ticket){
-            if($post_ticket->post()->first() != null){
-                $post = $post_ticket->post()->first();
-                $post= $post->where(function($query){
-                return $query->where('status','!=', null)->orWhere('picture', '!=', "")->orWhere(function ($q) {
-                    return $q->where('picture', null)->orWhere('payment_method', 'reservation');
-                });
-        })->first();
-                if($post->first() != null)
-                $posts->add($post->first());
+        dd("Temporarily Disabled");
+        // $post_tickets = SubTicketType::withTrashed()->find($id)->post_tickets()->groupBy('post_id')->get();
+        // $posts = new Collection();
+        // foreach($post_tickets as $post_ticket){
+        //     if($post_ticket->post()->first() != null){
+        //         $post = $post_ticket->post()->first();
+        //         $post= $post->where(function($query){
+        //         return $query->where('status','!=', null)->orWhere('picture', '!=', "")->orWhere(function ($q) {
+        //             return $q->where('picture', null)->orWhere('payment_method', 'reservation');
+        //         });
+        // })->first();
+        //         if($post->first() != null)
+        //         $posts->add($post->first());
 
-            }
+        //     }
 
 
-        }
-        return view('admin.requests',['requests'=>$posts, 'query'=>false]);
+        // }
+        return view('admin.requests',['requests'=>new Collection(), 'query'=>false]);
     }
 
     public function store($event_id,Request $request)
