@@ -234,7 +234,10 @@ Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
                 </table>
               </div>
             <div class="mt-4">
+                @if($requests instanceof \Illuminate\Pagination\LengthAwarePaginator )
+
                 {{$requests->links('pagination::tailwind') ?? ''}}
+                @endif
             </div>
           </div>
         </main>
