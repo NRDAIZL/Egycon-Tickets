@@ -24,6 +24,7 @@ class SubTicketController extends Controller
         foreach($post_tickets as $post_ticket){
             $posts->add($post_ticket->post()->get());
         }
+        dd($posts);
         return view('admin.requests',['requests'=>$posts, 'query'=>false]);
     }
 
