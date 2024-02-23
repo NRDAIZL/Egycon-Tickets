@@ -21,8 +21,8 @@ class SubTicketController extends Controller
     public function view_posts($event_id, $id){
         $post_tickets = SubTicketType::withTrashed()->find($id)->post_tickets()->groupBy('post_id')->get();
         $posts = new Collection();
-        foreach($posts as $post){
-            $posts->add($post);
+        foreach($post_tickets as $post_ticket){
+            $posts->add($post_ticket->post()->get());
         }
         return view('admin.requests',['requests'=>$posts, 'query'=>false]);
     }
