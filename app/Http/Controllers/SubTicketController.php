@@ -22,9 +22,9 @@ class SubTicketController extends Controller
         $post_tickets = SubTicketType::withTrashed()->find($id)->post_tickets()->groupBy('post_id')->get();
         $posts = new Collection();
         foreach($post_tickets as $post_ticket){
+            if($post_ticket != null)
             $posts->add($post_ticket->post()->first());
         }
-        dd($posts);
         return view('admin.requests',['requests'=>$posts, 'query'=>false]);
     }
 
