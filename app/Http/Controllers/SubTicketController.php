@@ -25,6 +25,13 @@ class SubTicketController extends Controller
             if($post_ticket->post()->first() != null)
             $posts->add($post_ticket->post()->first());
         }
+
+        $posts = $posts->where(function($query){
+                return $query->where('status','!=', null)->orWhere('picture', '!=', "")->orWhere(function ($q) {
+                    return $q->where('picture', null)->orWhere('payment_method', 'reservation');
+                });
+        });
+
         return view('admin.requests',['requests'=>$posts, 'query'=>false]);
     }
 
