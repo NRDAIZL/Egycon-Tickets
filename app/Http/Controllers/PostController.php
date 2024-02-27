@@ -199,6 +199,7 @@ class PostController extends Controller
 
         $theme = $event->themes()->where('is_active', 1)->first();
         $questions = $event->questions;
+        $promo_code = null;
         if($request->has('promo_code')){
             $code = PromoCode::where('code',$request->promo_code)->where('event_id',$x_event_id)->first();
             if(!$code){
@@ -207,6 +208,7 @@ class PostController extends Controller
             if($code->is_active != 1 || $code->max_uses <= $code->uses){
                 return redirect()->back()->with('status-failure','This code has reached the maximum number of uses');
             }
+            $promo_code = $code;
             $ticket_types = $code->ticket_types;
         }
         $request->validate([
@@ -240,7 +242,9 @@ class PostController extends Controller
             $total += $price;
             $i++;
         }
-
+        if($request->has('promo_code')){
+            $total = $total - ($total*($promo_code->discount/100));
+        }
         if ($total == 0 && !$request_include_reservations && !$request->has('promo_code')) {
             return redirect()->back()->with('status-failure', 'You must select at least on ticket');
         }
