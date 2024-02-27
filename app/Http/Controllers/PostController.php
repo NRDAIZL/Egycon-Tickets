@@ -178,10 +178,7 @@ class PostController extends Controller
 
     public function instructions_store(Request $request, $x_event_id, $code = null)
     {
-        if ($request->has('promo_code')) {
-            echo "<h1>Promo codes are temporarily disabled while we are working on an issue, please try again in few minutes :)</h1>";
-            exit;
-        }
+
         // check if $x_event_id is slug or id
         if (is_numeric($x_event_id)) {
             $event = Event::findOrFail($x_event_id);
@@ -244,12 +241,12 @@ class PostController extends Controller
             $i++;
         }
 
-        if ($total == 0 && !$request_include_reservations) {
+        if ($total == 0 && !$request_include_reservations && !$request->has('promo_code')) {
             return redirect()->back()->with('status-failure', 'You must select at least on ticket');
         }
 
         $payment_method = $request->payment_method;
-        if (!$payment_method && !$request_include_reservations) {
+        if (!$payment_method && !$request_include_reservations && $total > 0) {
             return redirect()->back()->with('status-failure', 'Please select a payment method');
         }
         $payment_method = $request_include_reservations ? "reservation" : $payment_method;
@@ -367,7 +364,6 @@ class PostController extends Controller
             'name'=>"required|string|min:6|max:64",
             'email' => "required|email",
             'phone_number' => "required",
-            'payment_method'=>"required",
             'promo_code' => 'nullable|exists:promo_codes,code',
             // 'ticket_type_id' => 'required_with:promo_code|exists:ticket_types,id',
             'unique_code' => 'required|unique:posts,code',
@@ -376,6 +372,12 @@ class PostController extends Controller
         ],[
             'unique_code.unique' => 'You have already registered, if you have any questions please contact us.',
         ]);
+
+        if($request->total > 0){
+            $request->validate(['payment_method' => "required",
+
+            ]);
+        }
 
         // check if promo code is valid on the selected ticket type
         if ($request->promo_code) {
@@ -396,7 +398,7 @@ class PostController extends Controller
             }
 
         }
-        if ($request->payment_method == "vodafone_cash") {
+        if ($request->payment_method == "vodafone_cash" && $request->total > 0) {
             $request->validate([
                 'receipt' => "required|file|mimes:png,jpg,jpeg",
             ]);
@@ -532,10 +534,25 @@ class PostController extends Controller
 
             $j++;
         }
+        if ($total_price > $request->total) {
+            $post->delete();
+            return redirect()->back()->with('status-failure', 'There has been an issue with your request!');
+        }
         $post->total_price = $total_price;
+
         if($request->payment_method == "reservation" && $total_quantity == $total_reservation_ticket){
            return $this->accept($x_event_id, $post->id, true);
         }
+        if ($total_price == 0 && isset($promo)) {
+            return $this->accept($x_event_id, $post->id, true);
+        }
+
+        if ($request->payment_method == "vodafone_cash" && $total_price > 0) {
+            $request->validate([
+                'receipt' => "required|file|mimes:png,jpg,jpeg",
+            ]);
+        }
+
         $post->save();
         // OPAY
         // if($request->payment_method == "credit_card"){
@@ -558,7 +575,7 @@ class PostController extends Controller
         //     return $this->online_payment($data);
         // }
         // KASHIER
-        if($request->payment_method == "credit_card"){
+        if($request->payment_method == "credit_card" && $total_price > 0 ){
             $post->save();
             // calculate the total amount
             $total = $post->total_price;
@@ -575,10 +592,14 @@ class PostController extends Controller
             $data->event_id = $x_event_id;
             $payment_methods = PaymentMethod::where('name','Kashier')->first();
             if(!$payment_methods){
+                $post->delete();
+
                 return redirect()->back()->with(["status-failure" =>"An error occurred while processing your request. Please try again later. Error code: 3", 'theme' => $theme, 'event' => $event]);
             }
             $event_payment_method = EventPaymentMethod::where('event_id',$x_event_id)->where('payment_method_id',$payment_methods->id)->first();
             if(!$event_payment_method){
+                $post->delete();
+
                 return redirect()->back()->with(["status-failure" =>"An error occurred while processing your request. Please try again later. Error code: 4", 'theme' => $theme, 'event' => $event]);
             }
             if(isset($promo))
