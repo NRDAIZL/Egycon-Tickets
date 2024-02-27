@@ -554,6 +554,9 @@ class PostController extends Controller
             $promo->save();
         }
         if ($total_price == 0 && isset($promo)) {
+            $post->status = 1;
+            $post->save();
+
             $this->accept($x_event_id, $post->id, true);
             return redirect()->route('thank_you', [
                 'x_event_id' => $x_event_id,
