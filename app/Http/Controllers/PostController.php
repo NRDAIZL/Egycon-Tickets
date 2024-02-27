@@ -179,7 +179,7 @@ class PostController extends Controller
     public function instructions_store(Request $request, $x_event_id, $code = null)
     {
         if ($request->has('promo_code')) {
-            echo "<h1>Promo codes are temporarily disabled while we are working on an issue</h1>";
+            echo "<h1>Promo codes are temporarily disabled while we are working on an issue, please try again in few minutes :)</h1>";
             exit;
         }
         // check if $x_event_id is slug or id
