@@ -566,9 +566,10 @@ class PostController extends Controller
         }
 
         if ($request->payment_method == "vodafone_cash" && $total_price > 0) {
-            $request->validate([
-                'receipt' => "required|file|mimes:png,jpg,jpeg",
-            ]);
+            if(!$request->hasFile('receipt')){
+                return redirect()->back()->with('status-failure', 'Something wrong happened while processing your request!');
+            }
+
         }
 
         $post->save();
