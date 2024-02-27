@@ -180,6 +180,7 @@ class PostController extends Controller
     {
         if ($request->has('promo_code')) {
             echo "<h1>Promo codes are temporarily disabled while we are working on an issue</h1>";
+            exit;
         }
         // check if $x_event_id is slug or id
         if (is_numeric($x_event_id)) {
