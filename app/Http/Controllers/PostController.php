@@ -342,6 +342,7 @@ class PostController extends Controller
                 'imageTransparencyBG' => [255, 255, 255],
             ]);
             $qrcode = new QRCode($qr_options);
+            if(false)
             $qrcode->render($unique_id, public_path('images/qrcodes/' . $unique_id . ".jpg"));
         } else if ($ticket->type == "discount") {
             $discount_ticket = TicketDiscountCode::where('claimed_at', null)->first();
@@ -547,8 +548,17 @@ class PostController extends Controller
         if($request->payment_method == "reservation" && $total_quantity == $total_reservation_ticket){
            return $this->accept($x_event_id, $post->id, true);
         }
+        $post->save();
+        if(isset($promo)){
+            $promo->save();
+        }
         if ($total_price == 0 && isset($promo)) {
-            return $this->accept($x_event_id, $post->id, true);
+            $this->accept($x_event_id, $post->id, true);
+            return redirect()->route('thank_you', [
+                'x_event_id' => $x_event_id,
+                "message" => "Your request is being processed. You should receive an email shortly.",
+            ]);
+
         }
 
         if ($request->payment_method == "vodafone_cash" && $total_price > 0) {
@@ -676,7 +686,7 @@ class PostController extends Controller
             // );
 
         } catch (PostmarkException $ex) {
-            dd($ex);
+            // dd($ex);
             // If the client is able to communicate with the API in a timely fashion,
             // but the message data is invalid, or there's a server error,
             // a PostmarkException can be thrown.

@@ -13,7 +13,13 @@ Thank you for registering at {{ $event->name??"The Event" }}!
         {{ $status_error }}
      </h1>
     @else
-     <h1 class="text-3xl text-center">Your request is being reviewed. Once approved you will receive your ticket(s) via E-mail. <br></h1>
+     <h1 class="text-3xl text-center">
+        @isset($message)
+            {{$message}}
+        @else
+        Your request is being reviewed. Once approved you will receive your ticket(s) via E-mail.
+        @endisset
+         <br></h1>
     @endif
 </div>
  @endsection
