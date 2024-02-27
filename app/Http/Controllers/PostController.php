@@ -549,7 +549,6 @@ class PostController extends Controller
            return $this->accept($x_event_id, $post->id, true);
         }
         $post->save();
-        dd($post);
         if(isset($promo)){
             $promo->save();
         }
