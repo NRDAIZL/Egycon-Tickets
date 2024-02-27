@@ -342,7 +342,6 @@ class PostController extends Controller
                 'imageTransparencyBG' => [255, 255, 255],
             ]);
             $qrcode = new QRCode($qr_options);
-            if(false)
             $qrcode->render($unique_id, public_path('images/qrcodes/' . $unique_id . ".jpg"));
         } else if ($ticket->type == "discount") {
             $discount_ticket = TicketDiscountCode::where('claimed_at', null)->first();
