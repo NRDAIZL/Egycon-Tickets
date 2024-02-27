@@ -549,6 +549,7 @@ class PostController extends Controller
            return $this->accept($x_event_id, $post->id, true);
         }
         $post->save();
+        dd($post);
         if(isset($promo)){
             $promo->save();
         }
@@ -556,7 +557,6 @@ class PostController extends Controller
             $this->accept($x_event_id, $post->id, true);
             return redirect()->route('thank_you', [
                 'x_event_id' => $x_event_id,
-                "message" => "Your request is being processed. You should receive an email shortly.",
             ]);
 
         }
