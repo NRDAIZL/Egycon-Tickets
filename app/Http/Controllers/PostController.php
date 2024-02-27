@@ -377,7 +377,9 @@ class PostController extends Controller
         ],[
             'unique_code.unique' => 'You have already registered, if you have any questions please contact us.',
         ]);
-
+        if($request->quantity <= 0){
+            session()->flash('status-failure', 'Please select at least one ticket');
+        }
         if($request->total > 0){
             $request->validate(['payment_method' => "required",
 
@@ -696,7 +698,7 @@ class PostController extends Controller
             echo $ex->message;
             echo $ex->postmarkApiErrorCode;
         } catch (Exception $generalException) {
-            dd($generalException);
+            // dd($generalException);
             // A general exception is thrown if the API
             // was unreachable or times out.
         }
@@ -811,7 +813,7 @@ class PostController extends Controller
                 $email_template->event_id = $post->event_id;
                 $email_template->body = $body;
                 $email_template->subject = $subject;
-                dd($email_template);
+                // dd($email_template);
             }
             $this->send_email($ticket,$post, $email_template);
         }
