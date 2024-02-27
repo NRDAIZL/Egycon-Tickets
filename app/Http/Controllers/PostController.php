@@ -393,11 +393,7 @@ class PostController extends Controller
             }
 
         }
-        if ($request->payment_method == "vodafone_cash") {
-            $request->validate([
-                'receipt' => "required|file|mimes:png,jpg,jpeg",
-            ]);
-        }
+
         $event = Event::findOrFail($x_event_id);
         $questions  = $event->questions;
         $ticket_types = [];
@@ -516,7 +512,7 @@ class PostController extends Controller
                 $total_price += $quantity * $ticket->price;
             }
             for($i = 0; $i<$quantity*$ticket->person; $i++){
-                $post->save();
+                // $post->save();
                 $sub_ticket_type = null;
                 if(isset($selected_sub_ticket_types[$ticket->id])){
                     $sub_ticket_type = $selected_sub_ticket_types[$ticket->id][$i];
@@ -530,8 +526,17 @@ class PostController extends Controller
             $j++;
         }
         $post->total_price = $total_price;
+        if ($request->payment_method == "vodafone_cash") {
+            $request->validate([
+                'receipt' => "required|file|mimes:png,jpg,jpeg",
+            ]);
+        }
         if($request->payment_method == "reservation" && $total_quantity == $total_reservation_ticket){
            return $this->accept($x_event_id, $post->id, true);
+        }
+
+        if (isset($promo) && $total_price == 0) {
+            return $this->accept($x_event_id, $post->id, true);
         }
         $post->save();
         // OPAY
