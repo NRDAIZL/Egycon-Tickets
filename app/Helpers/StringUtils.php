@@ -16,7 +16,7 @@ class StringUtils{
         }
         $word = strval($word);
         $string = strval($string);
-        $regex = "/(?i)($word)/";
+        $regex = "/(?i)($word)/u";
         return preg_replace($regex, $prefix."$1".$suffix, $string);
     }
 
