@@ -106,15 +106,14 @@ Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
 
                             $tickets = [];
                           foreach ($request->ticket as $ticket){
-                            $ticket_name = $ticket->ticket_type->name;
                             if(!isset($ticket->ticket_type)){
                                     $tickets[] = "N/A";
                                     continue;
                             }
-                            if(isset($ticket->sub_ticket_type)){
-                              $ticket_name = $ticket->ticket_type->name . " " . StringUtils::wrapWithParentheses($ticket->sub_ticket_type->name);
+                            if(isset($ticket->sub_ticket_type) && !isset($ticket->ticket_type->name_chaned)){
+                              $ticket->ticket_type->name = $ticket->ticket_type->name . " " . StringUtils::wrapWithParentheses($ticket->sub_ticket_type->name);
+                              $ticket->ticket_type->name_chaned = true;
                             }
-                            $ticket->ticket_type->name = $ticket_name;
                             if(!isset($similar[$ticket->ticket_type->name])){
 
                               $similar[$ticket->ticket_type->name] = 1;
