@@ -6,7 +6,9 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\HasApiTokens;
+use Laravolt\Avatar\Avatar;
 use Spatie\Permission\Traits\HasRoles;
 use OwenIt\Auditing\Contracts\Auditable;
 
@@ -51,6 +53,30 @@ class User extends Authenticatable implements Auditable
     public function events()
     {
         return $this->belongsToMany(Event::class);
+    }
+
+    public function generateAvatar()
+    {
+        $avatar = new Avatar();
+        $avatar_image_url =
+        $avatar->create($this->email)->toGravatar(['d' => 'identicon', 'r' => 'pg', 's' => 100]);
+        file_get_contents($avatar_image_url);
+        $path = 'avatars/'.$this->id.'.png';
+        Storage::disk('public')->put($path, file_get_contents($avatar_image_url));                
+        UserAvatar::create(['user_id' => $this->id, 'image' => $path]);
+        return $this;
+    }
+
+    public function getAvatar(){
+        $avatar = UserAvatar::where('user_id', $this->id);
+        if($avatar->exists()){
+            return $avatar->get()->last()->getImageAttribute();
+        }else if(env("GENERATE_AVATARS_AUTOMATICALLY", true)){
+            // generate
+            return $this->generateAvatar()->getAvatar();
+        }else{
+            return asset("images/". env("DEFAULT_AVATAR_PATH", "default_avatar.png"));
+        }
     }
 
 }

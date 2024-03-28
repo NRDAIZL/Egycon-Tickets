@@ -54,28 +54,29 @@ Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
                       <td class="px-4 py-3">
                         <div class="flex items-center text-sm">
                           <div>
-                            <p class="font-semibold">{!! str_ireplace("$query","<span class='bg-yellow-100'>$query</span>",$request->id) !!}</p>
+                            <p class="font-semibold">{!! StringUtils::highlight($request->id, $query) !!}</p>
+                            {{-- <p class="font-semibold">{!! str_ireplace("$query","<span class='bg-yellow-100'>$query</span>",$request->id) !!}</p> --}}
                           </div>
                         </div>
                       </td>
                       <td class="px-4 py-3">
                         <div class="flex items-center text-sm">
                           <div>
-                            <p class="font-semibold">{!! str_ireplace("$query","<span class='bg-yellow-100'>$query</span>",$request->name) !!}</p>
+                            <p class="font-semibold">{!! StringUtils::highlight($request->name, $query) !!}</p>
                           </div>
                         </div>
                       </td>
                       <td class="px-2 py-3">
                         <div class="flex items-center text-sm">
                           <div>
-                            <p class="font-semibold">{!! str_ireplace("$query","<span class='bg-yellow-100'>$query</span>",$request->email) !!}</p>
+                            <p class="font-semibold">{!! StringUtils::highlight($request->email, $query) !!}</p>
                           </div>
                         </div>
                       </td>
                       <td class="px-2 py-3">
                         <div class="flex items-center text-sm">
                           <div>
-                            <p class="font-semibold">{!! str_ireplace("$query","<span class='bg-yellow-100'>$query</span>",$request->phone_number) !!}</p>
+                            <p class="font-semibold">{!! StringUtils::highlight($request->phone_number, $query) !!}</p>
                           </div>
                         </div>
                       </td>
@@ -91,7 +92,7 @@ Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
                           @elseif ($request->payment_method == "credit_card")
                             Order Reference: <br>
                             <b>
-                              {!! str_ireplace("$query","<span class='bg-yellow-100'>$query</span>",$request->order_reference_id) !!}
+                              {!! StringUtils::highlight($request->order_reference_id, $query) !!}
                             <b>
                           @else
                           N/A
@@ -109,6 +110,9 @@ Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
                                     $tickets[] = "N/A";
                                     continue;
                             }
+                            if(isset($ticket->sub_ticket_type)){
+                              $ticket->ticket_type->name = $ticket->ticket_type->name . " " . StringUtils::wrapWithParentheses($ticket->sub_ticket_type->name);
+                            }
                             if(!isset($similar[$ticket->ticket_type->name])){
 
                               $similar[$ticket->ticket_type->name] = 1;
@@ -120,13 +124,13 @@ Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
                           }
 
                           foreach ($similar as $key => $value) {
-                            $tickets[] = $value/$similar_person[$key] . " " . str_replace("$query","<span class='bg-yellow-100'>$query</span>",$key);
+                            $tickets[] = $value/$similar_person[$key] . " " . StringUtils::highlight($key, $query);
                           }
                           @endphp
                             {!! implode(',',$tickets) !!}
                             @if($request->promo_code_id)
                             <br>
-                            <span class="text-xs text-gray-500">Promo Code: {{ $request->promo_code->code }}</span>
+                            <span class="text-xs text-gray-500">Promo Code: {!! StringUtils::highlight($request->promo_code->code, $query) !!}</span>
                             @endif
                         </a>
                       </td>
@@ -162,7 +166,7 @@ Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
                         <span
                           class="px-2 py-1 font-semibold leading-tight text-black-600 bg-green-100 rounded-full dark:bg-green-600 dark:text-green-100"
                         >
-                            {!! str_replace("$query","<span class='bg-yellow-100'>$query</span>",$request->provider->name) !!}
+                        {!! StringUtils::highlight($request->provider->name, $query) !!}
                         </span>
                         @endif
                         @else

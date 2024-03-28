@@ -16,6 +16,8 @@ use App\Http\Controllers\TicketController;
 use App\Http\Controllers\SubTicketController;
 use App\Http\Controllers\UserController;
 use App\Models\PostTicket;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
@@ -87,11 +89,8 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
 
         // ! Admin and Organizer
         Route::middleware('check_permissions:organizer|admin')->group(function(){
-
-
             Route::get('/view_tickets/{id}', [PostController::class, 'view_tickets'])->name('view_tickets');
             Route::get('/view_tickets/{id}/{ticket_id}', [PostController::class, 'scan_ticket'])->name('scan_ticket');
-
         });
 
         Route::get('qr_progress', function () {
@@ -109,9 +108,6 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
             Route::get('generate_qr_tickets', [QRCodeTicketController::class, 'generate_qr_tickets'])->name('generate_qr_tickets');
             Route::post('generate_qr_tickets', [QRCodeTicketController::class, 'generate_qr_tickets_post']);
 
-            Route::get('/register', [PostController::class, 'onspot_registration'])->name('register');
-            Route::post('/register', [PostController::class, 'onspot_registration_post']);
-
             Route::get('/requests/accept/{id}', [PostController::class, 'accept'])->name('accept');
             Route::get('/requests/reject/{id}', [PostController::class, 'reject'])->name('reject');
             Route::get('/requests/delete/{id}', [PostController::class, 'destroy'])->name('requests.delete');
@@ -122,7 +118,6 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
             Route::get('/requests/export', [PostController::class, 'export'])->name('requests.export');
 
             Route::prefix('/tickets')->as('tickets.')->group(function () {
-                Route::get('/', [TicketController::class, 'view'])->name('view');
                 Route::get('/add', [TicketController::class, 'add'])->name('add');
                 Route::get('/edit/{id}', [TicketController::class, 'edit'])->name('edit');
                 Route::post('/add', [TicketController::class, 'store']);
@@ -140,14 +135,23 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
                 Route::get('/restore/{id}', [DiscountCodeController::class, 'restore'])->name('restore');
             });
 
-            Route::prefix('/users')->as('users.')->group(function () {
-                Route::get('/', [UserController::class, 'view'])->name('view');
-                Route::get('/invite', [UserController::class, 'invite'])->name('invite');
-                Route::post('/invite', [UserController::class, 'invite_post']);
-            });
-
             Route::get('/import', [PostController::class, 'import_sheet'])->name('import');
             Route::post('/import', [PostController::class, 'import_sheet_store']);
+
+            Route::prefix('/users')->as('users.')->group(function () {
+                Route::get('/invite', [UserController::class, 'invite'])->name('invite');
+                Route::post('/invite', [UserController::class, 'invite_post']);
+                Route::get('/edit/{id}', [UserController::class, 'update'])->name('update');
+                Route::post('/edit/{id}', [UserController::class, 'update_post']);
+            });
+
+            Route::prefix('/sub_tickets')->as('sub_tickets.')->group(function () {
+                Route::get('/add', [SubTicketController::class, 'add'])->name('add');
+                Route::post('/add', [SubTicketController::class, 'store']);
+                Route::get('/trash/{id}', [SubTicketController::class, 'trash'])->name('delete');
+                Route::get('/restore/{id}', [SubTicketController::class, 'restore'])->name('restore');
+                Route::get('{id}/requests', [SubTicketController::class, 'view_posts'])->name('requests');
+            });
         });
 
 
@@ -159,41 +163,19 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
 
         Route::prefix('/tickets')->as('tickets.')->group(function () {
             Route::get('/', [TicketController::class, 'view'])->name('view');
-            Route::get('/add', [TicketController::class, 'add'])->name('add');
-            Route::post('/add', [TicketController::class, 'store']);
-            Route::get('/trash/{id}', [TicketController::class, 'trash'])->name('delete');
-            Route::get('/restore/{id}', [TicketController::class, 'restore'])->name('restore');
         });
 
         Route::prefix('/sub_tickets')->as('sub_tickets.')->group(function () {
             Route::get('/', [SubTicketController::class, 'view'])->name('view');
-            Route::get('/add', [SubTicketController::class, 'add'])->name('add');
-            Route::post('/add', [SubTicketController::class, 'store']);
-            Route::get('/trash/{id}', [SubTicketController::class, 'trash'])->name('delete');
-            Route::get('/restore/{id}', [SubTicketController::class, 'restore'])->name('restore');
-            Route::get('{id}/requests', [SubTicketController::class, 'view_posts'])->name('requests');
         });
 
-        Route::prefix('/codes')->as('codes.')->group(function () {
-            Route::get('/', [DiscountCodeController::class, 'index'])->name('view');
-            Route::get('/add', [DiscountCodeController::class, 'create'])->name('add');
-            Route::post('/add', [DiscountCodeController::class, 'store']);
-            Route::get('/upload', [DiscountCodeController::class, 'upload'])->name('upload');
-            Route::post('/upload', [DiscountCodeController::class, 'upload_store']);
-            Route::get('/trash/{id}', [DiscountCodeController::class, 'trash'])->name('delete');
-            Route::get('/restore/{id}', [DiscountCodeController::class, 'restore'])->name('restore');
-        });
         Route::prefix('/users')->as('users.')->group(function () {
             Route::get('/', [UserController::class, 'view'])->name('view');
-            Route::get('/invite', [UserController::class, 'invite'])->name('invite');
-            Route::post('/invite', [UserController::class, 'invite_post']);
         });
 
         Route::get('/register',[PostController::class, 'onspot_registration'])->name('register');
         Route::post('/register', [PostController::class, 'onspot_registration_post']);
 
-        Route::get('/import', [PostController::class, 'import_sheet'])->name('import');
-        Route::post('/import', [PostController::class, 'import_sheet_store']);
     });
 
 
@@ -224,4 +206,11 @@ Route::get('/{x_event_id}/thank_you',[PostController::class, 'thank_you'])->name
 //         }
 //     }
 //     return 'done';
+// });
+
+
+// Route::get("/generate/avatars", function(){
+//     User::all()->each(function($user){
+//         $user->generateAvatar();
+//     });
 // });

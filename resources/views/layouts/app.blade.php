@@ -143,7 +143,7 @@
                 >
                   <img
                     class="object-cover w-8 h-8 rounded-full border"
-                    {{-- src="{{ asset("avatars/".Auth::user()->with('avatar')->first()->avatar->image) }}" --}}
+                    src="{{ Auth::user()->getAvatar() }}"
                     aria-hidden="true"
                   />
                 </button>

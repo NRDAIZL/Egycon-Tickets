@@ -715,13 +715,22 @@ class PostController extends Controller
         $posts = $evnt->posts()->with(['ticket.ticket_type','ticket_type','provider'])->orderByRaw('FIELD (status, ' . implode(', ', $statusPriorities) . ') ASC');
         if($request->has('q')){
             $q = $request->q;
-            $posts = $posts->where(function($query) use ($q){
-                return $query
+            $posts = $posts->where(function($parent_query) use ($q){
+                return $parent_query
                 ->orWhere('email', 'like', '%' . $q . '%')
                 ->orWhere('phone_number', 'like', '%' . $q . '%')
                 ->orWhere('id', 'like', '%' . $q . '%')
                 ->orWhere('order_reference_id', 'like', '%' . $q . '%')
-                ->orWhere('name', 'like', '%' . $q . '%');
+                ->orWhere('name', 'like', '%' . $q . '%')
+                ->orWhereHas('ticket', function ($query) use ($q) {
+                    return $query->whereHas('ticket_type', function ($child_query) use ($q) {
+                        return $child_query->where('name', 'like', '%' . $q . '%');
+                    });
+                })->orWhereHas('ticket', function ($query) use ($q) {
+                    return $query->whereHas('sub_ticket_type', function ($child_query) use ($q) {
+                        return $child_query->where('name', 'like', '%' . $q . '%');
+                    });
+                });
             });
         }else{
             $posts = $posts->where('event_id',$event_id)->orderBy('created_at',"DESC");
@@ -732,7 +741,6 @@ class PostController extends Controller
                     return $q->where('picture', null)->orWhere('payment_method', 'reservation');
                 });
         });
-
         if($request->has('q')) {
             $posts = $posts->paginate(1000);
         }else{

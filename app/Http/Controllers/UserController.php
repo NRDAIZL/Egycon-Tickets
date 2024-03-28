@@ -157,4 +157,81 @@ class UserController extends Controller
         $invitations = $event->invitations()->where('accepted_at', null)->where('expires_at', '>', now()->subDays(7))->get();
         return view('admin.users.view', compact('event','users','invitations'));
     }
+
+    public function update($event_id, $user_id){
+        $event = auth()->user()->events()->where('event_id', $event_id)->first();
+        if(!$event){
+            return redirect()->back()->with('error', 'You are not authorized to update users in this event');
+        }
+        $user = $event->users()->where('user_id', $user_id)->first();
+        if(!$user){
+            return redirect()->back()->with('error', 'User not found');
+        }
+        $roles = Role::all();
+        $self_user = auth()->user()->id == $user->id;
+        return view('admin.users.edit', compact('event', 'user', 'roles', 'self_user'));
+    }
+
+    public function update_post(Request $request, $event_id, $user_id){
+        $event = auth()->user()->events()->where('event_id', $event_id)->first();
+        if(!$event){
+            return redirect()->back()->with('error', 'You are not authorized to update users in this event');
+        }
+        $user = $event->users()->where('user_id', $user_id)->first();
+        if(!$user){
+            return redirect()->back()->with('error', 'User not found');
+        }
+        $updated = [];
+
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required|email|unique:users,email,'.$user->id,
+            'role' => 'required|exists:roles,id'
+        ]);
+
+        if($user->email != $request->email){
+            $invitation = $event->invitations()->where('email', $request->email)->first();
+            if($invitation){
+                return redirect()->back()->with('error', 'Email already exists in this event');
+            }
+            $updated[] = ['Email' => $request->email];
+        }
+
+        if($request->has('password') && strlen($request->password) > 0){
+            $request->validate([
+                'password' => 'required|min:6|confirmed'
+            ]);
+            $user->update([
+                'password' => bcrypt($request->password)
+            ]);
+            $updated[] = ['Password' => str_repeat("*", strlen($request->password))];
+        }
+
+        if($request->name != $user->name){
+            $updated[] = ['Name' => $request->name];
+        }
+
+        if($request->role != ($user->roles()->first()->id ?? null)){
+            if($user->id == auth()->user()->id){
+                return redirect()->back()->with('error', 'You cannot change your role');
+            }
+            $updated[] = ['Role' => Role::find($request->role)->name];    
+        }
+
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email
+        ]);
+
+
+        $user->syncRoles([$request->role]);
+        $updated_message = 'Nothing updated!';
+        if(count($updated)){
+            $updated_message = "User updated successfully. The following fields were updated: \n";
+            foreach($updated as $field){
+                $updated_message .= key($field) . ": ". $field[key($field)] . "\n";
+            }
+        }
+        return redirect()->back()->with('success', nl2br($updated_message));
+    }
 }

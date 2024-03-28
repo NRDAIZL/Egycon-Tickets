@@ -110,6 +110,9 @@ users
                     <tr class="text-gray-700 dark:text-gray-400">
                       <td class="px-4 py-3">
                         <div class="flex items-center text-sm">
+                          <img class="object-cover w-8 h-8 rounded-full border mr-4"
+                            src="{{ $user->getAvatar() }}"
+                          />
                           <div>
                             <p class="font-semibold">{{ $user->name??"N/A" }}</p>
                           </div>
@@ -133,12 +136,12 @@ users
                       </td>
                       <td>
                         <div class="flex items-center text-sm py-2">
-                            <a href="#">
+                            <a href="{{ route('admin.users.update', ['event_id'=>$event_id, "id"=>$user->id]) }}">
                             <button
                                 class="flex items-center group disabled:hover:bg-inherit disabled:cursor-not-allowed  hover:bg-gray-300 dark:hover:bg-gray-600 justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400 focus:outline-none focus:shadow-outline-gray"
-                                aria-label="Switch"
+                                aria-label="Edit"
                             >
-                                <i class="las la-arrow-right text-xl group-disabled:text-gray-500 text-green-500"></i>
+                                <i class="las la-pen text-xl group-disabled:text-gray-500 text-green-500"></i>
                             </button>
                             </a>
                         </div>

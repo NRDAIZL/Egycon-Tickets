@@ -1,5 +1,7 @@
 <?php
 
+use App\Helpers\StringUtils;
+
 return [
 
     /*
@@ -234,7 +236,7 @@ return [
         'View' => Illuminate\Support\Facades\View::class,
         'Excel' => Maatwebsite\Excel\Facades\Excel::class,
         'Debugbar' => Barryvdh\Debugbar\Facades\Debugbar::class,
-
+        'StringUtils' => StringUtils::class
     ],
 
 ];
