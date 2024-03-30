@@ -22,6 +22,7 @@ class Event extends Model implements Auditable
         'google_maps_url',
         'registration_start',
         'registration_end',
+        'slug'
     ];
 
     public function users()
