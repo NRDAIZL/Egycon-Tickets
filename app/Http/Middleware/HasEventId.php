@@ -32,6 +32,8 @@ class HasEventId
             return redirect()->route('admin.events.view')->with('error', 'Event not found!');
         }
         setPermissionsTeamId($routeParameters['event_id']);
+
+        $request->attributes->add(['event_id' => $event_id]);
         return $next($request);
     }
 }

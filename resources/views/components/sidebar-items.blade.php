@@ -8,7 +8,6 @@
               $logo = 'logo.png';
               $dashboard_name = 'Egycon Tickets';
               if(isset($event_id)){
-                $event = App\Models\Event::find($event_id);
                 $dashboard_name = $event->name;
                 if($event->logo)
                   $logo = Storage::url($event->logo);
@@ -150,9 +149,7 @@
                 <span class="ml-4">Requests</span>
                 @php
                   // get pending requests
-                  $pending_requests = App\Models\Event::find($event_id)->posts()->where(function ($query) {
-                      return $query->where('status', '=', null)->where('picture', '!=', "");
-                  })->count();
+                  $pending_requests = $event->getPendingRequests();
                 @endphp
                 @if($pending_requests > 0)
                 <span class="ml-auto text-sm font-medium text-white flex items-center justify-center w-7 h-7 rounded-full bg-red-500">

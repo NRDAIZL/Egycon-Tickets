@@ -16,7 +16,7 @@ class ShowRequestsGraph extends Component
     public function mount()
     {
        
-        $event = Event::find($this->event_id);
+        $event = app(Event::class);
         $this->event = $event;
 
         $posts = Post::with('ticket')->where('event_id', $this->event_id)->where(function ($query) {

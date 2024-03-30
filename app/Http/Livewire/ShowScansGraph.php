@@ -17,7 +17,7 @@ class ShowScansGraph extends Component
     public function mount()
     {
 
-        $event = Event::find($this->event_id);
+        $event = app(Event::class);
         $this->event = $event;
 
         $ticket_types = $event->ticket_types()->withTrashed();

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Exception;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use OwenIt\Auditing\Contracts\Auditable;
@@ -119,5 +120,17 @@ class Event extends Model implements Auditable
     public function promo_codes()
     {
         return $this->hasMany(PromoCode::class);
+    }
+
+    public function getTotalRequests(){
+        return $this->posts()->where(function ($query) {
+            return $query->where('status', '!=', null)->orWhere('picture', '!=', "");
+        })->count();
+    }
+
+    public function getPendingRequests(){
+        return $this->posts()->where(function ($query) {
+            return $query->where('status', '=', null)->where('picture', '!=', "");
+        })->count();
     }
 }

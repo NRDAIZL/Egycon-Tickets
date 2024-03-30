@@ -14,7 +14,7 @@ class SuccessfulScans extends Component
     public $event_id;
     public function mount()
     {
-        $event = Event::find($this->event_id);
+        $event = app(Event::class);
         $ticket_types = $event->ticket_types()->withTrashed();
         // get sum of post tickets scans
         

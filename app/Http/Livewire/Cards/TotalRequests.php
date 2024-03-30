@@ -13,10 +13,8 @@ class TotalRequests extends Component
     public $icon = 'las la-receipt';
     public $event_id;
     public function mount(){
-        $event = Event::find($this->event_id);
-        $total_requests = $event->posts()->where(function ($query) {
-            return $query->where('status', '!=', null)->orWhere('picture', '!=', "");
-        })->count();
+        $event = app(Event::class);
+        $total_requests = $event->getTotalRequests();
         $accepted_requests =
         $event->posts()->where(function ($query) {
             return $query->where('status', 1);

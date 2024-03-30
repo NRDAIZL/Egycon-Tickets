@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 class EventQuestionController extends Controller
 {
     public function index($event_id){
-        $event = Event::find($event_id);
+        $event = app(Event::class);
         $questions = $event->questions;
         return view('admin.event_settings.questions.view', compact('event', 'questions'));
     }
@@ -17,7 +17,7 @@ class EventQuestionController extends Controller
         return view('admin.event_settings.questions.add');
     }
     public function edit($event_id, $id){
-        $event = Event::find($event_id);
+        $event = app(Event::class);
         $question = $event->questions()->find($id);
         return view('admin.event_settings.questions.edit', compact('question'));
     }
@@ -27,7 +27,7 @@ class EventQuestionController extends Controller
             'type' => 'required|in:text,number,email,date,time,select,radio,checkbox',
             'options' => 'required_if:type,select|required_if:type,radio|required_if:type,checkbox',
         ]);
-        $event = Event::find($event_id);
+        $event = app(Event::class);
         if($request->has('id')){
             $question = $event->questions()->find($request->id);
             $question->update([

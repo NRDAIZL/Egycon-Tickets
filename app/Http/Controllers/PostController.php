@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Helpers\RequestsHelper;
 use DB;
 use stdClass;
 use Exception;
@@ -51,8 +52,11 @@ class PostController extends Controller
 
     public function instructions(Request $request, $x_event_id, $i_have_a_code = null){
         // check if $x_event_id is slug or id
+        $event = app(Event::class);
+        if($event == null){
+            abort(404);
+        }
         if(is_numeric($x_event_id)){
-            $event = Event::findOrFail($x_event_id);
             if($event->slug != null){
                 if($i_have_a_code)
                     return redirect()->route('promo_code', ['x_event_id' => $event->slug]);
@@ -60,13 +64,9 @@ class PostController extends Controller
                 return redirect()->route('instructions', ['x_event_id' => $event->slug]);
             }
         }else{
-            $event = Event::where('slug',$x_event_id)->first();
-            if (!$event) {
-                return abort(404);
-            }
             $x_event_id = $event->id;
         }
-
+      
         // get event theme
         $theme = $event->themes()->where('is_active',1)->first();
         $ticket_types = $event->ticket_types()->where(['is_active'=>1, 'is_visible'=>1])->orderBy('is_disabled')->get();
@@ -100,15 +100,11 @@ class PostController extends Controller
     }
 
     public function instructions_code_store(Request $request, $x_event_id){
-        if (is_numeric($x_event_id)) {
-            $event = Event::findOrFail($x_event_id);
-        } else {
-            $event = Event::where('slug', $x_event_id)->first();
-            if (!$event) {
-                return abort(404);
-            }
-            $x_event_id = $event->id;
+        $event = app(Event::class);
+        if ($event == null) {
+            return abort(404);
         }
+        $x_event_id = $event->id;
         if ($request->has('name')) {
             return $this->store($request, $x_event_id);
         }
@@ -129,15 +125,12 @@ class PostController extends Controller
     }
 
     public function instructions_code_show_tickets($x_event_id, $code){
-        if (is_numeric($x_event_id)) {
-            $event = Event::findOrFail($x_event_id);
-        } else {
-            $event = Event::where('slug', $x_event_id)->first();
-            if (!$event) {
-                return abort(404);
-            }
-            $x_event_id = $event->id;
+        $event = app(Event::class);
+        if ($event == null) {
+            return abort(404);
         }
+        $x_event_id = $event->id;
+
         $code = PromoCode::where('code',$code)->where('event_id',$x_event_id)->first();
         if(!$code){
             return redirect()->back()->with('status-failure','Invalid code');
@@ -178,17 +171,11 @@ class PostController extends Controller
 
     public function instructions_store(Request $request, $x_event_id, $code = null)
     {
-
-        // check if $x_event_id is slug or id
-        if (is_numeric($x_event_id)) {
-            $event = Event::findOrFail($x_event_id);
-        } else {
-            $event = Event::where('slug', $x_event_id)->first();
-            if (!$event) {
-                return abort(404);
-            }
-            $x_event_id = $event->id;
+        $event = app(Event::class);
+        if ($event == null) {
+            return abort(404);
         }
+        $x_event_id = $event->id;
 
         if ($request->has('name')) {
             return $this->store($request, $x_event_id);
@@ -266,7 +253,7 @@ class PostController extends Controller
         if(strtoupper($request->random_string) != strtoupper($request->random_string_confirm)){
             return redirect()->back()->with('status-failure','The text does not match. Please try again');
         }
-        $posts = Event::find($event_id)->posts;
+        $posts = app(Event::class)->posts;
         $post_tickets = PostTicket::whereIn('post_id',$posts->pluck('id'))->get();
         $post_tickets->each(function($post_ticket){
             $post_ticket->delete();
@@ -409,7 +396,10 @@ class PostController extends Controller
                 'receipt' => "required|file|mimes:png,jpg,jpeg",
             ]);
         }
-        $event = Event::findOrFail($x_event_id);
+        $event = app(Event::class);
+        if($event == null){
+            return redirect()->back()->with('status-failure', 'Event not found');
+        }
         $questions  = $event->questions;
         $ticket_types = [];
         $theme = $event->themes()->where('is_active', 1)->first();
@@ -559,7 +549,7 @@ class PostController extends Controller
 
             $this->accept($x_event_id, $post->id, true);
             return redirect()->route('thank_you', [
-                'x_event_id' => $x_event_id,
+                'x_event_id' =>  $x_event_id,
             ]);
 
         }
@@ -630,7 +620,10 @@ class PostController extends Controller
     }
 
     public function thank_you($x_event_id){
-        $event = Event::findOrFail($x_event_id);
+        $event = app(Event::class);
+        if($event->slug != null && $event->slug != '' && $event->slug != $x_event_id){
+            return redirect()->route('thank_you', ['x_event_id' => $event->slug]);
+        }
         $theme = $event->themes()->where('is_active', 1)->first();
 
         return view('thank_you', ['status_success' => 'Thank you for registering at EGYcon. An email will be sent to you once your request is reviewed.', 'theme' => $theme, 'event' => $event]);
@@ -705,85 +698,42 @@ class PostController extends Controller
     }
 
     public function view_requests(Request $request,$event_id){
-        $q = false;
-         $statusPriorities = [1, 0];
+        $statusPriorities = [1, 0];
 
-        $evnt = Event::find($event_id);
+        $evnt = app(Event::class);
         if($evnt == null){
             return redirect()->back()->with(["status-failure" => "An error occurred while processing your request. Please try again later. Error code: 3"]);
         }
         $posts = $evnt->posts()->with(['ticket.ticket_type','ticket_type','provider'])->orderByRaw('FIELD (status, ' . implode(', ', $statusPriorities) . ') ASC');
-        if($request->has('q')){
-            $q = $request->q;
-            $posts = $posts->where(function($parent_query) use ($q){
-                return $parent_query
-                ->orWhere('email', 'like', '%' . $q . '%')
-                ->orWhere('phone_number', 'like', '%' . $q . '%')
-                ->orWhere('id', 'like', '%' . $q . '%')
-                ->orWhere('order_reference_id', 'like', '%' . $q . '%')
-                ->orWhere('name', 'like', '%' . $q . '%')
-                ->orWhereHas('ticket', function ($query) use ($q) {
-                    return $query->whereHas('ticket_type', function ($child_query) use ($q) {
-                        return $child_query->where('name', 'like', '%' . $q . '%');
-                    });
-                })->orWhereHas('ticket', function ($query) use ($q) {
-                    return $query->whereHas('sub_ticket_type', function ($child_query) use ($q) {
-                        return $child_query->where('name', 'like', '%' . $q . '%');
-                    });
-                });
-            });
-        }else{
-            $posts = $posts->where('event_id',$event_id)->orderBy('created_at',"DESC");
-        }
-        // filter if status is null and no reciept
-        $posts = $posts->where(function($query){
-                return $query->where('status','!=', null)->orWhere('picture', '!=', "")->orWhere(function ($q) {
-                    return $q->where('picture', null)->orWhere('payment_method', 'reservation');
-                });
-        });
+        $search_query = $request->has('q') ? $request->q : null;
+        $posts = RequestsHelper::SearchRequests($posts, $search_query);
+     
         if($request->has('q')) {
             $posts = $posts->paginate(1000);
         }else{
             $posts = $posts->paginate(15);
         }
-        return view('admin.requests',['requests'=>$posts, 'query'=>$q]);
+        return view('admin.requests',['requests'=>$posts, 'query'=>$search_query ?? null]);
     }
 
     public function view_ticket_type_requests(Request $request, $event_id, $ticket_type_id)
     {
-        $q = false;
         $statusPriorities = [1, 0];
-
-        $evnt = Event::find($event_id);
+        $evnt = app(Event::class);
         if ($evnt == null) {
             return redirect()->back()->with(["status-failure" => "An error occurred while processing your request. Please try again later. Error code: 3"]);
         }
         $ticket_type = TicketType::where('id', $ticket_type_id)->where('event_id', $event_id)->withTrashed()->first();
-        $posts = $ticket_type->posts()->with(['ticket.ticket_type', 'ticket_type', 'provider'])->orderBy('status', 'DESC')->orderBy('created_at', "DESC");
-        if ($request->has('q')) {
-            $q = $request->q;
-            $posts = $posts->where(function ($query) use ($q) {
-                return $query
-                    ->orWhere('email', 'like', '%' . $q . '%')
-                    ->orWhere('phone_number', 'like', '%' . $q . '%')
-                    ->orWhere('posts.id', 'like', '%' . $q . '%')
-                    ->orWhere('order_reference_id', 'like', '%' . $q . '%')
-                    ->orWhere('name', 'like', '%' . $q . '%');
-            });
-        } else {
-            $posts = $posts->where('event_id', $event_id)->orderBy('created_at', "DESC");
-        }
-        // filter if status is null and no reciept
-        $posts = $posts->where(function ($query) {
-            return $query->where('posts.status', '!=', null)->orWhere('picture', '!=', "");
-        });
+        $posts = $ticket_type->posts()->with(['ticket.ticket_type', 'ticket_type', 'provider'])->orderByRaw('FIELD (posts.status, ' . implode(', ', $statusPriorities) . ') ASC')->orderBy('created_at', "DESC");
+        $search_query = $request->has('q') ? $request->q : null;
+        $posts = RequestsHelper::SearchRequests($posts, $search_query);
 
         if ($request->has('q')) {
             $posts = $posts->paginate(1000);
         } else {
             $posts = $posts->paginate(15);
         }
-        return view('admin.requests', ['requests' => $posts, 'query' => $q]);
+        return view('admin.requests', ['requests' => $posts, 'query' => $search_query ?? null]);
     }
 
     public function accept($event_id = null,$id, $through_payment = false){
@@ -1024,7 +974,6 @@ class PostController extends Controller
 
     public function export($event_id)
     {
-        $event = Event::findOrFail($event_id);
         return Excel::download(new PostsExport($event_id), 'tickets.xlsx');
     }
 
@@ -1081,7 +1030,7 @@ class PostController extends Controller
 
     // onspot registration
     public function onspot_registration($event_id){
-        $event = Event::findOrFail($event_id);
+        $event = app(Event::class);
         $ticket_types = $event->ticket_types()->where('is_active',1)->get();
         return view('admin.onspot_registration',compact('event','ticket_types'));
     }
@@ -1098,7 +1047,6 @@ class PostController extends Controller
             'ticket_type.*' => 'required|exists:ticket_types,id',
             'quantity.*' => 'required|integer|min:1',
         ]);
-        $event = Event::findOrFail($event_id);
         $post = new Post();
         $post->event_id = $event_id;
         $post->name = $request->name;

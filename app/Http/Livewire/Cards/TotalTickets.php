@@ -13,13 +13,13 @@ class TotalTickets extends Component
     public $event_id;
     public function mount()
     {
-        $event = Event::find($this->event_id);
-        $posts = $event->posts()->where('status',1)->get();
+        $event = app(Event::class);
+        $posts = $event->posts()->with('ticket.ticket_type')->where('status',1)->get();
         $tickets_count = 0;
         $reservations_count = 0;
         foreach ($posts as $post) {
-            foreach($post->ticket as $ticket_type){
-                if($ticket_type->ticket_type->type != "reservation"){
+            foreach($post->ticket as $ticket){
+                if($ticket->ticket_type->type != "reservation"){
                     $tickets_count += 1;
                 }
                 else{

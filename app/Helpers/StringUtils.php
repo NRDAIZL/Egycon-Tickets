@@ -2,7 +2,7 @@
 
 namespace App\Helpers;
 
-class StringUtils{
+class StringUtils {
 
     const DEFAULT_SEARCH_PREFIX = "<span class='bg-yellow-100'>";
     const DEFAULT_SEARCH_SUFFIX = "</span>";
