@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Helpers\MailHelpers;
 use App\Helpers\RequestsHelper;
 use DB;
 use stdClass;
@@ -634,73 +635,7 @@ class PostController extends Controller
         return view('thank_you', ['status_success' => 'Thank you for registering at EGYcon. An email will be sent to you once your request is reviewed.', 'theme' => $theme, 'event' => $event]);
     }
 
-    private function send_email($ticket,$request, $email_template = null){
-        if(str_contains(strtolower($ticket->ticket_type->type),'noticket')){
-            return;
-        }
-        if (str_contains(strtolower($ticket->ticket_type->type), 'discount')) {
-            return;
-        }
-        try {
-            $client = new PostmarkClient(env("POSTMARK_TOKEN"));
-            $data = [
-                "name" => explode(' ', $request->name)[0],
-                "ticket_type" => $ticket->ticket_type->name,
-                "order_id" => $request->id,
-                // "date"=>date('Y/m/d'),
-
-            ];
-            $template_id = 0;
-            if($ticket->code != null){
-                $data["qrcode"] = asset('images/qrcodes/' . $ticket->code . '.jpg');
-                $data["code"] = $ticket->code;
-                $template_id = 27131977;
-            } else if ($ticket->discount_code_id != null) {
-                $data["code"] = $ticket->discount_code->code;
-                $template_id = 29184862; //TODO:Add new template id
-            }
-
-            if($email_template != null){
-                $body = $email_template->body;
-                $subject = $email_template->subject;
-                foreach($data as $key => $value){
-                    $body = str_replace("{{" . $key . "}}", $value, $body);
-                    $subject = str_replace("{{" . $key . "}}", $value, $subject);
-                }
-                $message = [
-                    'To' => $request->email,
-                    'From' => "egycon@gamerslegacy.net",
-                    'TrackOpens' => true,
-                    'Subject' => $subject,
-                    'HtmlBody' => $body,
-                    'Tag' => $request->event->name,
-                    'MessageStream' => "outbound" // here you can set your custom Message Stream
-                ];
-
-                $sendResult = $client->sendEmailBatch([$message]);
-            }
-
-            // $sendResult = $client->sendEmailWithTemplate(
-            //     "egycon@gamerslegacy.net",
-            //     $request->email,
-            //     $template_id,
-            //     $data
-            // );
-
-        } catch (PostmarkException $ex) {
-            // dd($ex);
-            // If the client is able to communicate with the API in a timely fashion,
-            // but the message data is invalid, or there's a server error,
-            // a PostmarkException can be thrown.
-            echo $ex->httpStatusCode;
-            echo $ex->message;
-            echo $ex->postmarkApiErrorCode;
-        } catch (Exception $generalException) {
-            // dd($generalException);
-            // A general exception is thrown if the API
-            // was unreachable or times out.
-        }
-    }
+    
 
     public function view_requests(Request $request,$event_id){
         $statusPriorities = [1, 0];
@@ -757,28 +692,11 @@ class PostController extends Controller
                 $ticket->ticket_type->type = "reservation";
             }
             if($ticket->ticket_type->type == "reservation"){
-                $email_template = EventEmailTemplate::where('event_id', $post->event_id)->where('type', 'reservation')->first();
+                $email_template = MailHelpers::getReservationEmailTemplate($event_id);
             }else{
-                $email_template = EventEmailTemplate::where('event_id', $post->event_id)->where('type', 'approved')->first();
+                $email_template = MailHelpers::getApprovedEmailTemplate($event_id);
             }
-            if(!$email_template){
-                $email_template = new stdClass();
-                if($ticket->ticket_type->type == "reservation"){
-                    // get html value from assets
-                    $body = file_get_contents(public_path('emails/reservation.html'));
-                    $subject = "Your request has been approved!";
-                    $email_template->type = 'reservation';
-                }else{
-                    $body = file_get_contents(public_path('emails/approved.html'));
-                    $subject = "Your ticket has been approved!";
-                    $email_template->type = 'approved';
-                }
-                $email_template->event_id = $post->event_id;
-                $email_template->body = $body;
-                $email_template->subject = $subject;
-                // dd($email_template);
-            }
-            $this->send_email($ticket,$post, $email_template);
+            MailHelpers::send_email($ticket,$post, $email_template);
         }
         $post->status = 1;
         $post->save();
@@ -800,6 +718,7 @@ class PostController extends Controller
 
     public function scan_ticket($event_id,$id,$ticket_id){
         $ticket = PostTicket::where('id', $ticket_id)->where('post_id',$id)->first();
+        // TODO: Check event
         if(!$ticket){
             return redirect()->back();
         }
@@ -808,62 +727,7 @@ class PostController extends Controller
         return redirect()->back();
     }
 
-    private function send_declined_email($request, $email_template = null)
-    {
-
-        try {
-            $client = new PostmarkClient(env("POSTMARK_TOKEN"));
-            if ($email_template != null) {
-                $body = $email_template->body;
-                $subject = $email_template->subject;
-                $data = [
-                    'name' => $request->name,
-                    'event_name' => $request->event->name,
-                    'order_id' => $request->id,
-                ];
-                foreach ($data as $key => $value) {
-                    $body = str_replace("{{" . $key . "}}", $value, $body);
-                    $subject = str_replace("{{" . $key . "}}", $value, $subject);
-                }
-                $message = [
-                    'To' => $request->email,
-                    'From' => "egycon@gamerslegacy.net",
-                    'TrackOpens' => true,
-                    'Subject' => $subject,
-                    'HtmlBody' => $body,
-                    'Tag' => $request->event->name,
-                    'Headers' => ["X-CUSTOM-HEADER" => "Header content"],
-                    'MessageStream' => "outbound" // here you can set your custom Message Stream
-                ];
-
-                $sendResult = $client->sendEmailBatch([$message]);
-            }
-            // $sendResult = $client->sendEmailWithTemplate(
-            //     "egycon@gamerslegacy.net",
-            //     $request->email,
-            //     27132435,
-            //     [
-            //         "name" => explode(' ', $request->name)[0],
-            //         "order_id" => $request->id,
-            //     ]
-            // );
-
-            // Getting the MessageID from the response
-            // echo $sendResult->MessageID;
-        } catch (PostmarkException $ex) {
-            dd($ex);
-            // If the client is able to communicate with the API in a timely fashion,
-            // but the message data is invalid, or there's a server error,
-            // a PostmarkException can be thrown.
-            echo $ex->httpStatusCode;
-            echo $ex->message;
-            echo $ex->postmarkApiErrorCode;
-        } catch (Exception $generalException) {
-            dd($generalException);
-            // A general exception is thrown if the API
-            // was unreachable or times out.
-        }
-    }
+   
     public function reject($event_id,$id, $through_payment = false)
     {
         $post = Post::with('ticket.ticket_type','event')->findOrFail($id);
@@ -874,16 +738,7 @@ class PostController extends Controller
                 return redirect()->back()->with(["status-failure" => "You are not allowed to view this page!"]);
             }
         }
-        $email_template = EventEmailTemplate::where('event_id', $post->event_id)->where('type', 'declined')->first();
-        if (!$email_template) {
-            // get html value from assets
-            $body = file_get_contents(public_path('emails/declined.html'));
-            $subject = "Your request has been declined";
-            $email_template = new stdClass();
-            $email_template->body = $body;
-            $email_template->subject = $subject;
-        }
-        $this->send_declined_email($post, $email_template);
+        MailHelpers::send_declined_email($post, MailHelpers::getDeclinedEmailTemplate($event_id));
         $post->status = 0;
         $post->save();
         return redirect()->back()->with(["success" => "{$post->name}'s request has been rejected successfully!"]);
@@ -971,7 +826,7 @@ class PostController extends Controller
                 }
                 $post_ticket->save();
                 $post_ticket = PostTicket::with('ticket_type')->find($post_ticket->id);
-                $this->send_email($post_ticket, $post);
+                MailHelpers::send_email($post_ticket, $post);
             }
         }
         return redirect()->back()->with('success',"Sheet imported successfully!");
@@ -1077,13 +932,4 @@ class PostController extends Controller
         }
         return redirect()->back()->with('success',"The user has been registered successfully!");
     }
-
-
-    // private function send_email_with_template($post, $type = 'approved', $data = [], $event_id){
-    //     $event = Event::find($post->event_id);
-    //     // $ticket_type = TicketType::find($post_ticket->ticket_type_id);
-
-
-    //     Mail::to($post->email)->send(new TicketEmail($body,$subject));
-    // }
 }
