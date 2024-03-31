@@ -33,7 +33,7 @@ Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
               <a href="{{ route('admin.requests.export', ["event_id"=>$event_id, "query"=>$query, 'ticket_id'=>$ticket_type_id ?? null]) }}">
                 <button class="ml-4 py-1 px-4 text-sm rounded-md bg-purple-500 hover:bg-purple-600 text-white"> 
                   <i class="las la-download"></i> 
-                  Export All <b>Searched</b> Requests
+                  Export {!! !empty($requests_keyword) ? "<b>(".$requests_keyword.")</b>" : "All"!!} <b>Searched</b> Requests
                 </button>
               </a>
               @endif
