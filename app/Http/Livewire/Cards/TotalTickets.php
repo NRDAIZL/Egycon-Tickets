@@ -13,6 +13,7 @@ class TotalTickets extends Component
     public $event_id;
     public function mount()
     {
+        /** @var Event $event */
         $event = app(Event::class);
         $posts = $event->posts()->with('ticket.ticket_type')->where('status',1)->get();
         $tickets_count = 0;

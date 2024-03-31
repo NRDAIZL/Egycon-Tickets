@@ -8,6 +8,7 @@
                       <th>Phone</th>
                       <th>Ticket Type</th>
                       <th>Status</th>
+                      <th>Proof of Payment</th>
                       <th>Promo Code</th>
                       <th>Date</th>
                     </tr>
@@ -96,6 +97,15 @@
                         >
                           Declined
                         </span>
+                        @endif
+                      </td>
+                      <td>
+                        @if(empty($request->picture) && empty($request->status))
+                          Pending Payment
+                        @elseif(empty($request->picture))
+                          Order Reference: {{ $request->order_reference_id }}
+                        @else
+                          Receipt Provided
                         @endif
                       </td>
                       <td>

@@ -13,6 +13,7 @@ class TotalRequests extends Component
     public $icon = 'las la-receipt';
     public $event_id;
     public function mount(){
+        /** @var Event $event */
         $event = app(Event::class);
         $total_requests = $event->getTotalRequests();
         $accepted_requests =

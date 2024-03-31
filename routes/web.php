@@ -115,7 +115,7 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
             Route::get('/delete_all_tickets', [PostController::class, 'delete_all_view'])->name('delete_all');
             Route::post('/delete_all_tickets', [PostController::class, 'delete_all']);
 
-            Route::get('/requests/export', [PostController::class, 'export'])->name('requests.export');
+            Route::get('/requests/export/{query?}/{ticket_id?}', [PostController::class, 'export'])->name('requests.export');
 
             Route::prefix('/tickets')->as('tickets.')->group(function () {
                 Route::get('/add', [TicketController::class, 'add'])->name('add');

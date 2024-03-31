@@ -13,6 +13,7 @@ class AcceptedRequests extends Component
     public $event_id;
     public function mount()
     {
+        /** @var Event $event */
         $event = app(Event::class);
         $posts = $event->posts()->where('status', 1)->count();
         $this->subtitle = $posts;

@@ -52,7 +52,9 @@ class PostController extends Controller
 
     public function instructions(Request $request, $x_event_id, $i_have_a_code = null){
         // check if $x_event_id is slug or id
-        $event = app(Event::class);
+        /** @var Event $event */
+        $event =  app(Event::class);
+
         if($event == null){
             abort(404);
         }
@@ -125,6 +127,7 @@ class PostController extends Controller
     }
 
     public function instructions_code_show_tickets($x_event_id, $code){
+        /** @var Event $event */
         $event = app(Event::class);
         if ($event == null) {
             return abort(404);
@@ -396,6 +399,7 @@ class PostController extends Controller
                 'receipt' => "required|file|mimes:png,jpg,jpeg",
             ]);
         }
+        /** @var Event $event */
         $event = app(Event::class);
         if($event == null){
             return redirect()->back()->with('status-failure', 'Event not found');
@@ -620,6 +624,7 @@ class PostController extends Controller
     }
 
     public function thank_you($x_event_id){
+        /** @var Event $event */
         $event = app(Event::class);
         if($event->slug != null && $event->slug != '' && $event->slug != $x_event_id){
             return redirect()->route('thank_you', ['x_event_id' => $event->slug]);
@@ -699,15 +704,15 @@ class PostController extends Controller
 
     public function view_requests(Request $request,$event_id){
         $statusPriorities = [1, 0];
-
+        /** @var Event $evnt */
         $evnt = app(Event::class);
         if($evnt == null){
             return redirect()->back()->with(["status-failure" => "An error occurred while processing your request. Please try again later. Error code: 3"]);
         }
         $posts = $evnt->posts()->with(['ticket.ticket_type','ticket_type','provider'])->orderByRaw('FIELD (status, ' . implode(', ', $statusPriorities) . ') ASC');
         $search_query = $request->has('q') ? $request->q : null;
-        $posts = RequestsHelper::SearchRequests($posts, $search_query);
-     
+        $posts = RequestsHelper::searchRequests($posts, $search_query);
+        $posts->distinct();
         if($request->has('q')) {
             $posts = $posts->paginate(1000);
         }else{
@@ -726,14 +731,14 @@ class PostController extends Controller
         $ticket_type = TicketType::where('id', $ticket_type_id)->where('event_id', $event_id)->withTrashed()->first();
         $posts = $ticket_type->posts()->with(['ticket.ticket_type', 'ticket_type', 'provider'])->orderByRaw('FIELD (posts.status, ' . implode(', ', $statusPriorities) . ') ASC')->orderBy('created_at', "DESC");
         $search_query = $request->has('q') ? $request->q : null;
-        $posts = RequestsHelper::SearchRequests($posts, $search_query);
-
+        $posts = RequestsHelper::searchRequests($posts, $search_query);
+        $posts->distinct();
         if ($request->has('q')) {
             $posts = $posts->paginate(1000);
         } else {
             $posts = $posts->paginate(15);
         }
-        return view('admin.requests', ['requests' => $posts, 'query' => $search_query ?? null]);
+        return view('admin.requests', ['requests' => $posts, 'query' => $search_query ?? null, 'ticket_type_id' => $ticket_type_id]);
     }
 
     public function accept($event_id = null,$id, $through_payment = false){
@@ -972,9 +977,10 @@ class PostController extends Controller
         return redirect()->back()->with('success',"Sheet imported successfully!");
     }
 
-    public function export($event_id)
+    public function export($event_id, $query = null, $ticket_id = null)
     {
-        return Excel::download(new PostsExport($event_id), 'tickets.xlsx');
+        $query == "null" ? $query = null : $query;
+        return Excel::download(new PostsExport($event_id, $query, $ticket_id), 'tickets.xlsx');
     }
 
 
@@ -1030,6 +1036,7 @@ class PostController extends Controller
 
     // onspot registration
     public function onspot_registration($event_id){
+        /** @var Event $event */
         $event = app(Event::class);
         $ticket_types = $event->ticket_types()->where('is_active',1)->get();
         return view('admin.onspot_registration',compact('event','ticket_types'));

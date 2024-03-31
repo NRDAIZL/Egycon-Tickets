@@ -14,7 +14,7 @@ Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
             <form action="">
                 <div class="flex  my-4">
                   <button class=" w-14 rounded-l-md flex items-center justify-center dark:bg-slate-800 border-l border-t border-b border-gray-800"> <i class="las la-search text-xl text-purple-500 "></i> </button>
-                  <input name="q" placeholder="Search phone, email, order id" type="text" class="w-full py-2 px-4  flex-1  dark:bg-slate-800 rounded-r-md dark:text-white border-t border-r border-b border-l-0 border-gray-800 ">
+                  <input value="{{ $query }}" name="q" placeholder="Search phone, email, order id" type="text" class="w-full py-2 px-4  flex-1  dark:bg-slate-800 rounded-r-md dark:text-white border-t border-r border-b border-l-0 border-gray-800 ">
                 </div>
             </form>
             @endif
@@ -23,7 +23,20 @@ Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
               class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"
             >
               Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
-              <a href="{{ route('admin.requests.export',$event_id) }}"><button class="mx-8 py-1 px-4 text-sm rounded-md bg-purple-500 hover:bg-purple-600 text-white"> <i class="las la-download"></i> Export All Requests</button></a>
+              <a href="{{ route('admin.requests.export',['event_id'=>$event_id, "query"=>"null",'ticket_id'=>$ticket_type_id ?? null]) }}">
+                <button class="ml-4 py-1 px-4 text-sm rounded-md bg-purple-500 hover:bg-purple-600 text-white"> 
+                  <i class="las la-download"></i> 
+                  Export All Requests
+                </button>
+              </a>
+              @if(!empty($query))
+              <a href="{{ route('admin.requests.export', ["event_id"=>$event_id, "query"=>$query, 'ticket_id'=>$ticket_type_id ?? null]) }}">
+                <button class="ml-4 py-1 px-4 text-sm rounded-md bg-purple-500 hover:bg-purple-600 text-white"> 
+                  <i class="las la-download"></i> 
+                  Export All <b>Searched</b> Requests
+                </button>
+              </a>
+              @endif
             </h2>
 
             <div class="w-full overflow-hidden rounded-lg shadow-xs">
@@ -42,7 +55,6 @@ Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
                       <th class="px-4 py-3">Status</th>
                       <th class="px-4 py-3">Date</th>
                       <th class="px-4 py-3">Actions</th>
-
                     </tr>
                   </thead>
                   <tbody

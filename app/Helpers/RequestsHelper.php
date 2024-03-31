@@ -1,10 +1,12 @@
 <?php
 
 namespace App\Helpers;
+use App\Models\Post;
 
 class RequestsHelper {
 
-    public static function SearchRequests($base_requests, $search_query) {
+    /** @return Post */
+    public static function searchRequests($base_requests, $search_query) : Post {
 
         // filter if status is null and no reciept
         $base_requests = $base_requests->where(function($query){
@@ -21,8 +23,10 @@ class RequestsHelper {
             return $parent_query
                 ->orWhere('email', 'like', '%' . $search_query . '%')
                 ->orWhere('phone_number', 'like', '%' . $search_query . '%')
-                ->orWhere('id', 'like', '%' . $search_query . '%')
-                ->orWhere('order_reference_id', 'like', '%' . $search_query . '%')
+                ->orWhere('posts.id', 'like', '%' . $search_query . '%')
+                ->orWhere(function ($q) use ($search_query) {
+                    return $q->where('order_reference_id', 'like', '%' . $search_query . '%')->where('picture','');
+                })
                 ->orWhere('name', 'like', '%' . $search_query . '%')
                 ->orWhereHas('ticket', function ($query) use ($search_query) {
                     return $query->whereHas('ticket_type', function ($child_query) use ($search_query) {
