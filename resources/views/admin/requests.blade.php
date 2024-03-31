@@ -22,11 +22,11 @@ Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
             <h2
               class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"
             >
-              Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
+              Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset @isset($requests_keyword) ({{ $requests_keyword }}) @endisset
               <a href="{{ route('admin.requests.export',['event_id'=>$event_id, "query"=>"null",'ticket_id'=>$ticket_type_id ?? null]) }}">
                 <button class="ml-4 py-1 px-4 text-sm rounded-md bg-purple-500 hover:bg-purple-600 text-white"> 
                   <i class="las la-download"></i> 
-                  Export All Requests
+                  Export {!! !empty($requests_keyword) ? "<b>(".$requests_keyword.")</b>" : "All"!!} Requests
                 </button>
               </a>
               @if(!empty($query))

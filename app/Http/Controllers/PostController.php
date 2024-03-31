@@ -738,7 +738,7 @@ class PostController extends Controller
         } else {
             $posts = $posts->paginate(15);
         }
-        return view('admin.requests', ['requests' => $posts, 'query' => $search_query ?? null, 'ticket_type_id' => $ticket_type_id]);
+        return view('admin.requests', ['requests' => $posts, 'query' => $search_query ?? null, 'requests_keyword' => $ticket_type->name, 'ticket_type_id' => $ticket_type_id]);
     }
 
     public function accept($event_id = null,$id, $through_payment = false){
