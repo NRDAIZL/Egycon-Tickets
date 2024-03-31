@@ -1,12 +1,10 @@
 <?php
 
 namespace App\Helpers;
-use App\Models\Post;
 
 class RequestsHelper {
 
-    /** @return Post */
-    public static function searchRequests($base_requests, $search_query) : Post {
+    public static function searchRequests($base_requests, $search_query) {
 
         // filter if status is null and no reciept
         $base_requests = $base_requests->where(function($query){
