@@ -21,7 +21,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/apexcharts/3.41.1/apexcharts.min.js" integrity="sha512-Gpg0M5UOTFSHGglemXUOUzL1LyO8MT0fxmEAjGN8jNlY6oSOsLerF1/vuXrqJXKyV5QIay12trwDDhmRJHZisA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     @livewireStyles
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=1.0.0" />
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=1.0.1" />
     <script
       src="{{ asset('js/alpine.min.js') }}"
       defer
