@@ -2,8 +2,10 @@
 
 namespace App\Services\Telegram;
 
+use App\Exceptions\UserNotFoundException;
 use App\Models\TelegramChat;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class TelegramService 
 {
@@ -11,20 +13,20 @@ class TelegramService
     private $url;
     private $user;
     private $chat_id;
-    public function __construct(User $user = null, $chat_id = null){
+    public function __construct(User $user = null, $chat_id = null, $withoutUser = false){
         $this->API_KEY = env('TELEGRAM_API_KEY');
         if($chat_id == null){
-            if($user == null){
-                throw new \InvalidArgumentException("User or chat_id cannot be null!");
+            if($user == null && $withoutUser == false){
+                throw new UserNotFoundException("User or chat_id cannot be null!");
             }
             $chat_id = $user->getTelegramChatId();
             if($chat_id == null){
-                throw new \InvalidArgumentException("User not found!");
+                throw new UserNotFoundException("User not found!");
             }
-        }else{
+        }else if ($withoutUser == false){
             $user = TelegramChat::where('chat_id', $chat_id)->first()->user;
             if($user == null){
-                throw new \InvalidArgumentException('User not found!');
+                throw new UserNotFoundException('User not found!');
             }
         }
         $this->url = "https://api.telegram.org/bot{$this->API_KEY}";
@@ -32,8 +34,8 @@ class TelegramService
         $this->chat_id = $chat_id;
     }
 
-    public static function withChatID($chat_id){
-        return new self(null, $chat_id);
+    public static function withChatID($chat_id, $withoutUser = false){
+        return new self(null, $chat_id, $withoutUser);
     }
 
     public static function withUser(User $user){
@@ -53,7 +55,7 @@ class TelegramService
         $res = curl_exec($ch);
         if (curl_error($ch)) {
             curl_close($ch);
-            dd(curl_error($ch));
+            Log::error(curl_error($ch));
         } else {
             return json_decode($res);
         }

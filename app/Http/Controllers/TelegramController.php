@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\UserNotFoundException;
 use App\Services\Telegram\TelegramService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -29,6 +30,9 @@ class TelegramController extends Controller
         try{
             $telegramService = TelegramService::withChatID($chat_id);
             $telegramService->sendMessage("Test 1234");
+        }catch(UserNotFoundException $e){
+            TelegramService::withChatID($chat_id, true);
+            $telegramService->sendMessage("User is not registered!\nPlease configure telegram code on your account first");
         }catch(\Exception $e){
             Log::error($e->getMessage());
         }
