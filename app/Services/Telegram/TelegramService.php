@@ -16,18 +16,21 @@ class TelegramService
     public function __construct(User $user = null, $chat_id = null, $withoutUser = false){
         $this->API_KEY = env('TELEGRAM_API_KEY');
         if($chat_id == null){
-            if($user == null && $withoutUser == false){
+            if($user == null && !$withoutUser){
                 throw new UserNotFoundException("User or chat_id cannot be null!");
             }
             $chat_id = $user->getTelegramChatId();
             if($chat_id == null){
+
                 throw new UserNotFoundException("User not found!");
             }
         }else if ($withoutUser == false){
-            $user = TelegramChat::where('chat_id', $chat_id)->first()->user;
-            if($user == null){
+            
+            $telegramChat = TelegramChat::where('chat_id', $chat_id)->first();
+            if($telegramChat == null){
                 throw new UserNotFoundException('User not found!');
             }
+            $user = $telegramChat->user;
         }
         $this->url = "https://api.telegram.org/bot{$this->API_KEY}";
         $this->user = $user;
