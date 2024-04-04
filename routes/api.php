@@ -3,6 +3,7 @@
 use App\Http\Controllers\API\EventController;
 use App\Http\Controllers\API\LoginController;
 use App\Http\Controllers\API\TicketController;
+use App\Http\Controllers\TelegramController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -29,5 +30,5 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::post('/search', [TicketController::class, 'search']);
 });
 
-
+Route::any('/telegram', [TelegramController::class,'index']);
 
