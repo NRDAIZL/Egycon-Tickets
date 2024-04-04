@@ -45,7 +45,7 @@ class PostsExport implements FromView, ShouldAutoSize
                     'promo_code'
                 ])->orderBy('status', 'asc')->orderBy('created_at','desc');
         if($this->query) {
-           $posts = RequestsHelper::searchRequests($posts, $this->query);
+           $posts = RequestsHelper::searchRequestsForAdmin($posts, $this->query);
         }
         $posts = $posts->get();
         return view('exports.posts', [

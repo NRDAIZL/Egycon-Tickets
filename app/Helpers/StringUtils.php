@@ -24,4 +24,15 @@ class StringUtils {
         return "($string)";
     }
 
+    public static function generateRandomString($length = 10){
+        return substr(str_shuffle("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, $length);
+    }
+
+    public static function simplifyString(string $string): string{
+        $string = strtolower($string);
+        $string = preg_replace('/[^a-zA-Z0-9]/', '', $string);
+        $string = preg_replace("/\s/",'', $string);
+        return $string;
+    }
+
 }

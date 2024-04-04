@@ -1,70 +1,64 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Exceptions\InvalidPromoCodeException;
+use App\Exceptions\InvalidRequestException;
 use App\Helpers\MailHelpers;
+use App\Helpers\QRHelper;
 use App\Helpers\RequestsHelper;
-use DB;
-use stdClass;
-use Exception;
+use App\Helpers\TicketsHelper;
 use Carbon\Carbon;
 use App\Models\Post;
 use App\Models\Event;
-use App\Mail\TicketEmail;
 use App\Models\PromoCode;
 use App\Models\PostTicket;
 use App\Models\TicketType;
 use App\Imports\PostImport;
 use App\Exports\PostsExport;
+use App\Helpers\CommonUtils;
+use App\Helpers\HttpHelper;
+use App\Helpers\PaymentHelper;
 use Illuminate\Http\Request;
-use Postmark\PostmarkClient;
 use App\Models\PaymentMethod;
 use App\Models\SubTicketType;
-use chillerlan\QRCode\QRCode;
-use chillerlan\QRCode\QROptions;
-use App\Models\EventEmailTemplate;
 use App\Models\EventPaymentMethod;
 use App\Models\TicketDiscountCode;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
-use Postmark\Models\PostmarkException;
 use App\Models\ExternalServiceProvider;
-use Illuminate\Contracts\Session\Session;
-use Nafezly\Payments\Classes\OpayPayment;
 use Nafezly\Payments\Classes\KashierPayment;
 use App\Http\Controllers\API\EventController;
 
 class PostController extends Controller
 {
 
-    public static function generate_random_string($length = 10){
-        $code = substr(str_shuffle("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, $length);
-        $code_exists = Post::where('code',$code)->first();
-        while($code_exists){
-            $code = substr(str_shuffle("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, $length);
-            $code_exists = Post::where('code',$code)->first();
-        }
-        return $code;
+    protected $event;
+    protected $ticketsHelper;
+    // construct
+    public function __construct(Event $event = null, Request $request){
+        $this->event = $event;
+        $this->ticketsHelper = new TicketsHelper($request, $event);
     }
+
+    
     public function instructions_code(Request $request, $x_event_id){
         return $this->instructions($request, $x_event_id, true);
     }
 
 
     public function instructions(Request $request, $x_event_id, $i_have_a_code = null){
-        // check if $x_event_id is slug or id
         /** @var Event $event */
-        $event =  app(Event::class);
-
+        $event =  $this->event;
         if($event == null){
             abort(404);
         }
+        
         if(is_numeric($x_event_id)){
             if($event->slug != null){
                 if($i_have_a_code)
                     return redirect()->route('promo_code', ['x_event_id' => $event->slug]);
                 else
-                return redirect()->route('instructions', ['x_event_id' => $event->slug]);
+                    return redirect()->route('instructions', ['x_event_id' => $event->slug]);
             }
         }else{
             $x_event_id = $event->id;
@@ -88,22 +82,13 @@ class PostController extends Controller
             $data['i_have_a_code'] = true;
             return view('instructions', $data);
         }
-        $payment_methods = EventPaymentMethod::where('event_id', $x_event_id)->where('is_active', true)->get();
-        $global_payment_methods = PaymentMethod::all();
-        $payment_methods = $payment_methods->map(function ($payment_method) use ($global_payment_methods) {
-            $global_payment_method = $global_payment_methods->where('id', $payment_method->payment_method_id)->first();
-            if ($payment_method->name == null)
-                $payment_method->name = $global_payment_method->name;
-            $payment_method->logo = $global_payment_method->logo;
-            return $payment_method;
-        });
-        $data['payment_methods'] = $payment_methods;
+        $data['payment_methods'] = EventPaymentMethod::getAndMapMethods($x_event_id);
         $data['i_have_a_code'] = $i_have_a_code;
         return view('instructions', $data);
     }
 
     public function instructions_code_store(Request $request, $x_event_id){
-        $event = app(Event::class);
+        $event = $this->event;
         if ($event == null) {
             return abort(404);
         }
@@ -114,33 +99,26 @@ class PostController extends Controller
         $request->validate([
             'code' => 'required',
         ]);
-
-        $code = PromoCode::where('code',$request->code)->where('event_id',$x_event_id)->first();
-        if(!$code){
-            return redirect()->back()->with('status-failure','Invalid code');
+        try{
+            $code = PromoCode::getAndValidateEventCode($request->code, $x_event_id);
+        } catch(InvalidPromoCodeException $e){
+            return redirect()->back()->with('status-failure', $e->getMessage());
         }
-        if($code->is_active != 1 || $code->max_uses <= $code->uses){
-            return redirect()->back()->with('status-failure','This code has reached the maximum number of uses');
-        }
-        $ticket_types = $code->ticket_types;
         return redirect()->route('promo_code_tickets',['x_event_id'=>$x_event_id,'code'=>$request->code]);
-        // return $this->instructions_store($request, $x_event_id, $code);
     }
 
     public function instructions_code_show_tickets($x_event_id, $code){
         /** @var Event $event */
-        $event = app(Event::class);
+        $event = $this->event;
         if ($event == null) {
             return abort(404);
         }
         $x_event_id = $event->id;
 
-        $code = PromoCode::where('code',$code)->where('event_id',$x_event_id)->first();
-        if(!$code){
-            return redirect()->back()->with('status-failure','Invalid code');
-        }
-        if($code->is_active != 1 || $code->max_uses <= $code->uses){
-            return redirect()->back()->with('status-failure','This code has reached the maximum number of uses');
+        try{
+            $code = PromoCode::getAndValidateEventCode($code, $x_event_id);
+        } catch(InvalidPromoCodeException $e){
+            return redirect()->back()->with('status-failure', $e->getMessage());
         }
         $ticket_types = $code->ticket_types;
         $ticket_types = $ticket_types->map(function($ticket_type) use ($code){
@@ -153,15 +131,7 @@ class PostController extends Controller
         $data['ticket_types'] = $ticket_types;
         $data['theme'] = $theme;
         $data['event'] = $event;
-        $payment_methods = EventPaymentMethod::where('event_id',$x_event_id)->where('is_active',true)->get();
-        $global_payment_methods = PaymentMethod::all();
-        $payment_methods = $payment_methods->map(function($payment_method) use ($global_payment_methods){
-            $global_payment_method = $global_payment_methods->where('id',$payment_method->payment_method_id)->first();
-            if($payment_method->name == null)
-                $payment_method->name = $global_payment_method->name;
-            $payment_method->logo = $global_payment_method->logo;
-            return $payment_method;
-        });
+        $payment_methods = EventPaymentMethod::getAndMapMethods($x_event_id);
         $data['payment_methods'] = $payment_methods;
         $data['i_have_a_code'] = false;
         $data['code'] = $code;
@@ -169,13 +139,13 @@ class PostController extends Controller
             $data['discount'] = $code->discount;
         return view('instructions', $data);
     }
-    public function instructions_code_show_tickets_store(Request $request, $x_event_id){
-        return $this->instructions_store($request, $x_event_id);
+    public function register_request_with_promo_view(Request $request, $x_event_id){
+        return $this->register_request_view($request, $x_event_id);
     }
 
-    public function instructions_store(Request $request, $x_event_id, $code = null)
+    public function register_request_view(Request $request, $x_event_id, $code = null)
     {
-        $event = app(Event::class);
+        $event = $this->event;
         if ($event == null) {
             return abort(404);
         }
@@ -185,67 +155,45 @@ class PostController extends Controller
             return $this->store($request, $x_event_id);
         }
 
-        $event = Event::findOrFail($x_event_id);
-        $ticket_types = $event->ticket_types()->where(['is_visible'=> 1])->orderBy('is_disabled')->get();
+        $ticketTypes = $event->ticket_types()->where(['is_visible'=> 1])->orderBy('is_disabled')->get();
 
         $theme = $event->themes()->where('is_active', 1)->first();
         $questions = $event->questions;
-        $promo_code = null;
+        $promoCode = null;
         if($request->has('promo_code')){
-            $code = PromoCode::where('code',$request->promo_code)->where('event_id',$x_event_id)->first();
-            if(!$code){
-            return redirect()->back()->with('status-failure','Invalid code');
+            try{
+                $promoCode = PromoCode::getAndValidateEventCode($request->promo_code, $x_event_id);
+            } catch(InvalidPromoCodeException $e){
+                return HttpHelper::redirectError($e->getMessage());
             }
-            if($code->is_active != 1 || $code->max_uses <= $code->uses){
-                return redirect()->back()->with('status-failure','This code has reached the maximum number of uses');
-            }
-            $promo_code = $code;
-            $ticket_types = $code->ticket_types;
+            $ticketTypes = $promoCode->ticket_types;
         }
         $request->validate([
             'quantity' => 'array',
             'quantity.*' => 'numeric|min:0|max:10',
         ]);
-        $total = 0;
+        $totalPrice = 0;
+        $totalQuantity = array_sum($request->quantity);
+        try{
+            $total_reservation_ticket = $this->ticketsHelper->countAndValidateReservations($ticketTypes);
+        } catch(InvalidRequestException $e){
+            return HttpHelper::redirectError($e->getMessage());
+        }
+        $requestIncludeReservations = $total_reservation_ticket > 0;
+        $totalPrice = round(array_reduce(array_chunk($ticketTypes->pluck('price')->toArray(), 1, true), function($sum, $item) use ($request, $promoCode){
+            return CommonUtils::sum($sum, current($item) * $request->quantity[key($item)]);
+        }) * (100 - optional($promoCode)->discount ?? 0)/100, 2);
 
-        $i = 0;
-        // check if any of selected tickets where quantity > 0 is a reservation ticket
-        $total_reservation_ticket = 0;
-        foreach ($ticket_types as $ticket_type) {
-            if($ticket_type->type == "reservation" && $request->quantity[$i] > 0){
-                $total_reservation_ticket += $request->quantity[$i];
-            }
-            $i++;
-        }
-
-        if($total_reservation_ticket > 5){
-            return redirect()->back()->with('status-failure', 'You cannot select more than 5 reservation tickets');
-        }
-
-        $request_include_reservations = $total_reservation_ticket > 0;
-        $i = 0;
-        foreach ($ticket_types as $ticket_type) {
-            // check if request includes not reservation tickets and reservation tickets at the same time and return error
-            if($request_include_reservations && $ticket_type->type != "reservation" && $request->quantity[$i] > 0){
-                return redirect()->back()->with('status-failure', 'You cannot select reservation tickets with other tickets');
-            }
-            $price = $ticket_type->price * $request->quantity[$i];
-            $total += $price;
-            $i++;
-        }
-        if($request->has('promo_code')){
-            $total = $total - ($total*($promo_code->discount/100));
-        }
-        if ($total == 0 && !$request_include_reservations && !$request->has('promo_code')) {
-            return redirect()->back()->with('status-failure', 'You must select at least on ticket');
+        if ($totalQuantity <= 0) {
+            return HttpHelper::redirectError("Please select at least one ticket");
         }
 
-        $payment_method = $request->payment_method;
-        if (!$payment_method && !$request_include_reservations && $total > 0) {
-            return redirect()->back()->with('status-failure', 'Please select a payment method');
+        $paymentMethod = $request->payment_method;
+        if (!$paymentMethod && !$requestIncludeReservations && $totalPrice > 0) {
+            return HttpHelper::redirectError("Please select a payment method");
         }
-        $payment_method = $request_include_reservations ? "reservation" : $payment_method;
-        return view('form', ['reservation'=> $request_include_reservations, 'payment_method' => $payment_method, 'ticket_types' => $ticket_types, 'total' => $total, 'quantity' => $request->quantity, 'theme' => $theme, 'event' => $event, 'questions' => $questions, 'code' => $code]);
+        $paymentMethod = $requestIncludeReservations ? "reservation" : $paymentMethod;
+        return view('form', ['reservation'=> $requestIncludeReservations, 'payment_method' => $paymentMethod, 'ticket_types' => $ticketTypes, 'total' => $totalPrice, 'quantity' => $request->quantity, 'theme' => $theme, 'event' => $event, 'questions' => $questions, 'code' => $promoCode]);
     }
 
     public function delete_all_view(){
@@ -257,7 +205,7 @@ class PostController extends Controller
         if(strtoupper($request->random_string) != strtoupper($request->random_string_confirm)){
             return redirect()->back()->with('status-failure','The text does not match. Please try again');
         }
-        $posts = app(Event::class)->posts;
+        $posts = $this->event->posts;
         $post_tickets = PostTicket::whereIn('post_id',$posts->pluck('id'))->get();
         $post_tickets->each(function($post_ticket){
             $post_ticket->delete();
@@ -284,38 +232,8 @@ class PostController extends Controller
         $response = $controller->scan($form_request,Auth::user());
         $response = json_decode($response->getContent());
         return back()->with($response->status, $response->message);
-        // $data = PostTicket::with('post','ticket_type')->where('code',$request->code)->first();
-        // // check if data related to event
-        // if($data){
-        //     $check_event_id = $data->ticket_type->event_id;
-        //     if($check_event_id != $event_id){
-        //         return back()->with('error', 'Code # '.$request->code.' Not Found');
-        //     }
-        // }
-        // if(!$data){
-        //     return back()->with('error', 'Code # '.$request->code.' Not Found');
-        // }else if(str_contains(strtolower($data->ticket_type->name),'bus')){
-        //     return back()->with('error', 'Code # ' . $request->code . ' is a Bus Ticket. This page is for event tickets only');
-        // }else{
-        //     // return back()->with('message', 'Code # '.$request->code.' Found');
-        //     $status = $data->post->status??1;
-        //     if($status == 0 || $status == null){
-        //         return back()->with('error', 'Not accepted yet');
-        //     }else if($status == 1 && $data->status != 2){
-        //         $data->status = 2;
-        //         $data->scanned_at = now();
-        //         $data->save();
-        //             return back()->with('message', 'Scanned Successfully! The registree can enter!, Name:'.($data->post->name??"N/A").' Order ID: '. ($data->post->id??"N/A"));
-        //     }else if($data->status == 2){
-        //         return back()->with('error', 'Already Scanned Before!!!, Name:'.($data->post->name??"N/A").' Order ID: '. ($data->post->id??"N/A"));
-        //     }else{
-        //         return back()->with('error', 'There was a problem Scanning! Please refer to the Technical Support Team., Name:'.($data->post->name??"N/A").' Order ID: '. ($data->post->id??"N/A"));
-        //     }
-        // }
-
     }
     private function generate_post_ticket(&$post, $ticket, $theme, $event, $sub_ticket_type_id){
-        $unique_id = $this->generate_random_string(6);
         $post_ticket = new PostTicket();
         $post_ticket->post_id = $post->id;
         $post_ticket->ticket_type_id = $ticket->id;
@@ -323,17 +241,7 @@ class PostController extends Controller
             $post_ticket->sub_ticket_type_id = $sub_ticket_type_id;
         }
         if ($ticket->type == "qr") {
-            $post_ticket->code = $unique_id;
-            $qr_options = new QROptions([
-                'version'    => 5,
-                'outputType' => QRCode::OUTPUT_IMAGE_JPG,
-                'eccLevel'   => QRCode::ECC_L,
-                'imageTransparent' => false,
-                'imagickFormat' => 'jpg',
-                'imageTransparencyBG' => [255, 255, 255],
-            ]);
-            $qrcode = new QRCode($qr_options);
-            $qrcode->render($unique_id, public_path('images/qrcodes/' . $unique_id . ".jpg"));
+            $post_ticket->code = (new QRHelper())->generate();
         } else if ($ticket->type == "discount") {
             $discount_ticket = TicketDiscountCode::where('claimed_at', null)->first();
             if ($discount_ticket) {
@@ -367,13 +275,13 @@ class PostController extends Controller
         ],[
             'unique_code.unique' => 'You have already registered, if you have any questions please contact us.',
         ]);
+        $requires_receipt = PaymentHelper::paymentReceiptRequired($request->payment_method);
+
         if($request->quantity <= 0){
             session()->flash('status-failure', 'Please select at least one ticket');
         }
         if($request->total > 0){
-            $request->validate(['payment_method' => "required",
-
-            ]);
+            $request->validate(['payment_method' => "required"]);
         }
 
         // check if promo code is valid on the selected ticket type
@@ -393,37 +301,37 @@ class PostController extends Controller
                 session()->flashInput($request->input());
                 return redirect()->route('promo_code_tickets', ['event_id' => $x_event_id, 'code' => $request->promo_code]);
             }
-
         }
-        if ($request->payment_method == "vodafone_cash" && $request->total > 0) {
+        if ($requires_receipt && $request->total > 0) {
             $request->validate([
                 'receipt' => "required|file|mimes:png,jpg,jpeg",
             ]);
         }
         /** @var Event $event */
-        $event = app(Event::class);
+        $event = $this->event;
         if($event == null){
             return redirect()->back()->with('status-failure', 'Event not found');
         }
         $questions  = $event->questions;
-        $ticket_types = [];
+        $ticketTypes = [];
         $theme = $event->themes()->where('is_active', 1)->first();
         if($request->promo_code){
-            $promo = PromoCode::where('event_id',$x_event_id)->where('code', $request->promo_code)->where('is_active', 1)->where('max_uses', '>', 'uses')->first();
-            if(!$promo){
-                session()->flash('status-failure', 'Promo code is not valid.');
+            try{
+                $promo = PromoCode::getAndValidateEventCode($request->promo_code, $x_event_id);
+            }catch(InvalidPromoCodeException $e){
+                session()->flash('status-failure', $e->getMessage());
                 session()->flashInput($request->input());
                 return redirect()->route('promo_code_tickets', ['event_id' => $x_event_id, 'code' => $request->promo_code]);
             }
-            $ticket_types = $promo->ticket_types;
+            $ticketTypes = $promo->ticket_types;
         }else{
             // $ticket_types = $event->ticket_types;
-            $ticket_types = TicketType::where('event_id',$x_event_id)->where(['is_active' => 1, 'is_visible' => 1])->orderBy('is_disabled')->get();
+            $ticketTypes = TicketType::where('event_id',$x_event_id)->where(['is_active' => 1, 'is_visible' => 1])->orderBy('is_disabled')->get();
         }
         if (strpos(trim($request->name), ' ') === false) {
             session()->flash('status-failure', 'Please enter your full name.');
             session()->flashInput($request->input());
-            return view('form', ['ticket_types' => $ticket_types, 'theme'=>$theme, 'total' => $request->total, 'quantity' => $request->quantity, 'payment_method'=>$request->payment_method, 'questions' => $questions, 'code' => $request->promo_code, 'event' => $event]);
+            return view('form', ['ticket_types' => $ticketTypes, 'theme'=>$theme, 'total' => $request->total, 'quantity' => $request->quantity, 'payment_method'=>$request->payment_method, 'questions' => $questions, 'code' => $request->promo_code, 'event' => $event]);
         }
 
         // get submited question answers and store them in an array
@@ -457,75 +365,50 @@ class PostController extends Controller
             return redirect()->back()->with('status-failure', 'Phone number must be numbers only!');
         }
         $post->code = $request->unique_code;
-        $total_price = 0;
-        $tickets = $ticket_types;
-        $total_quantity = array_sum($request->quantity);
-
-        $i = 0;
-        // check if any of selected tickets where quantity > 0 is a reservation ticket
-        $total_reservation_ticket = 0;
-        $selected_sub_ticket_types = [];
-        foreach ($ticket_types as $ticket_type) {
-            if ($ticket_type->type == "reservation" && $request->quantity[$i] > 0) {
-                $total_reservation_ticket += $request->quantity[$i];
-            }
-            if($ticket_type->sub_ticket_types()->count() > 0 && $request->quantity[$i] > 0){
-                $selected_sub_ticket_types[$ticket_type->id] = [];
-                foreach($request["sub_ticket_".$ticket_type->id] as $sub_ticket_type){
-                    $sub_ticket_type = SubTicketType::find($sub_ticket_type);
-                    if($sub_ticket_type == null || empty($sub_ticket_type)){
-                        return redirect()->back()->with('status-failure', 'Invalid sub ticket selection');
-                    }
-                    for($j = 0; $j < $ticket_type->person; $j++){
-                        $selected_sub_ticket_types[$ticket_type->id][] = $sub_ticket_type->id;
-                    }
-                }
-            }
-            $i++;
+        $totalPrice = 0;
+        $totalQuantity = array_sum($request->quantity);
+        try{
+            $totalReservationTickets = $this->ticketsHelper->countAndValidateReservations($ticketTypes);
+            $selectedSubTicketTypes = $this->ticketsHelper->getSubTicketsSelected($ticketTypes);
+        }catch(InvalidRequestException $e){
+            return HttpHelper::redirectError($e->getMessage());
         }
-        if ($total_reservation_ticket > 5) {
-            return redirect()->back()->with('status-failure', 'You cannot select more than 5 reservation tickets');
-        }
-        $request_include_reservations = $total_reservation_ticket > 0;
+        $requestIncludeReservations = $totalReservationTickets > 0;
 
         // check if the same email has already created a reservation ticket in the same event
-        $posts = Post::where('email', $request->email)->where('event_id', $x_event_id)->get();
-        foreach ($posts as $P) {
-            $post_tickets = $P->ticket;
-            foreach ($post_tickets as $post_ticket) {
-                if ($post_ticket->ticket_type->type == "reservation" && $request_include_reservations) {
-                    return redirect()->back()->with('status-failure', 'Failed to register your request. Maximum number of reservations is: 1 per email.');
-                }
+        $emailHasReservations = Post::where('email', $request->email)->where('event_id', $x_event_id)->whereHas('ticket', function($query){
+            return $query->whereHas('ticket_type', function($sub_query){
+                return $sub_query->where('type', 'reservation');
+            });
+        })->exists();
+     
+        if($emailHasReservations && $requestIncludeReservations) return HttpHelper::redirectError("Failed to register your request. You can't register more reservations");
+        if(isset($promo)){
+            if ($totalQuantity > $promo->max_uses - $promo->uses) {
+                return HttpHelper::redirectError('Number of tickets exceeds limit!');
             }
         }
-
         $j = 0;
         foreach($request->quantity as $quantity){
-
-            $ticket = $tickets[$j];
-            if ($request_include_reservations && $ticket->type != "reservation" && $quantity > 0) {
-                return redirect()->back()->with('status-failure', 'You cannot select reservation tickets with other tickets');
-            }
-
+            $ticket = $ticketTypes[$j];
             if(isset($promo)){
-                if($total_quantity > $promo->max_uses - $promo->uses && $quantity != 0){
-                    return redirect()->back()->with('status-failure', 'Number of tickets exceeds limit!');
-                }
-                $total_price += ($ticket->price - (($promo->discount / 100) * $ticket->price))*$quantity;
+                $totalPrice += ($ticket->price - (($promo->discount / 100) * $ticket->price))*$quantity;
                 $post->promo_code_id = $promo->id;
+                if($promo->uses + $quantity > $promo->max_uses){
+                    return HttpHelper::redirectError('Number of tickets exceeds limit!');
+                }
                 $promo->uses = $promo->uses + $quantity;
                 if ($promo->uses >= $promo->max_uses) {
                     $promo->is_active = 0;
                 }
-
             } else {
-                $total_price += $quantity * $ticket->price;
+                $totalPrice += $quantity * $ticket->price;
             }
             for($i = 0; $i<$quantity*$ticket->person; $i++){
                 $post->save();
                 $sub_ticket_type = null;
-                if(isset($selected_sub_ticket_types[$ticket->id])){
-                    $sub_ticket_type = $selected_sub_ticket_types[$ticket->id][$i];
+                if(isset($selectedSubTicketTypes[$ticket->id])){
+                    $sub_ticket_type = $selectedSubTicketTypes[$ticket->id][$i];
                 }
                 $response = $this->generate_post_ticket($post, $ticket, $theme, $event, $sub_ticket_type);
                 if($response){
@@ -535,20 +418,20 @@ class PostController extends Controller
 
             $j++;
         }
-        if ($total_price > $request->total) {
+        if ($totalPrice > $request->total) {
             $post->delete();
-            return redirect()->back()->with('status-failure', 'There has been an issue with your request!');
+            return HttpHelper::redirectError('There has been an issue with your request!');
         }
-        $post->total_price = $total_price;
+        $post->total_price = $totalPrice;
 
-        if($request->payment_method == "reservation" && $total_quantity == $total_reservation_ticket){
+        if($request->payment_method == "reservation" && $totalQuantity == $totalReservationTickets){
            return $this->accept($x_event_id, $post->id, true);
         }
         $post->save();
         if(isset($promo)){
             $promo->save();
         }
-        if ($total_price == 0 && isset($promo)) {
+        if ($totalPrice == 0 && isset($promo)) {
             $post->status = 1;
             $post->save();
 
@@ -559,7 +442,7 @@ class PostController extends Controller
 
         }
 
-        if ($request->payment_method == "vodafone_cash" && $total_price > 0) {
+        if ($requires_receipt && $totalPrice > 0) {
             if(!$request->hasFile('receipt')){
                 return redirect()->back()->with('status-failure', 'Something wrong happened while processing your request!');
             }
@@ -567,42 +450,12 @@ class PostController extends Controller
         }
 
         $post->save();
-        // OPAY
-        // if($request->payment_method == "credit_card"){
-        //     // calculate the total amount
-        //     $total = 0;
-        //     $j=0;
-        //     foreach($request->quantity as $quantity){
-        //         $ticket = $tickets[$j];
-        //         $total += $quantity*$ticket->price;
-        //         $j++;
-        //     }
-        //     $data = [
-        //         "amount" => $total,
-        //         "user_first_name" => explode(' ', $request->name)[0],
-        //         "user_last_name" => explode(' ', $request->name)[1],
-        //         "user_email" => $request->email,
-        //         "user_phone" => $request->phone_number,
-        //         "order_id" => $post->id,
-        //     ];
-        //     return $this->online_payment($data);
-        // }
+   
         // KASHIER
-        if($request->payment_method == "credit_card" && $total_price > 0 ){
+        if($request->payment_method == "credit_card" && $totalPrice > 0 ){
             $post->save();
-            // calculate the total amount
             $total = $post->total_price;
-            $j=0;
-            $data = new \stdClass();
-            $data->amount = $total;
-            $data->user_first_name = explode(' ', $request->name)[0];
-            $data->user_last_name = explode(' ', $request->name)[1];
-            $data->user_email = $request->email;
-            $data->user_phone = $request->phone_number;
-            $data->order_id = $post->id;
-            $data->currency = "EGP";
-            $data->order_reference_id = $post->order_reference_id;
-            $data->event_id = $x_event_id;
+            $data = PaymentHelper::buildKashierData($total, $request->email, $request->name, $request->phone_number, $post->id, $post->order_reference_id, $x_event_id);
             $payment_methods = PaymentMethod::where('name','Kashier')->first();
             if(!$payment_methods){
                 $post->delete();
@@ -626,7 +479,7 @@ class PostController extends Controller
 
     public function thank_you($x_event_id){
         /** @var Event $event */
-        $event = app(Event::class);
+        $event = $this->event;
         if($event->slug != null && $event->slug != '' && $event->slug != $x_event_id){
             return redirect()->route('thank_you', ['x_event_id' => $event->slug]);
         }
@@ -640,13 +493,13 @@ class PostController extends Controller
     public function view_requests(Request $request,$event_id){
         $statusPriorities = [1, 0];
         /** @var Event $evnt */
-        $evnt = app(Event::class);
+        $evnt = $this->event;
         if($evnt == null){
             return redirect()->back()->with(["status-failure" => "An error occurred while processing your request. Please try again later. Error code: 3"]);
         }
         $posts = $evnt->posts()->with(['ticket.ticket_type','ticket_type','provider'])->orderByRaw('FIELD (status, ' . implode(', ', $statusPriorities) . ') ASC');
         $search_query = $request->has('q') ? $request->q : null;
-        $posts = RequestsHelper::searchRequests($posts, $search_query);
+        $posts = RequestsHelper::searchRequestsForAdmin($posts, $search_query);
         $posts->distinct();
         if($request->has('q')) {
             $posts = $posts->paginate(1000);
@@ -659,14 +512,14 @@ class PostController extends Controller
     public function view_ticket_type_requests(Request $request, $event_id, $ticket_type_id)
     {
         $statusPriorities = [1, 0];
-        $evnt = app(Event::class);
+        $evnt = $this->event;
         if ($evnt == null) {
             return redirect()->back()->with(["status-failure" => "An error occurred while processing your request. Please try again later. Error code: 3"]);
         }
         $ticket_type = TicketType::where('id', $ticket_type_id)->where('event_id', $event_id)->withTrashed()->first();
         $posts = $ticket_type->posts()->with(['ticket.ticket_type', 'ticket_type', 'provider'])->orderByRaw('FIELD (posts.status, ' . implode(', ', $statusPriorities) . ') ASC')->orderBy('created_at', "DESC");
         $search_query = $request->has('q') ? $request->q : null;
-        $posts = RequestsHelper::searchRequests($posts, $search_query);
+        $posts = RequestsHelper::searchRequestsForAdmin($posts, $search_query);
         $posts->distinct();
         if ($request->has('q')) {
             $posts = $posts->paginate(1000);
@@ -768,7 +621,7 @@ class PostController extends Controller
             'sheet'=>'required|file',
             'provider_id'=>'required|exists:external_service_providers,id'
         ]);
-        $array = Excel::toArray(PostImport::class,$request->file('sheet'));
+        $array = Excel::toArray(new PostImport, $request->file('sheet'));
 
         foreach($array[0] as $k=>$row){
             if($row[1]==null||$k == 0 || Post::where('external_service_provider_order_id',intval($row[0]))->where('external_service_provider_id',$request->provider_id)->first()){
@@ -794,22 +647,12 @@ class PostController extends Controller
             $post->status=1;
             $post->save();
             for ($i = 0; $i < $quantity * $ticket_type->person; $i++) {
-                $unique_id = $this->generate_random_string(6);
                 $post_ticket = new PostTicket();
                 $post_ticket->post_id = $post->id;
                 $post_ticket->ticket_type_id = $ticket_type->id;
                 if(config('settings.enable_qr')){
                     $post_ticket->code = $unique_id;
-                    $qr_options = new QROptions([
-                        'version'    => 5,
-                        'outputType' => QRCode::OUTPUT_IMAGE_JPG,
-                        'eccLevel'   => QRCode::ECC_L,
-                        'imageTransparent' => false,
-                        'imagickFormat' => 'jpg',
-                        'imageTransparencyBG' => [255, 255, 255],
-                    ]);
-                    $qrcode = new QRCode($qr_options);
-                    $qrcode->render($unique_id, public_path('images/qrcodes/' . $unique_id . ".jpg"));
+                    $unique_id = (new QRHelper())->generate();
                 }else if(config('settings.enable_codes')){
                     $discount_ticket = TicketDiscountCode::where('claimed_at',null)->first();
                     if($discount_ticket){
@@ -838,38 +681,6 @@ class PostController extends Controller
         return Excel::download(new PostsExport($event_id, $query, $ticket_id), 'tickets.xlsx');
     }
 
-
-    // OPAY
-    public function online_payment($data){
-        $payment = new OpayPayment();
-        $response = $payment->pay(
-            $data['amount'],
-            null,
-            $data['user_first_name'],
-            $data['user_last_name'],
-            $data['user_email'],
-            $data['user_phone']
-        );
-        $post = Post::find($data['order_id']);
-        $post->external_service_provider_payment_method = 'opay';
-        $post->external_service_provider_order_id = $response['payment_id'];
-        $post->save();
-        return redirect($response['redirect_url']);
-    }
-
-    // OPAY
-    public function verify_payment(Request $request){
-        $payment = new OpayPayment();
-        $response = $payment->verify($request);
-        if($response['process_data']['data']['status'] == 'SUCCESS'){
-            $post = Post::where('external_service_provider_order_id',$response['payment_id'])->first();
-            $this->accept(null,$post->id,true);
-            return view('thank_you', ['status_success' => 'Thank you for registering at EGYcon. An email will be sent to you with your ticket(s)']);
-        }else{
-            return view('thank_you', ['status_error' => 'There was an error processing your payment. Please try again later.']);
-        }
-    }
-
     // KASHIER
     public function payment_success(Request $request){
         $payment = new KashierPayment();
@@ -880,6 +691,7 @@ class PostController extends Controller
         $post = Post::where('order_reference_id',$response['payment_id'])->first();
         $post->external_service_provider_payment_method = 'kashier';
         $post->external_service_provider_order_id = $request->merchantOrderId;
+        $post->save();
         // check if the order is already accepted
         if($post->status != 1){
             $this->accept(null,$post->id,true);
@@ -892,7 +704,7 @@ class PostController extends Controller
     // onspot registration
     public function onspot_registration($event_id){
         /** @var Event $event */
-        $event = app(Event::class);
+        $event = $this->event;
         $ticket_types = $event->ticket_types()->where('is_active',1)->get();
         return view('admin.onspot_registration',compact('event','ticket_types'));
     }

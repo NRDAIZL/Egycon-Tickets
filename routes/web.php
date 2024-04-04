@@ -1,5 +1,6 @@
 <?php
 
+use App\Helpers\PaymentHelper;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\DashboardController;
@@ -182,35 +183,12 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
 });
 
 Route::get('/{x_event_id}', [PostController::class, 'instructions'])->name('instructions');
-Route::post( '/{x_event_id}', [PostController::class, 'instructions_store']);
+Route::post( '/{x_event_id}', [PostController::class, 'register_request_view']);
 Route::get('/{x_event_id}/code', [ PostController::class, 'instructions_code'])->name('promo_code');
 Route::post('/{x_event_id}/code', [PostController::class, 'instructions_code_store']);
 Route::get('/{x_event_id}/code/{code}', [PostController::class, 'instructions_code_show_tickets'])->name( 'promo_code_tickets');
-Route::post('/{x_event_id}/code/{code}', [PostController::class, 'instructions_code_show_tickets_store']);
+Route::post('/{x_event_id}/code/{code}', [PostController::class, 'register_request_with_promo_view']);
 
-Route::get('/payment_test',[PostController::class, 'online_payment'])->name('payment_test');
-Route::get('verify-payment',[PostController::class, 'verify_payment'])->name('verify-payment');
 Route::get('/{x_event_id}/payment-success',[PostController::class, 'payment_success'])->name('payment-success');
 
 Route::get('/{x_event_id}/thank_you',[PostController::class, 'thank_you'])->name('thank_you');
-// Route::get('/',function(){
-//     return view('tickets_suspended');
-// });
-
-// Route::get('set/scans', function () {
-//     $post_tickets = PostTicket::all();
-//     foreach ($post_tickets as $ticket) {
-//         if($ticket->scanned_at != null){
-//             $ticket->scans = 1;
-//             $ticket->save();
-//         }
-//     }
-//     return 'done';
-// });
-
-
-// Route::get("/generate/avatars", function(){
-//     User::all()->each(function($user){
-//         $user->generateAvatar();
-//     });
-// });

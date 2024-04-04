@@ -4,7 +4,7 @@ namespace App\Helpers;
 
 class RequestsHelper {
 
-    public static function searchRequests($base_requests, $search_query) {
+    public static function searchRequestsForAdmin($base_requests, $search_query) {
 
         // filter if status is null and no reciept
         $base_requests = $base_requests->where(function($query){
@@ -39,5 +39,7 @@ class RequestsHelper {
 
         return $base_requests;
     }
+
+    
     
 }
