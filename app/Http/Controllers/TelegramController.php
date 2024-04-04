@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\Telegram\TelegramService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class TelegramController extends Controller
 {
@@ -23,13 +24,13 @@ class TelegramController extends Controller
 
         $type2 = @$update->callback_query->message->chat->type;
         $type = $type ?? $type2;
-        log($chat_id);
+        Log::info($chat_id);
         
         try{
             $telegramService = TelegramService::withChatID($chat_id);
             $telegramService->sendMessage("Test 1234");
         }catch(\Exception $e){
-            log($e->getMessage());
+            Log::error($e->getMessage());
         }
     }
 }

@@ -7,11 +7,12 @@ use App\Models\User;
 
 class TelegramService 
 {
-    private $API_KEY = env('TELEGRAM_API_KEY');
+    protected $API_KEY;
     private $url;
     private $user;
     private $chat_id;
     public function __construct(User $user = null, $chat_id = null){
+        $this->API_KEY = env('TELEGRAM_API_KEY');
         if($chat_id == null){
             if($user == null){
                 throw new \InvalidArgumentException("User or chat_id cannot be null!");
