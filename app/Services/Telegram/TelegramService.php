@@ -27,7 +27,7 @@ class TelegramService
                 throw new \InvalidArgumentException('User not found!');
             }
         }
-        $this->url = "https://api.telegram.org/bot{$this->API_KEY}/";
+        $this->url = "https://api.telegram.org/bot{$this->API_KEY}";
         $this->user = $user;
         $this->chat_id = $chat_id;
     }
