@@ -55,11 +55,11 @@ class EnsureQueueListenerIsRunning extends Command
         $os = strtolower(php_uname('s'));
         $command = $this->getProcessCommand(strtolower(php_uname('s')), $pid);
         $process = exec($command);
-        Log::info("process: ". $process);
+        //$processIsQueueListener = str_contains($process, 'queue:listen'); // 5.1
         if($os == "windows nt"){
             $processIsQueueListener = !str_contains($process, 'No tasks are running'); 
         }else{
-            $processIsQueueListener = !empty($process);
+            $processIsQueueListener = str_contains($process, 'queue:work');
         }
         return $processIsQueueListener;
     }
