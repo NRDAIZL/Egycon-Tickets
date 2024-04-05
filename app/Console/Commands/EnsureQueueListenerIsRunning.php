@@ -32,7 +32,10 @@ class EnsureQueueListenerIsRunning extends Command
         /** @var DatabaseQueue $jobs  */
         $jobs = app('queue')->connection('database');
         $size = $jobs->size();
-        $lastSize = $this->getLastSize();
+        if(!$lastSize = $this->getLastSize()){
+            $this->saveQueueSize($size, time());
+            return false;
+        }
         $this->info("Last restart: " . time() - $lastSize[1] . " seconds ago");
         $this->info("Last checkup: " . time() - $lastSize[2] . " seconds ago");
         if($size > $lastSize[0]) {
@@ -47,7 +50,7 @@ class EnsureQueueListenerIsRunning extends Command
         return true;
     }
 
-    private function getLastSize(): array
+    private function getLastSize(): array|bool
     {
         if (!file_exists(__DIR__ . '/queue.size')) {
             return false;
