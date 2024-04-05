@@ -68,7 +68,7 @@ class EnsureQueueListenerIsRunning extends Command
     private function startQueueListener()
     {
         $descriptorspec = [0 => ['pipe', 'r'], 1 => ['pipe', 'r'], 2 => ['pipe', 'r']];
-        $command =  'php "' . base_path() . '\\artisan" queue:work --queue=default --delay=0 --timeout=30 --sleep=2 --tries=3 > nul 2>&1 & echo $!';
+        $command =  'php "' . base_path("artisan") . '" queue:work --queue=default --delay=0 --timeout=30 --sleep=2 --tries=3 > nul 2>&1 & echo $!';
         Log::info("command: ". $command);
         $proc = proc_open($command, $descriptorspec, $pipes);
         $proc_details = proc_get_status($proc);
