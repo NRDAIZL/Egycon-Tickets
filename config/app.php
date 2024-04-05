@@ -1,6 +1,7 @@
 <?php
 
 use App\Helpers\StringUtils;
+use App\NotificationChannels\TelegramChannel;
 
 return [
 
@@ -236,7 +237,8 @@ return [
         'View' => Illuminate\Support\Facades\View::class,
         'Excel' => Maatwebsite\Excel\Facades\Excel::class,
         'Debugbar' => Barryvdh\Debugbar\Facades\Debugbar::class,
-        'StringUtils' => StringUtils::class
+        'StringUtils' => StringUtils::class,
+        'telegram' => TelegramChannel::class
     ],
 
 ];

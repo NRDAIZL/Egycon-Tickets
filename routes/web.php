@@ -16,8 +16,10 @@ use App\Http\Controllers\QRCodeTicketController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\SubTicketController;
 use App\Http\Controllers\UserController;
+use App\Models\Post;
 use App\Models\PostTicket;
 use App\Models\User;
+use App\Notifications\NewRequest;
 use Illuminate\Support\Facades\Auth;
 
 /*
@@ -192,3 +194,10 @@ Route::post('/{x_event_id}/code/{code}', [PostController::class, 'register_reque
 Route::get('/{x_event_id}/payment-success',[PostController::class, 'payment_success'])->name('payment-success');
 
 Route::get('/{x_event_id}/thank_you',[PostController::class, 'thank_you'])->name('thank_you');
+
+
+Route::get('/test1234/x', function(){
+    $user = Auth::user();
+    $request = Post::find(145);
+    $user->notify((new NewRequest($request)));
+});
