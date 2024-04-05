@@ -36,6 +36,8 @@ class EnsureQueueListenerIsRunning extends Command
             $this->saveQueueSize($size, time());
             return false;
         }
+        $this->info(time(). "{$lastSize[1]}");
+        $this->info(time() - $lastSize[1]);
         $this->info("Last restart: " . time() - $lastSize[1] . " seconds ago");
         $this->info("Last checkup: " . time() - $lastSize[2] . " seconds ago");
         if($size > $lastSize[0]) {
