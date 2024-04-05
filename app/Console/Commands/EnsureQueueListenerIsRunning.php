@@ -50,7 +50,7 @@ class EnsureQueueListenerIsRunning extends Command
         return true;
     }
 
-    private function getLastSize(): array|bool
+    private function getLastSize()
     {
         if (!file_exists(__DIR__ . '/queue.size')) {
             return false;
