@@ -3,6 +3,8 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Queue\DatabaseQueue;
+use Illuminate\Queue\Jobs\DatabaseJob;
 use Illuminate\Support\Facades\Log;
 
 class EnsureQueueListenerIsRunning extends Command
@@ -19,74 +21,51 @@ class EnsureQueueListenerIsRunning extends Command
     {
         if (!$this->isQueueListenerRunning()) {
             $this->comment('Queue listener is being started.');
-            $pid = $this->startQueueListener();
-            $this->saveQueueListenerPID($pid);
+            $this->startQueueListener();
         }
 
         $this->comment('Queue listener is running.');
     }
 
-    private function getProcessCommand($os, $pid){
-        $command = "ps -p {$pid}";
-        switch ($os) {
-            case "linux":
-                $this->info("Server is running on linux OS");
-                $this->info("ps will be used");
-                break;
-            case "windows nt":
-                $command = "tasklist /fi \"pid eq {$pid}\"";
-                $this->info("Server is running on Windows OS");
-                $this->info("Command tasklist will be used");
-                break;
-            default:
-                $os = "linux";
-                $this->error("Unable to detect OS");
-                $this->info("ps will be used");
-                break;
-        }
-        return $command;
-    }
-
     private function isQueueListenerRunning()
     {
-        if (!$pid = $this->getLastQueueListenerPID()) {
-            return false;
+        /** @var DatabaseQueue $jobs  */
+        $jobs = app('queue')->connection('database');
+        $size = $jobs->size();
+        $lastSize = $this->getLastSize();
+        $this->info("Last restart: " . time() - $lastSize[1] . " seconds ago");
+        $this->info("Last checkup: " . time() - $lastSize[2] . " seconds ago");
+        if($size > $lastSize[0]) {
+            if(time() - $lastSize[1] >= 300 && time() - $lastSize[2] >= 5) {
+                $this->error("Queue size has increased. Restarting queue listener.");
+                $this->saveQueueSize($size, time());
+                return false;
+            }
         }
-        $os = strtolower(php_uname('s'));
-        $command = $this->getProcessCommand(strtolower(php_uname('s')), $pid);
-        $process = exec($command);
-        //$processIsQueueListener = str_contains($process, 'queue:listen'); // 5.1
-        if($os == "windows nt"){
-            $processIsQueueListener = !str_contains($process, 'No tasks are running'); 
-        }else{
-            $processIsQueueListener = str_contains($process, 'queue:work');
-        }
-        return $processIsQueueListener;
+        $this->saveQueueSize($size, $lastSize[1]);
+        $this->info("Current Queue Size: ".$size);
+        return true;
     }
 
-    private function getLastQueueListenerPID()
+    private function getLastSize(): array
     {
-        if (!file_exists(__DIR__ . '/queue.pid')) {
+        if (!file_exists(__DIR__ . '/queue.size')) {
             return false;
         }
-
-        return file_get_contents(__DIR__ . '/queue.pid');
+        $data = file_get_contents(__DIR__ . '/queue.size');
+        $data = explode(",", $data);
+        return $data;
     }
 
-    private function saveQueueListenerPID($pid)
+    private function saveQueueSize($size, $time)
     {
-        file_put_contents(__DIR__ . '/queue.pid', $pid);
+        file_put_contents(__DIR__ . '/queue.size', "$size,$time,".time()); // queueSize, lastRestartTime, lastCheckupTime
     }
 
     private function startQueueListener()
     {
-        //$command = 'php-cli ' . base_path() . '/artisan queue:listen --timeout=60 --sleep=5 --tries=3 > /dev/null & echo $!'; // 5.1
-        //$command = 'php-cli ' . base_path() . '/artisan queue:work --timeout=60 --sleep=5 --tries=3 > /dev/null & echo $!'; // 5.6 - see comments
-
-        //handle memory issues
         $descriptorspec = [0 => ['pipe', 'r'], 1 => ['pipe', 'r'], 2 => ['pipe', 'r']];
-
-        $command =  'php "' . base_path() . '\\artisan" queue:work --queue=default --delay=0 --timeout=30 --sleep=5 --tries=3 > nul 2>&1 & echo $!';
+        $command =  'php "' . base_path() . '\\artisan" queue:work --queue=default --delay=0 --timeout=30 --sleep=2 --tries=3 > nul 2>&1 & echo $!';
         Log::info("command: ". $command);
         $proc = proc_open($command, $descriptorspec, $pipes);
         $proc_details = proc_get_status($proc);
