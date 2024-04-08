@@ -85,11 +85,11 @@ class User extends Authenticatable implements Auditable
         return $this->hasOne(TelegramChat::class);
     }
 
-    public function getTelegramChatId(): string|null {
+    public function getTelegramChatId() {
         return $this->telegram_chat()->exists() ? $this->telegram_chat->chat_id : null;
     }
 
-    public function getTelegramChatIdObject(): TelegramChat|null
+    public function getTelegramChatIdObject()
     {
         return $this->telegram_chat()->exists() ? $this->telegram_chat : null;
     }
