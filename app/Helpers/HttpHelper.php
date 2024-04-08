@@ -14,10 +14,10 @@ class HttpHelper
         return redirect()->back()->with('status-failure', $message);
     }
 
-    public static function getSafeRoute($name, $parameters, $default = null){
-        if(env('APP_ENV') == 'local'){
-            return $default ?? self::DEFAULT_TESTING_URL;
-        }
-        return route($name, $parameters);
-    }
+    // public static function getSafeRoute($name, $parameters, $default = null){
+    //     if(env('APP_ENV') == 'local'){
+    //         return $default ?? self::DEFAULT_TESTING_URL;
+    //     }
+    //     return route($name, $parameters);
+    // }
 }

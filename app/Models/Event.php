@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\StringUtils;
 use Exception;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;

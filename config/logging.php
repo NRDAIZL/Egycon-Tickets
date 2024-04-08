@@ -109,7 +109,11 @@ return [
             'driver' => 'monolog',
             'handler' => NullHandler::class,
         ],
-
+        'telegram' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/telegram.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+        ],
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
         ],

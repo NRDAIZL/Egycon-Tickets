@@ -180,8 +180,8 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
         Route::post('/register', [PostController::class, 'onspot_registration_post']);
 
     });
-
-
+    Route::get('/settings', [UserController::class,'viewSettings'])->name('settings');
+    Route::get('/settings/disable_telegram', [UserController::class,'disableTelegramNotifications'])->name('settings.disableTelegram');
 });
 
 Route::get('/{x_event_id}', [PostController::class, 'instructions'])->name('instructions');

@@ -50,8 +50,11 @@ class TelegramService
 
     public function bot($method, $data = [])
     {
-        $data = json_decode(json_encode($data), true);
         $url = "{$this->url}/$method";
+        if(!config("app.enable_telegram_notifications")){
+            $this->log($data, $method);
+            return $data;
+        }
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_HEADER, true);
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -100,6 +103,24 @@ class TelegramService
             $this->markup->inline_keyboard[]= [$message->action->toArray()];
         }
         return $this->sendMessage($message->toString());
+    }
+
+    private function log($data, $method){
+        Log::channel('telegram')->info(
+            "Telegram Message Logged" .
+            PHP_EOL .
+                "Method: " . $method .
+                PHP_EOL .
+                json_encode($data)
+        );
+    }
+
+    public function getUser(){
+        return $this->user;
+    }
+
+    public function getChatID(){
+        return $this->chat_id;
     }
 }
 

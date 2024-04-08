@@ -3,36 +3,50 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\UserNotFoundException;
+use App\Models\User;
 use App\Services\Telegram\TelegramService;
+use App\Services\Telegram\TelegramUpdate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class TelegramController extends Controller
 {
-    
     public function index(){
-        $update = json_decode(file_get_contents('php://input'));
-        $message = @$update->message;
-        $text = @$message->text;
-        $chat_id = @$message->chat->id;
-        $data = @$update->callback_query->data;
-        $chat_id2 = @$update->callback_query->message->chat->id;
-        $type = @$message->chat->type;
-        $chat_member = @$update->chat_member->user->id;
-        $new_chat_members = @$message->new_chat_members;
-
-        $chat_id = $chat_id ?? $chat_id2;
-
-        $type2 = @$update->callback_query->message->chat->type;
-        $type = $type ?? $type2;
+        $message = new TelegramUpdate(json_decode(file_get_contents('php://input')));
+        $response = null;
         try{
-            $telegramService = TelegramService::withChatID($chat_id);
-            $telegramService->sendMessage("Test 1234");
+            $telegramService = TelegramService::withChatID($message->getChatId());
+            $response = $this->reply($message->getText(), $telegramService);
         }catch(UserNotFoundException $e){
-            $telegramService = TelegramService::withChatID($chat_id, true);
-            $telegramService->sendMessage("User is not recognized!\nPlease configure telegram on your account first");
+            $telegramService = TelegramService::withChatID($message->getChatId(), true);
+            $response = $this->reply($message->getText(), $telegramService);
         }catch(\Exception $e){
             Log::error($e->getMessage());
         }
+        if(config('app.telegram_message_testing')){
+            return response()->json($response);
+        }
+    }
+
+    private function reply($text, $telegramService){
+        switch($text){
+            case 'Checkup':
+                return $telegramService->sendMessage("Messages are working");
+            default:
+                return $this->validateTelegramCode($text, $telegramService);
+        }
+    }
+
+    private function validateTelegramCode($code, TelegramService $telegramService){
+        $code = str_replace("/start ", "", $code);
+        if(!$telegramService->getUser()){
+            if(User::where("telegram_code", $code)->exists()){
+                $user = User::where("telegram_code", $code)->first();
+                $user->saveTelegramChatId($telegramService->getChatID());
+                return $telegramService->sendMessage("User registered successfully!");
+            }
+            return $telegramService->sendMessage("User is not recognized!\nPlease configure telegram notifications on your account first");
+        }
+        return $telegramService->sendMessage("Unkown Command!");
     }
 }

@@ -91,7 +91,7 @@ class NewRequest extends Notification implements Telegramable, ShouldQueue
                     ->line($this->request->getPromoCode() ? 'Promo code: '.$this->request->getPromoCode() : '')
                     ->line('Date: '.$this->request->created_at)
                     ->actionText("View requests")
-                    ->actionUrl(HttpHelper::getSafeRoute('admin.requests', $this->request->event->id));
+                    ->actionUrl(route('admin.requests', $this->request->event->id));
 
     }
 }
