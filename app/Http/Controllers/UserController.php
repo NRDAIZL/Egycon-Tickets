@@ -253,4 +253,9 @@ class UserController extends Controller
         }
         return redirect()->back()->with('success', 'Telegram notifications disabled');
     }
+
+    public function viewEditProfile(){
+        $user = auth()->user();
+        return view('admin.settings.profile', compact('user'));
+    }
 }

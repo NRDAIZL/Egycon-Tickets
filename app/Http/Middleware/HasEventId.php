@@ -26,9 +26,9 @@ class HasEventId
         $user = auth()->user();
         $user_events = $user->events;
         $user_events_ids = $user_events->pluck('id')->toArray();
-        $user_events_slugs = $user_events->pluck('slug')->toArray();
+        // $user_events_slugs = $user_events->pluck('slug')->toArray();
         if (!in_array($event_id,$user_events_ids) 
-            && !in_array($event_id, $user_events_slugs)
+            // && !in_array($event_id, $user_events_slugs
         ) {
             return redirect()->route('admin.events.view')->with('error', 'Event not found!');
         }
