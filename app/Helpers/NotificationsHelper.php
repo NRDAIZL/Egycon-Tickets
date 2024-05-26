@@ -17,6 +17,9 @@ class NotificationsHelper {
     function sendToEventAdmins($event_id) {
         $users = Event::find($event_id)->users();
         foreach($users as $user){
+            if(!($user instanceof User)){
+                dd($user);
+            }
             if((new RoleHelper("admin|organizer"))->checkUserPermission($user)){
                 $user->notify($this->notification);
             }
