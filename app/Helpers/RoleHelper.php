@@ -6,10 +6,9 @@ use App\Models\User;
 
 class RoleHelper {
 
-    private $admin_roles = "admin|organizer|volunteer";
     private $role;
 
-    public function __construct(string $roles = $this->admin_roles) {
+    public function __construct(string $roles = "admin|organizer|volunteer") {
         $this->role = $roles;
     }
 
