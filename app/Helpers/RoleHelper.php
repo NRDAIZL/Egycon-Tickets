@@ -20,6 +20,7 @@ class RoleHelper {
                 $has_permission = true;
             }
         }
+        dd($has_permission);
         return $has_permission;
     }
 
