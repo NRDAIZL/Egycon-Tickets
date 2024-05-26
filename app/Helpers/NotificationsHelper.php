@@ -16,7 +16,7 @@ class NotificationsHelper {
 
     function sendToEventAdmins($event_id) {
         $users = Event::find($event_id)->users();
-        dd($users);
+        dd($users->get());
         foreach($users as $user){
             if(!($user instanceof User)){
                 dd($user);
