@@ -22,13 +22,17 @@ class QRHelper
         ]);
     }
 
-    public function generate(string $code = null) : string {
+    public function generate(string $code = null, bool $file = true, bool $returnBase64 = false) : string {
         if(empty($code)){
             $code = self::generateRandomQrCode(6);
         }
         $qrcode = new QRCode($this->qrOptions);
-        $qrcode->render($code, public_path("{$this->qrImagePath}/{$code}.{$this->qrImageFormat}"));
-        return $code;
+        $path = null;
+        if($file){
+            $path = public_path("{$this->qrImagePath}/{$code}.{$this->qrImageFormat}");
+        }
+        $base64 = $qrcode->render($code, $path);
+        return $returnBase64 ? $base64 : $code;
     }
 
     public static function generateRandomQrCode($length = 10){

@@ -1,9 +1,9 @@
 @extends('layouts.app')
 @section('page')
-tickets
+sub_tickets
 @endsection
 @section('title')
-Tickets
+Sub Tickets
 @endsection
 @section('content')
         <main class="h-full pb-16 overflow-y-auto">
@@ -13,10 +13,10 @@ Tickets
             <h2
               class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200"
             >
-              Tickets
+              Sub Tickets
             </h2>
             <a href="{{ route('admin.sub_tickets.add',$event_id) }}"><button class="bg-purple-600 text-white py-2 px-8 rounded-md">
-                Add Ticket Type
+                Add Sub Ticket Type
             </button></a>
               </div>
 

@@ -112,35 +112,7 @@ Requests @isset($promo_code) ({{ $promo_code->code }}) @endisset
                       </td>
                       <td class="px-4 py-3 text-sm">
                         <a class="hover:underline" href="{{ route('admin.view_tickets',['id'=>$request->id,'event_id'=>$event_id]) }}">
-                          @php
-                            $similar = [];
-                            $similar_person = [];
-
-                            $tickets = [];
-                          foreach ($request->ticket as $ticket){
-                            if(!isset($ticket->ticket_type)){
-                                    $tickets[] = "N/A";
-                                    continue;
-                            }
-                            if(isset($ticket->sub_ticket_type) && !isset($ticket->ticket_type->name_chaned)){
-                              $ticket->ticket_type->name = $ticket->ticket_type->name . " " . StringUtils::wrapWithParentheses($ticket->sub_ticket_type->name);
-                              $ticket->ticket_type->name_chaned = true;
-                            }
-                            if(!isset($similar[$ticket->ticket_type->name])){
-
-                              $similar[$ticket->ticket_type->name] = 1;
-
-                              $similar_person[$ticket->ticket_type->name] = $ticket->ticket_type->person;
-                            }else{
-                              $similar[$ticket->ticket_type->name]++;
-                            }
-                          }
-
-                          foreach ($similar as $key => $value) {
-                            $tickets[] = $value/$similar_person[$key] . " " . StringUtils::highlight($key, $query);
-                          }
-                          @endphp
-                            {!! implode(',',$tickets) !!}
+                            {!! StringUtils::highlight(implode(',',$request->getTicketsArray()), $query) !!}
                             @if($request->promo_code_id)
                             <br>
                             <span class="text-xs text-gray-500">Promo Code: {!! StringUtils::highlight($request->promo_code->code, $query) !!}</span>

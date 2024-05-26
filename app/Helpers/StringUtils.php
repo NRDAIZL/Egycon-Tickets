@@ -35,4 +35,11 @@ class StringUtils {
         return $string;
     }
 
+    public static function toTitleCase(string $string): string{
+        $pattern = '/([;:,-_.\/ X])/';
+        $result = preg_replace($pattern, ' ', $string);
+        $result = ucwords(strtolower($result));
+        return $result;
+    }
+
 }

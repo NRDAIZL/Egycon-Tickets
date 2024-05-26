@@ -1,6 +1,7 @@
 <?php
 
 use App\Helpers\StringUtils;
+use App\NotificationChannels\TelegramChannel;
 
 return [
 
@@ -43,6 +44,25 @@ return [
 
     'debug' => (bool) env('APP_DEBUG', false),
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Enable Telegram Notifications
+    |--------------------------------------------------------------------------
+    | This should be true if you want to enable telegram notifications
+    | Otherwise notification request will be dumbed to log file "telegram.log"
+    |
+    */
+    'enable_telegram_notifications' => (bool) env('ENABLE_TELEGRAM_NOTIFICATIONS', false),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Enable Telegram Notifications
+    |--------------------------------------------------------------------------
+    | This should be true to enable telegram messages testing
+    |
+    */
+    'telegram_message_testing' => (bool) env('TELEGRAM_MESSAGE_TESTING', false),
     /*
     |--------------------------------------------------------------------------
     | Application URL
@@ -236,7 +256,8 @@ return [
         'View' => Illuminate\Support\Facades\View::class,
         'Excel' => Maatwebsite\Excel\Facades\Excel::class,
         'Debugbar' => Barryvdh\Debugbar\Facades\Debugbar::class,
-        'StringUtils' => StringUtils::class
+        'StringUtils' => StringUtils::class,
+        'telegram' => TelegramChannel::class
     ],
 
 ];
