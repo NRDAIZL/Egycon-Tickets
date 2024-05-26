@@ -1,8 +1,11 @@
 <?php
 
+namespace App\Helpers;
+
 use App\Models\Event;
 use App\Models\User;
 use Illuminate\Notifications\Notification;
+use RoleHelper;
 
 class NotificationsHelper {
     

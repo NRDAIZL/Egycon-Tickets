@@ -17,6 +17,7 @@ use App\Imports\PostImport;
 use App\Exports\PostsExport;
 use App\Helpers\CommonUtils;
 use App\Helpers\HttpHelper;
+use App\Helpers\NotificationsHelper;
 use App\Helpers\PaymentHelper;
 use Illuminate\Http\Request;
 use App\Models\PaymentMethod;
@@ -29,8 +30,6 @@ use App\Models\ExternalServiceProvider;
 use Nafezly\Payments\Classes\KashierPayment;
 use App\Http\Controllers\API\EventController;
 use App\Notifications\NewRequest;
-use NotificationsHelper;
-use PhpOffice\PhpSpreadsheet\Calculation\Statistical\Distributions\NewtonRaphson;
 
 class PostController extends Controller
 {
@@ -476,7 +475,7 @@ class PostController extends Controller
         if(isset($promo))
             $promo->save();
 
-        // Send "New Request" Notification to event admins
+        // Send "New Request" Notification to event
         (new NotificationsHelper(new NewRequest($post)))->sendToEventAdmins($event->id);
         return redirect()->route('thank_you', ['x_event_id' => $x_event_id]);
     }
