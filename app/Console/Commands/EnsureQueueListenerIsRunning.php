@@ -19,12 +19,21 @@ class EnsureQueueListenerIsRunning extends Command
     }
     public function handle()
     {
-        if (!$this->isQueueListenerRunning()) {
+        if (!$this->isQueueListenerRunningUsingPS()) {
             $this->comment('Queue listener is being started.');
-            $this->startQueueListener();
+            $this->startQueueListenerUsingNoHup();
+            $this->info('Queue listener has been started.');
+        } else {
+            $this->info('Queue listener is already running.');
         }
+    }
 
-        $this->comment('Queue listener is running.');
+    private function isQueueListenerRunningUsingPS()
+    {
+        $output = [];
+        exec('ps aux | grep queue:work', $output);
+        $this->info("Output: " . implode("\n", $output));
+        return count($output) > 1;
     }
 
     private function isQueueListenerRunning()
@@ -70,6 +79,20 @@ class EnsureQueueListenerIsRunning extends Command
         $descriptorspec = [0 => ['pipe', 'r'], 1 => ['pipe', 'r'], 2 => ['pipe', 'r']];
         $command =  'php "' . base_path("artisan") . '" queue:work --queue=default --delay=0 --timeout=30 --sleep=2 --tries=3 > nul 2>&1 & echo $!';
         Log::info("command: ". $command);
+        $proc = proc_open($command, $descriptorspec, $pipes);
+        $proc_details = proc_get_status($proc);
+        $pid = $proc_details['pid'];
+        // $pid = exec($command, $output);
+        Log::info('t', [$proc_details]);
+
+        return $pid;
+    }
+
+    private function startQueueListenerUsingNoHup()
+    {
+        $descriptorspec = [0 => ['pipe', 'r'], 1 => ['pipe', 'r'], 2 => ['pipe', 'r']];
+        $command =  'nohup php "' . base_path("artisan") . '" queue:work --daemon >> '. base_path('storage/logs/laravel-queue.log').' 2>&1 &';
+        Log::info("command: " . $command);
         $proc = proc_open($command, $descriptorspec, $pipes);
         $proc_details = proc_get_status($proc);
         $pid = $proc_details['pid'];
