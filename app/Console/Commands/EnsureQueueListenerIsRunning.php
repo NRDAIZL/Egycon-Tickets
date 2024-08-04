@@ -92,10 +92,10 @@ class EnsureQueueListenerIsRunning extends Command
     {
         $output = [];
         $command =  'nohup php "' . base_path("artisan") . '" queue:work --daemon >> '. base_path('storage/logs/laravel-queue.log').' 2>&1 &';
+        $command =  'nohup php "' . base_path("artisan") . '" queue:work --daemon >> '. base_path('storage/logs/laravel-queue.log').' 2>&1 &';
         Log::info("command: " . $command);
         $pid = exec($command, $output);
         Log::info('t', $output);
-
         return $pid;
     }
 }
