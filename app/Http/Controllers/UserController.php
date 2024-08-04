@@ -258,4 +258,17 @@ class UserController extends Controller
         $user = auth()->user();
         return view('admin.settings.profile', compact('user'));
     }
+
+    public function updateProfileImage(Request $request){
+        $request->validate([
+            'profile_image' => 'required|file|max:5120',
+        ]);
+        $allowed_types = ['image/jpg', 'image/jpeg', 'image/png'];
+        if(!in_array($request->profile_image->getMimeType(), $allowed_types)){
+            return redirect()->back()->withErrors(['profile_image' => 'Invalid image type. Only jpg, jpeg, or png images are allowed']);
+        }
+        
+        $user = auth()->user()->saveProfileImage($request->profile_image);
+        return redirect()->back()->with('success', 'Profile image updated successfully');
+    }
 }

@@ -30,7 +30,8 @@ use App\Models\ExternalServiceProvider;
 use Nafezly\Payments\Classes\KashierPayment;
 use App\Http\Controllers\API\EventController;
 use App\Notifications\NewRequest;
-
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Facades\Image;
 class PostController extends Controller
 {
 
@@ -306,7 +307,7 @@ class PostController extends Controller
         }
         if ($requires_receipt && $request->total > 0) {
             $request->validate([
-                'receipt' => "required|file|mimes:png,jpg,jpeg",
+                'receipt' => "required|file|mimes:png,jpg,jpeg|max:5120",
             ]);
         }
         /** @var Event $event */
@@ -350,7 +351,13 @@ class PostController extends Controller
         if($request->hasFile('receipt')){
             $image = $request->file('receipt');
             $image_name = time().'-'.$image->getClientOriginalName();
-            $image->move(public_path('/images'), $image_name);
+            $tmp_path = $image->store('tmp', 'public');
+            $img = Image::make(Storage::disk('public')->path($tmp_path));
+            $img->resize(500, 500, function ($constraint) {
+                $constraint->aspectRatio();
+            });
+            $img->encode('jpg', 80);
+            $img->save(public_path('/images/'.$image_name));
             $post->picture = $image_name;
         }
         $post->name = $request->name;

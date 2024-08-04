@@ -114,7 +114,7 @@ Egycon Tickets
   @if($total > 0)
   @if($payment_method == 'vodafone_cash' || old('payment_method') == 'vodafone_cash' || $payment_method == 'instapay' || old('payment_method') == 'instapay'  )
     <label class="text-center w-full my-2">
-      <input  name='receipt' id="file" type="file" placeholder='Phone Number' class="hidden" type='text'>
+      <input  name='receipt' id="file" type="file" placeholder='Phone Number' class="hidden" accept="image/jpg,image/jpeg,image/png">
       <div class="bg-yellow-600 cursor-pointer font-bold text-black inline-block py-2 px-4 border-4 border-black hover:bg-yellow-500"><i class="las la-image"></i> <span id="filename">Upload receipt</span></div>
     </label>
     <br>

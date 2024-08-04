@@ -183,6 +183,7 @@ Route::middleware('auth')->prefix('/admin')->as('admin.')->group(function(){
     Route::get('/settings', [UserController::class,'viewSettings'])->name('settings');
     Route::get('/settings/disable_telegram', [UserController::class,'disableTelegramNotifications'])->name('settings.disableTelegram');
     Route::get('/profile', [UserController::class, 'viewEditProfile'])->name('profile');
+    Route::post('/profile', [UserController::class, 'updateProfileImage'])->name('profile.image');
 
 });
 

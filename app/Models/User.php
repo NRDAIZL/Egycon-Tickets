@@ -13,7 +13,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Laravolt\Avatar\Avatar;
 use Spatie\Permission\Traits\HasRoles;
 use OwenIt\Auditing\Contracts\Auditable;
-
+use Intervention\Image\Facades\Image;
 class User extends Authenticatable implements Auditable
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles,  \OwenIt\Auditing\Auditable;
@@ -65,6 +65,23 @@ class User extends Authenticatable implements Auditable
         file_get_contents($avatar_image_url);
         $path = 'avatars/'.$this->id.'.png';
         Storage::disk('public')->put($path, file_get_contents($avatar_image_url));                
+        UserAvatar::create(['user_id' => $this->id, 'image' => $path]);
+        return $this;
+    }
+    public function saveProfileImage($image)
+    {
+        $path = $image->store('tmp', 'public');
+        $image = Image::make(Storage::disk('public')->path($path));
+        unlink(Storage::disk('public')->path($path));
+        if ($image->width() > 500 || $image->height() > 500) {
+            $image->resize(500, 500, function ($constraint) {
+                $constraint->aspectRatio();
+            });
+        }
+        // convert to jpg
+        $image->encode('jpg', 80);
+        $path = 'avatars/'.$this->id."-" . time() . ".jpg";
+        Storage::disk('public')->put($path, $image);
         UserAvatar::create(['user_id' => $this->id, 'image' => $path]);
         return $this;
     }
