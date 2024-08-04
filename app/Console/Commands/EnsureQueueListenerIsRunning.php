@@ -31,7 +31,7 @@ class EnsureQueueListenerIsRunning extends Command
     private function isQueueListenerRunningUsingPS()
     {
         $output = [];
-        exec('ps aux | grep queue:work > nul 2>&1 & echo $!', $output);
+        exec('ps aux | grep queue:work 2>&1', $output);
         $this->info("Output: " . implode("\n", $output));
         return count($output) > 1;
     }
