@@ -19,12 +19,21 @@ class EnsureQueueListenerIsRunning extends Command
     }
     public function handle()
     {
-        if (!$this->isQueueListenerRunning()) {
+        if (!$this->isQueueListenerRunningUsingPS()) {
             $this->comment('Queue listener is being started.');
-            $this->startQueueListener();
+            $this->startQueueListenerUsingNoHup();
+            $this->info('Queue listener has been started.');
+        } else {
+            $this->info('Queue listener is already running.');
         }
+    }
 
-        $this->comment('Queue listener is running.');
+    private function isQueueListenerRunningUsingPS()
+    {
+        $output = [];
+        exec('ps auxww | grep "queue:work" | grep -v grep 2>&1', $output);
+        $this->info("Output: " . implode("\n", $output));
+        return count($output) > 0;
     }
 
     private function isQueueListenerRunning()
@@ -76,6 +85,16 @@ class EnsureQueueListenerIsRunning extends Command
         // $pid = exec($command, $output);
         Log::info('t', [$proc_details]);
 
+        return $pid;
+    }
+
+    private function startQueueListenerUsingNoHup()
+    {
+        $output = [];
+        $command =  'nohup /usr/local/bin/php "' . base_path("artisan") . '" queue:work --daemon >> '. base_path('storage/logs/laravel-queue.log').' 2>&1 &';
+        Log::info("command: " . $command);
+        $pid = exec($command, $output);
+        Log::info('t', $output);
         return $pid;
     }
 }
