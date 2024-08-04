@@ -90,14 +90,11 @@ class EnsureQueueListenerIsRunning extends Command
 
     private function startQueueListenerUsingNoHup()
     {
-        $descriptorspec = [0 => ['pipe', 'r'], 1 => ['pipe', 'r'], 2 => ['pipe', 'r']];
+        $output = [];
         $command =  'nohup php "' . base_path("artisan") . '" queue:work --daemon >> '. base_path('storage/logs/laravel-queue.log').' 2>&1 &';
         Log::info("command: " . $command);
-        $proc = proc_open($command, $descriptorspec, $pipes);
-        $proc_details = proc_get_status($proc);
-        $pid = $proc_details['pid'];
-        // $pid = exec($command, $output);
-        Log::info('t', [$proc_details]);
+        $pid = exec($command, $output);
+        Log::info('t', $output);
 
         return $pid;
     }
