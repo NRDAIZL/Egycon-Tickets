@@ -29,7 +29,11 @@ class AddExternalProviderColumnsToPosts extends Migration
     public function down()
     {
         Schema::table('posts', function (Blueprint $table) {
-            //
+            $table->dropForeign(['external_service_provider_id']);
+            $table->dropColumn('external_service_provider_id');
+            $table->dropColumn('external_service_provider_order_id');
+            $table->dropColumn('external_service_provider_payment_method');
+            $table->dropColumn('external_service_provider_notes');
         });
     }
 }

@@ -495,7 +495,7 @@ class PostController extends Controller
         }
         $theme = $event->themes()->where('is_active', 1)->first();
 
-        return view('thank_you', ['status_success' => 'Thank you for registering at EGYcon. An email will be sent to you once your request is reviewed.', 'theme' => $theme, 'event' => $event]);
+        return view('thank_you', ['status_success' => "Thank you for registering at {$event->name}. An email will be sent to you once your request is reviewed.", 'theme' => $theme, 'event' => $event]);
     }
 
     

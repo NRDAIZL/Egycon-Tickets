@@ -27,7 +27,6 @@ class AddTicketTypeIdToPostsTable extends Migration
     {
         Schema::table('posts', function (Blueprint $table) {
             $table->dropConstrainedForeignId('ticket_type_id');
-            $table->dropColumn('ticket_type_id');
         });
     }
 }

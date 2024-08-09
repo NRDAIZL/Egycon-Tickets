@@ -31,4 +31,3 @@ Route::middleware('auth:sanctum')->group(function(){
 });
 
 Route::any('/telegram', [TelegramController::class,'index']);
-

@@ -42,4 +42,23 @@ class StringUtils {
         return $result;
     }
 
+    public static function toSnakeCase(string $string): string{
+        $string = preg_replace('/\s+/', '_', $string);
+        $string = strtolower($string);
+        return $string;
+    }
+
+    public static function getEnvValue(string $fileName, string $key){
+        $file = file_get_contents($fileName);
+        $lines = explode("\n", $file);
+        foreach($lines as $line){
+            $line = trim($line);
+            if(strpos($line, $key) === 0){
+                $value = explode("=", $line)[1];
+                return $value;
+            }
+        }
+        return null;
+    }
+
 }

@@ -1,6 +1,6 @@
 @extends('layouts.form')
 @section('title')
-Egycon Tickets
+{{ $event->name }}
 @endsection
 @section('content')
 

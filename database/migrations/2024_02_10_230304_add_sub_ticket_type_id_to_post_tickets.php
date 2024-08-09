@@ -26,7 +26,8 @@ class AddSubTicketTypeIdToPostTickets extends Migration
     public function down()
     {
         Schema::table('post_tickets', function (Blueprint $table) {
-            //
+            $table->dropForeign(['sub_ticket_type_id']);
+            $table->dropColumn('sub_ticket_type_id');
         });
     }
 }
