@@ -103,8 +103,7 @@ final class MailHelpers
     public static function sendEmail($message){
         
         if(env('ENABLE_EMAIL_SENDING', true) == false) {
-            // log to file (laravel-emails.log)
-            Log::channel('telegram')->info(
+            Log::channel('emails')->info(
                 "Email Sending is Disabled."
                 . PHP_EOL
                 ."Email To Send:". 
