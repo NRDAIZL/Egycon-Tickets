@@ -114,6 +114,11 @@ return [
             'path' => storage_path('logs/telegram.log'),
             'level' => env('LOG_LEVEL', 'debug'),
         ],
+        'emails' => [
+            'driver' => 'monolog',
+            'path' => storage_path('logs/emails.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+        ],
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
         ],

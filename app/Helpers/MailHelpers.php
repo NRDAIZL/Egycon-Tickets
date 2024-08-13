@@ -10,12 +10,14 @@ use Postmark\Models\DynamicResponseModel;
 use Postmark\PostmarkClient;
 use Postmark\Models\PostmarkException;
 use stdClass;
+use Illuminate\Support\Facades\Log;
 
 final class MailHelpers 
 {
     private static $subjects = [
         "declined" => "Your request has been declined",
         "accepted" => "Your ticket request has been approved!",
+        "approved" => "Your ticket request has been approved!",
         "reservation" => "Your request has been approved!",
     ];
 
@@ -93,12 +95,23 @@ final class MailHelpers
 
     /**
      * @param array $message
-     * @return DynamicResponseModel
+     * @return DynamicResponseModel | null
      * @throws MailException
      * @throws Exception
      * @throws PostmarkException
      */
     public static function sendEmail($message){
+        
+        if(env('ENABLE_EMAIL_SENDING') == false) {
+            // log to file (laravel-emails.log)
+            Log::channel('telegram')->info(
+                "Email Sending is Disabled."
+                . PHP_EOL
+                ."Email To Send:". 
+                json_encode($message)
+            );
+            return null;
+        }
         try {
             $client = new PostmarkClient(env("POSTMARK_TOKEN"));
             return $client->sendEmailBatch($message);
